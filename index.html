@@ -479,7 +479,7 @@ const Store = (function(){
   function rowToProj(r){ return {id:r.id,name:r.name,color:r.color,shared:r.shared!==false}; }
   // ---- 인증 토큰 (AUTH_KEY · 로컬 전용 저장) ----
   function loadTok(){ _tok=lsGet(AUTH_KEY); }
-  function saveTok(j){ _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at}; lsSet(AUTH_KEY,_tok); }
+  function saveTok(j){ _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,email:(j.user&&j.user.email)||(_tok&&_tok.email)||null}; lsSet(AUTH_KEY,_tok); }
   function clearTok(){ _tok=null; try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
   // ---- HTTP (Supabase REST/Auth) ----
   function restHeaders(prefer){ const h={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((_tok&&_tok.access_token)||SUPABASE_KEY),'Content-Type':'application/json'}; if(prefer)h.Prefer=prefer; return h; }
@@ -583,7 +583,7 @@ const Store = (function(){
     get mode(){ return _mode; },
     isAuthenticated(){ return _mode==='local' ? true : !!(_tok&&_tok.access_token); },
     requiresLogin(){ return _mode!=='local' && !this.isAuthenticated(); },      // 로컬 → 항상 false, 절대 막지 않음
-    currentUser(){ return _mode==='local' ? {id:'local',email:null} : (_me||(_tok?{id:'me'}:null)); },
+    currentUser(){ return _mode==='local' ? {id:'local',email:null} : (_me||(_tok?{id:'me',email:_tok.email||null}:null)); },
     async signin(email,pw){ if(_mode==='local')return null; const j=await authPost('token?grant_type=password',{email:email,password:pw}); saveTok(j); _me=j.user; await pull(); return j.user; },
     async signup(email,pw){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
     async signout(){ clearTok(); _me=null; _data.tasks.length=0; _data.projects.length=0; },
