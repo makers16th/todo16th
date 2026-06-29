@@ -311,6 +311,7 @@ button{cursor:pointer;border:none;background:none}
     <div class="side-foot">
       <div class="acct" id="acctRow" hidden>
         <span class="acct-email" id="acctEmail"></span>
+        <button class="acct-out" data-action="pw-open">비번변경</button>
         <button class="acct-out" data-action="logout">로그아웃</button>
       </div>
       <div class="side-stat" id="sideStat"></div>
@@ -370,6 +371,18 @@ button{cursor:pointer;border:none;background:none}
     <div class="login-err" id="loginErr" hidden></div>
     <button type="submit" class="btn primary" id="loginSubmit">로그인</button>
     <button type="button" class="login-toggle" data-action="auth-toggle">계정이 없으신가요? 회원가입</button>
+  </form>
+</div>
+
+<!-- 비밀번호 변경 (로그인 상태에서) -->
+<div class="loginscreen" id="pwScreen" hidden>
+  <form class="login-card" id="pwForm">
+    <h2>비밀번호 변경</h2>
+    <input type="password" id="pwNew" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
+    <input type="password" id="pwNew2" placeholder="새 비밀번호 확인" autocomplete="new-password">
+    <div class="login-err" id="pwErr" hidden></div>
+    <button type="submit" class="btn primary" id="pwSubmit">변경</button>
+    <button type="button" class="btn" data-action="pw-cancel">취소</button>
   </form>
 </div>
 <div id="toast"></div>
@@ -571,6 +584,12 @@ const Store = (function(){
     async signup(email,pw){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
     async signout(){ clearTok(); _me=null; _data.tasks.length=0; _data.projects.length=0; },
     refresh(){ return _mode==='local'?Promise.resolve(null):doRefresh(); },
+    async changePassword(newPw){ if(_mode==='local')return null;
+      let r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
+      if(r.status===401&&await doRefresh())r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
+      const j=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.error||j.error_code))||('변경 실패 '+r.status));
+      return j; },
     async me(){ if(_mode==='local')return {id:'local',email:null}; if(!_tok)return null;
       try{ let r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:restHeaders()}); if(r.status===401&&await doRefresh())r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:restHeaders()}); if(r.ok){ _me=await r.json(); return _me; } }catch(e){} return null; }
   };
@@ -800,6 +819,8 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'auth-toggle':{const signup=$('loginTitle').textContent.indexOf('회원가입')>=0;$('loginTitle').textContent=signup?'로그인':'회원가입';$('loginSubmit').textContent=signup?'로그인':'회원가입';$('loginErr').hidden=true;break;}
     case 'logout':Store.auth.signout().then(()=>{showLogin(true);updateAccountUI();});break;
+    case 'pw-open':$('pwNew').value='';$('pwNew2').value='';$('pwErr').hidden=true;showPw(true);setTimeout(()=>$('pwNew').focus(),0);break;
+    case 'pw-cancel':showPw(false);break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'select-project':state.ui.projectFilter=id;Store.prefs.save();renderProjects();renderList();break;
     case 'delete-project':
@@ -937,6 +958,7 @@ function ensureDaechi5(){ // '대치5호점' 프로젝트 보장 (딱 한 번만
 /* ---------- 로그인 / 계정 ---------- */
 function showLogin(show){const ls=$('loginScreen');if(!ls)return;ls.hidden=!show;const app=document.querySelector('.app');if(app)app.style.display=show?'none':'';}
 function hideLogin(){showLogin(false);}
+function showPw(show){const el=$('pwScreen');if(el)el.hidden=!show;}
 function updateAccountUI(){
   const acct=$('acctRow');if(!acct)return;
   const u=(Store.mode!=='local'&&Store.auth.isAuthenticated())?Store.auth.currentUser():null;
@@ -972,6 +994,17 @@ if(loginForm)loginForm.addEventListener('submit',async e=>{
     await enterApp();
   }catch(ex){err.textContent=(ex&&ex.message)?('실패: '+ex.message):'로그인에 실패했어요';err.hidden=false;}
   finally{btn.disabled=false;}
+});
+const pwForm=$('pwForm');
+if(pwForm)pwForm.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const np=$('pwNew').value, np2=$('pwNew2').value, err=$('pwErr');err.hidden=true;
+  if(np.length<6){err.textContent='6자 이상 입력해 주세요';err.hidden=false;return;}
+  if(np!==np2){err.textContent='두 비밀번호가 일치하지 않아요';err.hidden=false;return;}
+  const btn=$('pwSubmit');btn.disabled=true;
+  try{ await Store.auth.changePassword(np); showPw(false); toast('비밀번호를 변경했어요'); }
+  catch(ex){ err.textContent=(ex&&ex.message)?('실패: '+ex.message):'변경에 실패했어요'; err.hidden=false; }
+  finally{ btn.disabled=false; }
 });
 
 /* ---------- 시작 ---------- */
