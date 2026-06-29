@@ -87,6 +87,10 @@ button{cursor:pointer;border:none;background:none}
   padding:0 2px;border-radius:4px;transition:.13s}
 .proj-item:hover .pi-del{opacity:.7}
 .proj-item .pi-del:hover{opacity:1;color:#ff8e8e}
+.proj-item .pi-share{opacity:0;color:var(--cream-soft);font-size:13px;line-height:1;
+  padding:0 3px;border-radius:4px;transition:.13s}
+.proj-item:hover .pi-share{opacity:.7}
+.proj-item .pi-share:hover{opacity:1;color:var(--green)}
 
 .proj-add-btn{margin-top:4px;padding:9px 10px;border-radius:10px;color:var(--cream-soft);
   font-weight:600;text-align:left;transition:.13s;border:1px dashed rgba(255,255,255,.16)}
@@ -256,7 +260,7 @@ button{cursor:pointer;border:none;background:none}
   .proj-nav{flex-direction:row;flex-wrap:wrap;flex:1;gap:6px}
   .proj-item{width:auto;padding:7px 11px}
   .proj-item.active::before{display:none}
-  .proj-item .pi-del{display:none}
+  .proj-item .pi-del,.proj-item .pi-share{display:none}
   .proj-add-btn{margin:0}
   .proj-add{order:5}
   .side-foot{margin:0;padding:0;display:flex;align-items:center;gap:10px;width:100%}
@@ -659,6 +663,7 @@ function renderProjects(){
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
       <span class="pi-dot"></span><span class="pi-name">${esc(p.name)}${p.shared===false?'<span class="pi-lock" title="개인 프로젝트">🔒</span>':''}</span>
       <span class="pi-cnt">${cnt[p.id]||0}</span>
+      <span class="pi-share" data-action="toggle-shared" data-id="${p.id}" title="${p.shared===false?'팀 공유로 전환':'개인 프로젝트로 전환'}">⇄</span>
       <span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span></button>`;
   }
   sidebarProjects.innerHTML=h;
@@ -823,6 +828,15 @@ document.addEventListener('click',e=>{
     case 'pw-cancel':showPw(false);break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'select-project':state.ui.projectFilter=id;Store.prefs.save();renderProjects();renderList();break;
+    case 'toggle-shared':{
+      e.stopPropagation();
+      const p=state.projects.find(x=>x.id===id);if(!p)break;
+      const isShared=p.shared!==false, next=!isShared;
+      if(isShared&&!confirm(`'${p.name}'을(를) 개인 프로젝트로 바꿀까요?\n팀원은 이 프로젝트와 그 안의 할일을 더 이상 볼 수 없게 됩니다.`))break;
+      Store.projects.update(id,{shared:next});
+      renderProjects();renderList();
+      toast(`'${p.name}' → ${next?'팀 공유':'개인'}`);
+      break;}
     case 'delete-project':
       e.stopPropagation();
       if(confirm('이 프로젝트를 삭제할까요?\n(할 일은 ‘기타’로 옮겨집니다)')){
