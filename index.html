@@ -294,6 +294,13 @@ button{cursor:pointer;border:none;background:none}
 .login-err{color:#d4524f;font-size:12.5px;font-weight:600;text-align:center}
 .login-err[hidden]{display:none}
 .login-toggle{color:var(--purple);font-weight:700;font-size:12.5px;padding:4px}
+.login-card select{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:11px 13px;outline:none;font:inherit;color:var(--ink)}
+.login-card select:focus{border-color:var(--purple);box-shadow:0 0 0 3px color-mix(in srgb,var(--purple) 12%,transparent)}
+.share-members{max-height:230px;overflow:auto;display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:11px;padding:11px;background:var(--paper)}
+.share-members[hidden]{display:none}
+.share-members label{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);cursor:pointer;line-height:1.3}
+.share-members input{width:16px;height:16px;accent-color:var(--purple);flex:0 0 auto}
+.share-members .empty-dir{color:#9aa6a0;font-size:12.5px;text-align:center;padding:6px 0}
 </style>
 </head>
 <body>
@@ -309,7 +316,7 @@ button{cursor:pointer;border:none;background:none}
     <button class="proj-add-btn" data-action="show-add-project">＋ 프로젝트 추가</button>
     <form class="proj-add" id="projForm" hidden>
       <input id="projName" placeholder="프로젝트 이름" autocomplete="off" maxlength="20">
-      <select id="projShared" title="공유 범위"><option value="shared">👥 팀 공유</option><option value="personal">🔒 개인</option></select>
+      <select id="projShared" title="공유 범위"><option value="shared">👥 팀 전원</option><option value="personal">🔒 개인</option></select>
       <button type="submit">추가</button>
     </form>
     <div class="side-foot">
@@ -389,6 +396,22 @@ button{cursor:pointer;border:none;background:none}
     <button type="button" class="btn" data-action="pw-cancel">취소</button>
   </form>
 </div>
+
+<!-- 프로젝트 공유 설정 (생성자만) -->
+<div class="loginscreen" id="shareScreen" hidden>
+  <form class="login-card" id="shareForm">
+    <h2 id="shareTitle">공유 설정</h2>
+    <select id="shareMode" title="공유 범위">
+      <option value="personal">🔒 개인 (나만)</option>
+      <option value="team">👥 팀 전원</option>
+      <option value="list">🎯 특정인만</option>
+    </select>
+    <div class="share-members" id="shareMembers" hidden></div>
+    <div class="login-err" id="shareErr" hidden></div>
+    <button type="submit" class="btn primary">저장</button>
+    <button type="button" class="btn" data-action="share-cancel">취소</button>
+  </form>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -434,7 +457,7 @@ function defaultState(){
   const p1=uid(),p2=uid();
   return{
     tasks:[],
-    projects:[{id:p1,name:'랜딩',color:'#7c5cff',shared:true},{id:p2,name:'간판',color:'#2fd98a',shared:true}],
+    projects:[{id:p1,name:'랜딩',color:'#7c5cff',shared:true,members:[]},{id:p2,name:'간판',color:'#2fd98a',shared:true,members:[]}],
     ui:{view:'date',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,search:'',editingId:null}
   };
 }
@@ -445,7 +468,7 @@ function migrate(s){
   s.ui.selectedDate=ymd(new Date()); // 열 때 항상 오늘로
   s.ui.editingId=null; s.ui.search='';
   s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
-  s.projects.forEach(p=>{if(!('shared'in p))p.shared=true;}); // 기존 프로젝트는 팀 공유로 기본값
+  s.projects.forEach(p=>{if(!('shared'in p))p.shared=true; if(!Array.isArray(p.members))p.members=[];}); // 기존 프로젝트는 팀 공유로 기본값
   return s;
 }
 /* ---------- 백엔드 설정 ----------
@@ -468,18 +491,19 @@ const Store = (function(){
   const _data={tasks:[],projects:[]};        // 한 번 생성, 절대 재할당 안 함
   let _prefs={};                             // init()에서 1회 할당, 이후 제자리 변경
   let _batch=0;
-  let _tok=null, _me=null, _onChange=null;
+  let _tok=null, _me=null, _dir=null, _onChange=null;
   const enc=encodeURIComponent;
   // ---- 필드 매핑 (앱 객체 ↔ Supabase 행: text↔title, date↔start_date 등) ----
   function taskToRow(t){ return {id:t.id,title:t.text,project:t.project||null,priority:t.priority||'mid',done:!!t.done,start_date:t.date||null,end_date:t.endDate||null,done_at:t.doneAt||null,note:t.note||'',sort:(typeof t.sort==='number'?t.sort:null)}; }
   function taskPatchToRow(p){ const r={}; if('text'in p)r.title=p.text; if('project'in p)r.project=p.project||null; if('priority'in p)r.priority=p.priority; if('done'in p)r.done=!!p.done; if('date'in p)r.start_date=p.date||null; if('endDate'in p)r.end_date=p.endDate||null; if('doneAt'in p)r.done_at=p.doneAt||null; if('note'in p)r.note=p.note||''; if('sort'in p)r.sort=p.sort; return r; }
   function rowToTask(r){ return {id:r.id,text:r.title,project:r.project||'none',priority:r.priority||'mid',done:!!r.done,createdAt:r.created_at?Date.parse(r.created_at):Date.now(),date:r.start_date||null,endDate:r.end_date||null,doneAt:r.done_at||null,note:r.note||'',sort:(typeof r.sort==='number'?r.sort:null)}; }
-  function projToRow(p){ return {id:p.id,name:p.name,color:p.color||null,shared:p.shared!==false}; }
-  function projPatchToRow(p){ const r={}; if('name'in p)r.name=p.name; if('color'in p)r.color=p.color; if('shared'in p)r.shared=!!p.shared; return r; }
-  function rowToProj(r){ return {id:r.id,name:r.name,color:r.color,shared:r.shared!==false}; }
+  function projToRow(p){ return {id:p.id,name:p.name,color:p.color||null,shared:p.shared!==false,members:Array.isArray(p.members)?p.members:[]}; }
+  function projPatchToRow(p){ const r={}; if('name'in p)r.name=p.name; if('color'in p)r.color=p.color; if('shared'in p)r.shared=!!p.shared; if('members'in p)r.members=Array.isArray(p.members)?p.members:[]; return r; }
+  function rowToProj(r){ return {id:r.id,name:r.name,color:r.color,shared:r.shared!==false,members:Array.isArray(r.members)?r.members:[],owner:r.owner||null}; }
   // ---- 인증 토큰 (AUTH_KEY · 로컬 전용 저장) ----
-  function loadTok(){ _tok=lsGet(AUTH_KEY); }
-  function saveTok(j){ _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,email:(j.user&&j.user.email)||(_tok&&_tok.email)||null}; lsSet(AUTH_KEY,_tok); }
+  function decodeJwt(t){ try{ let p=(t||'').split('.')[1]; if(!p)return null; p=p.replace(/-/g,'+').replace(/_/g,'/'); p+='='.repeat((4-p.length%4)%4); return JSON.parse(atob(p)); }catch(e){ return null; } }
+  function loadTok(){ _tok=lsGet(AUTH_KEY); if(_tok&&_tok.access_token&&(!_tok.uid||!_tok.email)){ const o=decodeJwt(_tok.access_token); if(o){ if(!_tok.uid)_tok.uid=o.sub||null; if(!_tok.email)_tok.email=o.email||null; lsSet(AUTH_KEY,_tok); } } }
+  function saveTok(j){ const o=decodeJwt(j.access_token)||{}; _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,email:(j.user&&j.user.email)||o.email||(_tok&&_tok.email)||null,uid:(j.user&&j.user.id)||o.sub||(_tok&&_tok.uid)||null}; lsSet(AUTH_KEY,_tok); }
   function clearTok(){ _tok=null; try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
   // ---- HTTP (Supabase REST/Auth) ----
   function restHeaders(prefer){ const h={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((_tok&&_tok.access_token)||SUPABASE_KEY),'Content-Type':'application/json'}; if(prefer)h.Prefer=prefer; return h; }
@@ -583,10 +607,10 @@ const Store = (function(){
     get mode(){ return _mode; },
     isAuthenticated(){ return _mode==='local' ? true : !!(_tok&&_tok.access_token); },
     requiresLogin(){ return _mode!=='local' && !this.isAuthenticated(); },      // 로컬 → 항상 false, 절대 막지 않음
-    currentUser(){ return _mode==='local' ? {id:'local',email:null} : (_me||(_tok?{id:'me',email:_tok.email||null}:null)); },
+    currentUser(){ if(_mode==='local')return {id:'local',email:null}; if(_me&&_me.id)return {id:_me.id,email:_me.email}; if(_tok)return {id:_tok.uid||'me',email:_tok.email||null}; return null; },
     async signin(email,pw){ if(_mode==='local')return null; const j=await authPost('token?grant_type=password',{email:email,password:pw}); saveTok(j); _me=j.user; await pull(); return j.user; },
     async signup(email,pw){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
-    async signout(){ clearTok(); _me=null; _data.tasks.length=0; _data.projects.length=0; },
+    async signout(){ clearTok(); _me=null; _dir=null; _data.tasks.length=0; _data.projects.length=0; },
     refresh(){ return _mode==='local'?Promise.resolve(null):doRefresh(); },
     async changePassword(newPw){ if(_mode==='local')return null;
       let r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
@@ -600,6 +624,7 @@ const Store = (function(){
   // ---- 렌더 콜백(원격 비동기 갱신 반영) · 로컬 데이터 접근 · 1회 클라우드 이전 ----
   api.onChange=function(fn){ _onChange=fn; };
   api.localData=function(){ return lsGet(DATA_KEY); };
+  api.directory=async function(){ if(_mode==='local')return []; if(_dir)return _dir; const rows=await rest('GET','profiles?select=id,email&order=email.asc'); _dir=rows||[]; return _dir; };
   api.migrateLocalToCloud=async function(){
     const local=lsGet(DATA_KEY); if(!local) return {projects:0,tasks:0};
     const projs=(local.projects||[]).map(p=>({id:p.id,name:p.name,color:p.color||null,shared:true})); // 기존 프로젝트는 팀 공유로
@@ -658,13 +683,18 @@ function syncHeader(){
 function renderProjects(){
   const cnt={};state.tasks.forEach(t=>{if(!t.done)cnt[t.project]=(cnt[t.project]||0)+1;});
   const all=state.tasks.filter(t=>!t.done).length;
+  const meId=(Store.mode!=='local'&&Store.auth.isAuthenticated()&&Store.auth.currentUser())?Store.auth.currentUser().id:null;
   let h=`<button class="proj-item${state.ui.projectFilter==='all'?' active':''}" data-action="select-project" data-id="all" style="--pc:var(--green)"><span class="pi-name">전체</span><span class="pi-cnt">${all}</span></button>`;
   for(const p of state.projects){
+    const mine = Store.mode==='local' || (p.owner && meId && p.owner===meId);
+    let badge='';
+    if(p.shared!==true){ badge = (p.members&&p.members.length) ? `<span class="pi-lock" title="${p.members.length}명에게 공유">🎯${p.members.length}</span>` : '<span class="pi-lock" title="개인 프로젝트(나만)">🔒</span>'; }
+    const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">👥</span>`:'';
+    const del = mine?`<span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span>`:'';
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
-      <span class="pi-dot"></span><span class="pi-name">${esc(p.name)}${p.shared===false?'<span class="pi-lock" title="개인 프로젝트">🔒</span>':''}</span>
+      <span class="pi-dot"></span><span class="pi-name">${esc(p.name)}${badge}</span>
       <span class="pi-cnt">${cnt[p.id]||0}</span>
-      <span class="pi-share" data-action="toggle-shared" data-id="${p.id}" title="${p.shared===false?'팀 공유로 전환':'개인 프로젝트로 전환'}">⇄</span>
-      <span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span></button>`;
+      ${cfg}${del}</button>`;
   }
   sidebarProjects.innerHTML=h;
   addProject.innerHTML=projectOptions(state.ui.projectFilter!=='all'?state.ui.projectFilter:'none');
@@ -828,15 +858,8 @@ document.addEventListener('click',e=>{
     case 'pw-cancel':showPw(false);break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'select-project':state.ui.projectFilter=id;Store.prefs.save();renderProjects();renderList();break;
-    case 'toggle-shared':{
-      e.stopPropagation();
-      const p=state.projects.find(x=>x.id===id);if(!p)break;
-      const isShared=p.shared!==false, next=!isShared;
-      if(isShared&&!confirm(`'${p.name}'을(를) 개인 프로젝트로 바꿀까요?\n팀원은 이 프로젝트와 그 안의 할일을 더 이상 볼 수 없게 됩니다.`))break;
-      Store.projects.update(id,{shared:next});
-      renderProjects();renderList();
-      toast(`'${p.name}' → ${next?'팀 공유':'개인'}`);
-      break;}
+    case 'share-config':{ e.stopPropagation(); openShareConfig(id); break;}
+    case 'share-cancel':{ $('shareScreen').hidden=true; _shareProjId=null; break;}
     case 'delete-project':
       e.stopPropagation();
       if(confirm('이 프로젝트를 삭제할까요?\n(할 일은 ‘기타’로 옮겨집니다)')){
@@ -877,6 +900,7 @@ document.addEventListener('change',e=>{
   if(el.id==='datePick'){state.ui.selectedDate=el.value||ymd(new Date());Store.prefs.save();syncHeader();renderList();}
   else if(el.id==='importFile'){if(el.files[0])importJSON(el.files[0]);el.value='';}
   else if(el.id==='showDone'){state.ui.showDone=el.checked;Store.prefs.save();renderList();}
+  else if(el.id==='shareMode'){updateShareMembersVis();}
 });
 
 addForm.addEventListener('submit',e=>{
@@ -891,7 +915,7 @@ projForm.addEventListener('submit',e=>{
   const name=projName.value.trim();if(!name)return;
   const color=PROJECT_COLORS[Store.projects.all().length%PROJECT_COLORS.length];
   const shared=$('projShared').value!=='personal';
-  Store.projects.create({id:uid(),name,color,shared});
+  Store.projects.create({id:uid(),name,color,shared,members:[]});
   projName.value='';projForm.hidden=true;renderProjects();renderList();
 });
 document.addEventListener('submit',e=>{if(!state)return;if(e.target.classList.contains('editform')){e.preventDefault();saveEdit(e.target.dataset.id);}});
@@ -1019,6 +1043,43 @@ if(pwForm)pwForm.addEventListener('submit',async e=>{
   try{ await Store.auth.changePassword(np); showPw(false); toast('비밀번호를 변경했어요'); }
   catch(ex){ err.textContent=(ex&&ex.message)?('실패: '+ex.message):'변경에 실패했어요'; err.hidden=false; }
   finally{ btn.disabled=false; }
+});
+
+/* ---------- 프로젝트 공유 설정 (생성자만 · 멤버 목록 편집) ---------- */
+let _shareProjId=null;
+function updateShareMembersVis(){ const b=$('shareMembers'); if(b)b.hidden=$('shareMode').value!=='list'; }
+async function openShareConfig(pid){
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  _shareProjId=pid;
+  $('shareTitle').textContent=`‘${p.name}’ 공유 설정`;
+  $('shareMode').value = p.shared===true ? 'team' : ((p.members&&p.members.length)?'list':'personal');
+  $('shareErr').hidden=true;
+  const box=$('shareMembers'); box.innerHTML='<div class="empty-dir">불러오는 중…</div>';
+  updateShareMembersVis();
+  $('shareScreen').hidden=false;
+  let dir=[];
+  try{ dir=await Store.directory(); }
+  catch(e){ if(_shareProjId===pid)box.innerHTML='<div class="empty-dir">가입자 목록을 불러오지 못했어요.</div>'; return; }
+  if(_shareProjId!==pid)return;                      // 그새 닫힘/전환
+  const me=Store.auth.currentUser(), meId=me?me.id:null;
+  const others=dir.filter(u=>u.id!==meId && !/@example\.com$/i.test(u.email||'')); // 테스트 계정(@example.com) 숨김
+  const sel=new Set(p.members||[]);
+  box.innerHTML = others.length
+    ? others.map(u=>`<label><input type="checkbox" value="${u.id}"${sel.has(u.id)?' checked':''}> ${esc(u.email||u.id)}</label>`).join('')
+    : '<div class="empty-dir">공유할 다른 가입자가 없어요.<br>(상대가 먼저 이 보드에 가입해야 해요)</div>';
+}
+const shareForm=$('shareForm');
+if(shareForm)shareForm.addEventListener('submit',e=>{
+  e.preventDefault(); if(!_shareProjId)return;
+  const mode=$('shareMode').value;
+  let shared=false, members=[];
+  if(mode==='team'){ shared=true; members=[]; }
+  else if(mode==='list'){ members=Array.from($('shareMembers').querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value); }
+  const p=state.projects.find(x=>x.id===_shareProjId);
+  Store.projects.update(_shareProjId,{shared,members});
+  $('shareScreen').hidden=true; _shareProjId=null;
+  renderProjects();renderList();
+  toast(`‘${p?p.name:''}’ 공유 설정 저장`);
 });
 
 /* ---------- 시작 ---------- */
