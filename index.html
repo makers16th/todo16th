@@ -301,6 +301,59 @@ button{cursor:pointer;border:none;background:none}
 .share-members label{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);cursor:pointer;line-height:1.3}
 .share-members input{width:16px;height:16px;accent-color:var(--purple);flex:0 0 auto}
 .share-members .empty-dir{color:#9aa6a0;font-size:12.5px;text-align:center;padding:6px 0}
+
+/* ---------- 세그먼트(항목 필터 · 기간) ---------- */
+.segbar{display:flex;gap:4px;background:var(--paper-3);padding:3px;border-radius:9px}
+.segbar button{padding:6px 12px;border-radius:7px;font-weight:700;font-size:12px;color:var(--ink-soft);transition:.12s;white-space:nowrap;line-height:1}
+.segbar button:hover{color:var(--ink)}
+.segbar button.active{background:var(--paper-2);color:var(--ink);box-shadow:0 1px 2px rgba(36,23,16,.12)}
+
+/* ---------- 추가바: 일정 시간 입력 ---------- */
+.addbar input[type=time]{background:var(--paper-2);border:1px solid var(--line);border-radius:11px;padding:0 10px;outline:none;font-weight:600;color:var(--ink-soft)}
+.addbar input[type=time]:focus{border-color:var(--purple)}
+
+/* ---------- 일정(event) 카드 ---------- */
+.task.event{background:color-mix(in srgb,var(--purple) 5%,var(--paper-2));border-color:color-mix(in srgb,var(--purple) 20%,var(--line))}
+.task.event:hover{border-color:color-mix(in srgb,var(--purple) 35%,var(--line))}
+.evmark{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-size:12px;background:color-mix(in srgb,var(--purple) 16%,white)}
+.pill.time{color:var(--purple);background:color-mix(in srgb,var(--purple) 15%,white);font-weight:800}
+
+/* ---------- 주 뷰(요일별 아젠다) ---------- */
+.day-sec{display:flex;align-items:baseline;gap:7px;font-weight:800;font-size:14px;color:var(--ink);
+  margin:22px 2px 10px;padding-bottom:7px;border-bottom:1px solid var(--line);cursor:pointer}
+.day-sec:hover{border-color:var(--line-strong)}
+.day-sec.today{color:var(--purple);border-color:color-mix(in srgb,var(--purple) 40%,var(--line))}
+.day-sec .wd{font-size:12px;color:var(--ink-soft);font-weight:700}
+.day-sec.today .wd{color:var(--purple)}
+.day-sec .cnt{background:var(--paper-3);border-radius:999px;padding:1px 9px;font-size:11px;margin-left:auto;color:var(--ink-soft)}
+.day-sec.today .cnt{background:color-mix(in srgb,var(--purple) 14%,white);color:var(--purple)}
+.day-empty{color:var(--ink-soft);opacity:.5;font-size:12.5px;padding:0 2px 6px}
+
+/* ---------- 월 뷰(달력 그리드) ---------- */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.cal-wd{text-align:center;font-size:11px;font-weight:800;color:var(--ink-soft);padding:2px 0 4px;letter-spacing:.5px}
+.cal-wd.sun{color:#d4524f}.cal-wd.sat{color:#4b7bd4}
+.cal-cell{min-height:106px;border:1px solid var(--line);border-radius:10px;background:var(--paper-2);
+  padding:5px 6px;cursor:pointer;transition:.12s;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.cal-cell:hover{border-color:var(--line-strong);box-shadow:var(--shadow)}
+.cal-cell.blank{background:transparent;border:none;cursor:default;box-shadow:none}
+.cal-cell.today{border-color:var(--purple);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple) 16%,transparent)}
+.cal-daynum{font-size:12px;font-weight:800;color:var(--ink);line-height:1;margin-bottom:1px}
+.cal-cell.today .cal-daynum{color:var(--purple)}
+.cal-daynum.sun{color:#d4524f}.cal-daynum.sat{color:#4b7bd4}
+.cal-cell.today .cal-daynum.sun,.cal-cell.today .cal-daynum.sat{color:var(--purple)}
+.cal-chip{font-size:10.5px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:1px 5px;border-radius:5px;border-left:3px solid var(--pc,var(--line-strong));background:var(--paper-3);color:var(--ink)}
+.cal-chip.done{opacity:.5;text-decoration:line-through}
+.cal-chip.ev{border-left-color:var(--purple);background:color-mix(in srgb,var(--purple) 11%,white);font-weight:700}
+.cal-more{font-size:10px;color:var(--ink-soft);font-weight:700;padding-left:2px}
+@media(max-width:760px){
+  .cal{gap:3px}
+  .cal-cell{min-height:64px;padding:3px 4px;border-radius:8px}
+  .cal-chip{font-size:9px;padding:0 3px}
+  .cal-daynum{font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -344,27 +397,42 @@ button{cursor:pointer;border:none;background:none}
         <button class="tab" data-action="view" data-view="project">프로젝트별</button>
         <button class="tab" data-action="view" data-view="all">전체</button>
       </div>
+      <div class="segbar" id="itemFilter" title="할 일 / 일정 표시">
+        <button data-action="item-filter" data-f="all">전체</button>
+        <button data-action="item-filter" data-f="task">✓ 할 일</button>
+        <button data-action="item-filter" data-f="event">📅 일정</button>
+      </div>
       <div class="spacer"></div>
       <label class="donetoggle"><input type="checkbox" id="showDone"> 완료 항목 보기</label>
       <div class="search"><input id="searchInput" placeholder="검색…" autocomplete="off"></div>
     </div>
 
     <div class="datenav" id="dateNav">
-      <button data-action="prev-day" title="이전 날">‹</button>
+      <button data-action="prev-day" title="이전">‹</button>
       <div class="datelabel"><span id="dateMain"></span><span class="daybadge" id="dayBadge"></span></div>
-      <button data-action="next-day" title="다음 날">›</button>
+      <button data-action="next-day" title="다음">›</button>
       <button class="today-btn" data-action="today">오늘</button>
+      <div class="segbar" id="periodSeg" style="margin-left:6px" title="일 / 주 / 월">
+        <button data-action="period" data-p="day">일</button>
+        <button data-action="period" data-p="week">주</button>
+        <button data-action="period" data-p="month">월</button>
+      </div>
       <input type="date" id="datePick" class="datepick" title="날짜로 이동">
     </div>
 
     <form class="addbar" id="addForm">
       <input id="addText" placeholder="할 일을 입력하고 Enter ↵" autocomplete="off">
+      <select id="addType" title="종류">
+        <option value="task" selected>✓ 할 일</option>
+        <option value="event">📅 일정</option>
+      </select>
       <select id="addProject"></select>
       <select id="addPriority">
         <option value="high">🔴 높음</option>
         <option value="mid" selected>🟡 보통</option>
         <option value="low">🟢 낮음</option>
       </select>
+      <input type="time" id="addTime" title="일정 시간(선택)" hidden>
       <button type="submit" class="add-btn">추가</button>
     </form>
 
@@ -435,8 +503,8 @@ const todayYmd=()=>ymd(new Date());
 function effEnd(t){
   if(!t.date)return null;
   if(t.endDate&&t.endDate>t.date)return t.endDate;        // 지정 기간(완료 여부 무관)
-  if(!t.done){const ty=todayYmd();if(t.date<ty)return ty;} // 미완료 + 과거 시작 → 오늘까지 자동 연장(밀림)
-  return t.date;                                           // 완료/단일 → 시작일까지만 (어제 끝낸 일을 오늘 완료해도 어제에 남고 오늘 목록에선 사라짐)
+  if(t.type!=='event'&&!t.done){const ty=todayYmd();if(t.date<ty)return ty;} // '할 일' 미완료 + 과거 시작 → 오늘까지 자동 연장(일정은 과거에 그대로 둠)
+  return t.date;                                           // 완료/단일/일정 → 시작일까지만
 }
 /* 작업이 날짜 sd에 표시되는가 (시작~실제종료 사이 모든 날) */
 function spansDate(t,sd){if(!t.date)return false;const end=effEnd(t);return t.date<=sd&&sd<=end;}
@@ -458,16 +526,18 @@ function defaultState(){
   return{
     tasks:[],
     projects:[{id:p1,name:'랜딩',color:'#7c5cff',shared:true,members:[]},{id:p2,name:'간판',color:'#2fd98a',shared:true,members:[]}],
-    ui:{view:'date',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,search:'',editingId:null}
+    ui:{view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,search:'',editingId:null}
   };
 }
 function migrate(s){
   s.tasks=Array.isArray(s.tasks)?s.tasks:[];
   s.projects=Array.isArray(s.projects)?s.projects:[];
-  s.ui=Object.assign({view:'date',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,search:'',editingId:null},s.ui||{});
+  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,search:'',editingId:null},s.ui||{});
   s.ui.selectedDate=ymd(new Date()); // 열 때 항상 오늘로
   s.ui.editingId=null; s.ui.search='';
-  s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
+  if(['day','week','month'].indexOf(s.ui.period)<0)s.ui.period='day';
+  if(['all','task','event'].indexOf(s.ui.itemFilter)<0)s.ui.itemFilter='all';
+  s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';t.type=(t.type==='event'?'event':'task');if(!('time'in t))t.time=null;if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
   s.projects.forEach(p=>{if(!('shared'in p))p.shared=true; if(!Array.isArray(p.members))p.members=[];}); // 기존 프로젝트는 팀 공유로 기본값
   return s;
 }
@@ -494,9 +564,9 @@ const Store = (function(){
   let _tok=null, _me=null, _dir=null, _onChange=null;
   const enc=encodeURIComponent;
   // ---- 필드 매핑 (앱 객체 ↔ Supabase 행: text↔title, date↔start_date 등) ----
-  function taskToRow(t){ return {id:t.id,title:t.text,project:t.project||null,priority:t.priority||'mid',done:!!t.done,start_date:t.date||null,end_date:t.endDate||null,done_at:t.doneAt||null,note:t.note||'',sort:(typeof t.sort==='number'?t.sort:null)}; }
-  function taskPatchToRow(p){ const r={}; if('text'in p)r.title=p.text; if('project'in p)r.project=p.project||null; if('priority'in p)r.priority=p.priority; if('done'in p)r.done=!!p.done; if('date'in p)r.start_date=p.date||null; if('endDate'in p)r.end_date=p.endDate||null; if('doneAt'in p)r.done_at=p.doneAt||null; if('note'in p)r.note=p.note||''; if('sort'in p)r.sort=p.sort; return r; }
-  function rowToTask(r){ return {id:r.id,text:r.title,project:r.project||'none',priority:r.priority||'mid',done:!!r.done,createdAt:r.created_at?Date.parse(r.created_at):Date.now(),date:r.start_date||null,endDate:r.end_date||null,doneAt:r.done_at||null,note:r.note||'',sort:(typeof r.sort==='number'?r.sort:null)}; }
+  function taskToRow(t){ return {id:t.id,title:t.text,type:(t.type==='event'?'event':'task'),project:t.project||null,priority:t.priority||'mid',done:!!t.done,start_date:t.date||null,end_date:t.endDate||null,event_time:t.time||null,done_at:t.doneAt||null,note:t.note||'',sort:(typeof t.sort==='number'?t.sort:null)}; }
+  function taskPatchToRow(p){ const r={}; if('text'in p)r.title=p.text; if('type'in p)r.type=(p.type==='event'?'event':'task'); if('project'in p)r.project=p.project||null; if('priority'in p)r.priority=p.priority; if('done'in p)r.done=!!p.done; if('date'in p)r.start_date=p.date||null; if('endDate'in p)r.end_date=p.endDate||null; if('time'in p)r.event_time=p.time||null; if('doneAt'in p)r.done_at=p.doneAt||null; if('note'in p)r.note=p.note||''; if('sort'in p)r.sort=p.sort; return r; }
+  function rowToTask(r){ return {id:r.id,text:r.title,type:(r.type==='event'?'event':'task'),project:r.project||'none',priority:r.priority||'mid',done:!!r.done,createdAt:r.created_at?Date.parse(r.created_at):Date.now(),date:r.start_date||null,endDate:r.end_date||null,time:r.event_time||null,doneAt:r.done_at||null,note:r.note||'',sort:(typeof r.sort==='number'?r.sort:null)}; }
   function projToRow(p){ return {id:p.id,name:p.name,color:p.color||null,shared:p.shared!==false,members:Array.isArray(p.members)?p.members:[]}; }
   function projPatchToRow(p){ const r={}; if('name'in p)r.name=p.name; if('color'in p)r.color=p.color; if('shared'in p)r.shared=!!p.shared; if('members'in p)r.members=Array.isArray(p.members)?p.members:[]; return r; }
   function rowToProj(r){ return {id:r.id,name:r.name,color:r.color,shared:r.shared!==false,members:Array.isArray(r.members)?r.members:[],owner:r.owner||null}; }
@@ -659,30 +729,64 @@ const sidebarProjects=$('sidebarProjects'),addProject=$('addProject'),addText=$(
 function visibleTasks(){
   let t=state.tasks.slice();
   if(state.ui.projectFilter!=='all')t=t.filter(x=>x.project===state.ui.projectFilter);
+  const itf=state.ui.itemFilter||'all';
+  if(itf==='task')t=t.filter(x=>x.type!=='event');
+  else if(itf==='event')t=t.filter(x=>x.type==='event');
   if(state.ui.search){const q=state.ui.search.toLowerCase();t=t.filter(x=>x.text.toLowerCase().includes(q)||(x.note||'').toLowerCase().includes(q));}
-  if(!state.ui.showDone)t=t.filter(x=>!x.done);
+  if(!state.ui.showDone)t=t.filter(x=>!x.done);   // 일정은 done=false라 항상 남음
   return t;
 }
-function sortTasks(a,b){
-  if(a.done!==b.done)return a.done?1:-1; // 완료는 항상 아래로
-  return 0; // 같은 완료상태면 배열(=수동 드래그) 순서를 그대로 유지 (Array.sort는 안정 정렬)
+const isEvent=t=>t.type==='event';
+function projOrder(pid){const i=state.projects.findIndex(p=>p.id===pid);return i<0?9999:i;}
+/* 하루/전체 목록 정렬: ①일정을 위로(시간순) ②그다음 할 일 — 완료는 맨 아래, 미완료는 프로젝트별 */
+function cmpItems(a,b){
+  const ae=isEvent(a),be=isEvent(b);
+  if(ae!==be)return ae?-1:1;
+  if(ae&&be){const at=a.time||'99:99',bt=b.time||'99:99';return at!==bt?(at<bt?-1:1):0;}
+  if(a.done!==b.done)return a.done?1:-1;            // 완료된 할 일 → 아래
+  const pa=projOrder(a.project),pb=projOrder(b.project);
+  if(pa!==pb)return pa-pb;                          // 프로젝트별
+  return 0;                                         // 안정정렬: 수동 드래그 순서 유지
+}
+/* 프로젝트 그룹 안(여러 날짜 혼재): 완료된 '할 일'만 맨 아래, 나머지는 날짜·시간순 */
+function cmpProjGroup(a,b){
+  const ad=(!isEvent(a)&&a.done)?1:0,bd=(!isEvent(b)&&b.done)?1:0;
+  if(ad!==bd)return ad-bd;
+  const asd=a.date||'9999',bsd=b.date||'9999';
+  if(asd!==bsd)return asd<bsd?-1:1;
+  const at=a.time||'99:99',bt=b.time||'99:99';
+  return at!==bt?(at<bt?-1:1):0;
 }
 
 function syncHeader(){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===state.ui.view));
-  dateNav.style.display=state.ui.view==='date'?'flex':'none';
-  if(state.ui.view==='date'){
-    dateMain.textContent=fmtDateKo(state.ui.selectedDate);
+  const isDate=state.ui.view==='date',period=state.ui.period||'day';
+  dateNav.style.display=isDate?'flex':'none';
+  document.querySelectorAll('#periodSeg button').forEach(b=>b.classList.toggle('active',b.dataset.p===period));
+  if(isDate){
+    const base=parseYmd(state.ui.selectedDate);
+    dayBadge.style.display='none';
+    if(period==='day'){
+      dateMain.textContent=fmtDateKo(state.ui.selectedDate);
+      const r=relLabel(state.ui.selectedDate);
+      dayBadge.textContent=r;dayBadge.style.display=r?'inline-flex':'none';
+    }else if(period==='week'){
+      const s=new Date(base);s.setDate(base.getDate()-base.getDay());
+      const e=new Date(s);e.setDate(s.getDate()+6);
+      dateMain.textContent=`${s.getMonth()+1}.${s.getDate()} ~ ${e.getMonth()+1}.${e.getDate()}`;
+    }else{
+      dateMain.textContent=`${base.getFullYear()}년 ${base.getMonth()+1}월`;
+    }
     datePick.value=state.ui.selectedDate;
-    const r=relLabel(state.ui.selectedDate);
-    dayBadge.textContent=r;dayBadge.style.display=r?'inline-flex':'none';
   }
+  const itf=state.ui.itemFilter||'all';
+  document.querySelectorAll('#itemFilter button').forEach(b=>b.classList.toggle('active',b.dataset.f===itf));
   showDone.checked=state.ui.showDone;
 }
 
 function renderProjects(){
-  const cnt={};state.tasks.forEach(t=>{if(!t.done)cnt[t.project]=(cnt[t.project]||0)+1;});
-  const all=state.tasks.filter(t=>!t.done).length;
+  const cnt={};state.tasks.forEach(t=>{if(t.type!=='event'&&!t.done)cnt[t.project]=(cnt[t.project]||0)+1;});
+  const all=state.tasks.filter(t=>t.type!=='event'&&!t.done).length;
   const meId=(Store.mode!=='local'&&Store.auth.isAuthenticated()&&Store.auth.currentUser())?Store.auth.currentUser().id:null;
   let h=`<button class="proj-item${state.ui.projectFilter==='all'?' active':''}" data-action="select-project" data-id="all" style="--pc:var(--green)"><span class="pi-name">전체</span><span class="pi-cnt">${all}</span></button>`;
   for(const p of state.projects){
@@ -698,41 +802,49 @@ function renderProjects(){
   }
   sidebarProjects.innerHTML=h;
   addProject.innerHTML=projectOptions(state.ui.projectFilter!=='all'?state.ui.projectFilter:'none');
-  const done=state.tasks.filter(t=>t.done).length;
+  const done=state.tasks.filter(t=>t.type!=='event'&&t.done).length;
   sideStat.innerHTML=`할 일 <b>${all}</b> · 완료 <b>${done}</b>`;
 }
 
 function progressHTML(list){
-  const total=list.length,done=list.filter(x=>x.done).length;
-  const pct=total?Math.round(done/total*100):0;
+  const tasks=list.filter(x=>x.type!=='event');   // 진행률은 '할 일'만
+  const total=tasks.length,done=tasks.filter(x=>x.done).length;
+  if(!total)return '';
+  const pct=Math.round(done/total*100);
   return `<div class="prog"><div class="progbar"><i style="width:${pct}%"></i></div><span class="progtxt">${done}/${total} 완료</span></div>`;
 }
 function emptyHTML(t,s){return `<div class="empty"><div class="em">🗒️</div><h3>${t}</h3>${s?`<p>${s}</p>`:''}</div>`;}
 
-function cardHTML(t){
+/* mode: 'day'(날짜별-일 · grip/미루기/기간 진행표시) | 'full'(프로젝트별·전체 · 날짜 전부) | 'compact'(주 뷰 · 날짜배지 최소) */
+function cardHTML(t,opts){
+  opts=opts||{};const mode=opts.mode||'full';const ev=isEvent(t);
   const p=projectById(t.project);
-  const inDate=state.ui.view==='date';
   const dm=dateMeta(t);
   const rangePill=b=>`<span class="pill range" title="${dm.startKo} ~ ${dm.endKo} · 총 ${dm.total}일">📅 ${dm.short}${b?` <b>${dm.idx}/${dm.total}</b>`:''}</span>`;
   const carryPill=b=>`<span class="pill carry" title="${dm.startKo}에 시작한 미완료 — 완료할 때까지 오늘로 자동 연장">⏳ ${md(t.date)}부터${b?` <b>${dm.total}일째</b>`:''}</span>`;
   let dateTag='';
-  if(inDate){
+  if(mode==='day'){
     if(dm.kind==='range')dateTag=rangePill(true);
     else if(dm.kind==='carry')dateTag=carryPill(true);
   }else{
     if(dm.kind==='range')dateTag=rangePill(false);
     else if(dm.kind==='carry')dateTag=carryPill(false);
-    else if(dm.kind==='single')dateTag=`<span class="pill date">${fmtShort(t.date)}</span>`;
-    else dateTag=`<span class="pill date none">날짜 미정</span>`;
+    else if(mode==='full'){
+      if(dm.kind==='single')dateTag=`<span class="pill date">${fmtShort(t.date)}</span>`;
+      else dateTag=`<span class="pill date none">날짜 미정</span>`;
+    }
   }
+  const timePill=(ev&&t.time)?`<span class="pill time">🕒 ${esc(t.time)}</span>`:'';
   const projPill=p.real?`<span class="pill proj" style="--pc:${p.color}">${esc(p.name)}</span>`:`<span class="pill proj etc">기타</span>`;
-  const post=state.ui.view==='date'?`<button class="iconbtn post" data-action="postpone" data-id="${t.id}" title="내일로 미루기">→</button>`:'';
-  const grip=inDate?`<span class="grip" title="드래그해서 순서 변경" aria-hidden="true">⠿</span>`:'';
-  return `<div class="task${t.done?' done':''}" data-id="${t.id}">
-    ${grip}<button class="check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button>
-    <span class="pdot ${t.priority}"></span>
+  const post=(mode==='day')?`<button class="iconbtn post" data-action="postpone" data-id="${t.id}" title="${ev?'다음 날로':'내일로 미루기'}">→</button>`:'';
+  const grip=(mode==='day'&&!ev)?`<span class="grip" title="드래그해서 순서 변경" aria-hidden="true">⠿</span>`:'';
+  const lead=ev
+    ? `<span class="evmark" title="일정">📅</span>`
+    : `<button class="check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button><span class="pdot ${t.priority}"></span>`;
+  return `<div class="task${ev?' event':''}${(!ev&&t.done)?' done':''}" data-id="${t.id}">
+    ${grip}${lead}
     <div class="ttext" data-action="edit" data-id="${t.id}">${esc(t.text)}${t.note?` <span class="noteicon" title="${esc(t.note)}">📝</span>`:''}</div>
-    ${projPill}${dateTag}
+    ${timePill}${projPill}${dateTag}
     <div class="acts">${post}
       <button class="iconbtn" data-action="edit" data-id="${t.id}" title="수정">✏️</button>
       <button class="iconbtn" data-action="delete" data-id="${t.id}" title="삭제">🗑</button>
@@ -742,10 +854,15 @@ function cardHTML(t){
 function editHTML(t){
   return `<div class="task editing" data-id="${t.id}">
     <form class="editform" data-id="${t.id}">
-      <input class="ef-text" id="ef-text" value="${esc(t.text)}" placeholder="할 일">
+      <input class="ef-text" id="ef-text" value="${esc(t.text)}" placeholder="${isEvent(t)?'일정':'할 일'}">
       <div class="ef-row">
+        <select id="ef-type">
+          <option value="task"${isEvent(t)?'':' selected'}>✓ 할 일</option>
+          <option value="event"${isEvent(t)?' selected':''}>📅 일정</option>
+        </select>
         <select id="ef-proj">${projectOptions(t.project)}</select>
-        <select id="ef-pri">${priOptions(t.priority)}</select>
+        <select id="ef-pri"${isEvent(t)?' hidden':''}>${priOptions(t.priority)}</select>
+        <input type="time" id="ef-time" value="${t.time||''}"${isEvent(t)?'':' hidden'} title="시간 (선택)">
         <input type="date" id="ef-date" value="${t.date||''}" title="시작일 (비우면 ‘날짜 미정’)">
         <span class="ef-tilde">~</span>
         <input type="date" id="ef-dateEnd" value="${t.endDate||''}" min="${t.date||''}" title="종료일 (선택 · 여러 날에 걸친 일이면 지정)">
@@ -759,21 +876,16 @@ function editHTML(t){
     </form>
   </div>`;
 }
-const cardOrEdit=t=>state.ui.editingId===t.id?editHTML(t):cardHTML(t);
+const cardOrEdit=(t,mode)=>state.ui.editingId===t.id?editHTML(t):cardHTML(t,{mode:mode||'full'});
 
 function renderList(){
   const view=state.ui.view,visible=visibleTasks();
   let html='';
   if(view==='date'){
-    const sd=state.ui.selectedDate;
-    const day=visible.filter(t=>spansDate(t,sd)).sort(sortTasks);
-    html+=progressHTML(day);
-    html+=day.length?day.map(cardOrEdit).join(''):emptyHTML('이 날에 할 일이 없어요','아래 입력칸에서 추가해 보세요');
-    const backlog=visible.filter(t=>!t.date&&!t.done).sort(sortTasks);
-    if(backlog.length){
-      html+=`<div class="section-h backlog">📥 날짜 미정 <span class="cnt">${backlog.length}</span></div>`;
-      html+=backlog.map(cardOrEdit).join('');
-    }
+    const period=state.ui.period||'day';
+    if(period==='week')html=renderWeek(visible);
+    else if(period==='month')html=renderMonth(visible);
+    else html=renderDay(visible);
   }else if(view==='project'){
     const projs=state.ui.projectFilter==='all'?state.projects:state.projects.filter(p=>p.id===state.ui.projectFilter);
     const groups=projs.map(p=>({p,list:visible.filter(t=>t.project===p.id)}));
@@ -782,33 +894,95 @@ function renderList(){
       if(none.length)groups.push({p:{id:'none',name:'기타',color:'#9aa6a0'},list:none});
     }
     const ne=groups.filter(g=>g.list.length);
-    if(!ne.length)html+=emptyHTML('할 일이 없어요','');
+    if(!ne.length)html+=emptyHTML('항목이 없어요','');
     for(const g of ne){
-      g.list.sort((a,b)=>{const ad=a.date||'9999',bd=b.date||'9999';return ad!==bd?(ad<bd?-1:1):sortTasks(a,b);});
+      g.list.sort(cmpProjGroup);   // 완료된 할 일은 그룹 맨 아래, 나머지는 날짜·시간순
       html+=`<div class="section-h"><span class="dot" style="background:${g.p.color}"></span>${esc(g.p.name)} <span class="cnt">${g.list.length}</span></div>`;
-      html+=progressHTML(g.list)+g.list.map(cardOrEdit).join('');
+      html+=progressHTML(g.list)+g.list.map(t=>cardOrEdit(t,'full')).join('');
     }
-  }else{ // all
-    const list=visible.slice().sort((a,b)=>{const ad=a.date||'9999',bd=b.date||'9999';return ad!==bd?(ad<bd?-1:1):sortTasks(a,b);});
+  }else{ // all — 프로젝트별로 묶고, 그룹 안에서 완료는 아래로
+    const list=visible.slice().sort((a,b)=>{const pa=projOrder(a.project),pb=projOrder(b.project);return pa!==pb?pa-pb:cmpProjGroup(a,b);});
     html+=progressHTML(list);
-    html+=list.length?list.map(cardOrEdit).join(''):emptyHTML('할 일이 없어요','');
+    html+=list.length?list.map(t=>cardOrEdit(t,'full')).join(''):emptyHTML('항목이 없어요','');
   }
   listContainer.innerHTML=html;
+}
+function renderDay(visible){
+  const sd=state.ui.selectedDate;
+  const day=visible.filter(t=>spansDate(t,sd)).sort(cmpItems);
+  let html=progressHTML(day);
+  html+=day.length?day.map(t=>cardOrEdit(t,'day')).join(''):emptyHTML('이 날에 항목이 없어요','아래에서 할 일이나 일정을 추가해 보세요');
+  const backlog=visible.filter(t=>!t.date&&(isEvent(t)||!t.done)).sort(cmpItems);
+  if(backlog.length){
+    html+=`<div class="section-h backlog">📥 날짜 미정 <span class="cnt">${backlog.length}</span></div>`;
+    html+=backlog.map(t=>cardOrEdit(t,'full')).join('');
+  }
+  return html;
+}
+function renderWeek(visible){
+  const base=parseYmd(state.ui.selectedDate),start=new Date(base);
+  start.setDate(base.getDate()-base.getDay());   // 일요일 시작
+  const today=todayYmd();let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(start);d.setDate(start.getDate()+i);const ds=ymd(d);
+    const items=visible.filter(t=>spansDate(t,ds)).sort(cmpItems);
+    const isT=ds===today;
+    html+=`<div class="day-sec${isT?' today':''}" data-action="goto-day" data-date="${ds}">
+      <span>${d.getMonth()+1}.${d.getDate()}</span><span class="wd">(${WD[d.getDay()]})${isT?' · 오늘':''}</span>
+      <span class="cnt">${items.length}</span></div>`;
+    html+=items.length?items.map(t=>cardOrEdit(t,'compact')).join(''):`<div class="day-empty">—</div>`;
+  }
+  return html;
+}
+function renderMonth(visible){
+  const base=parseYmd(state.ui.selectedDate),y=base.getFullYear(),m=base.getMonth();
+  const lead=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate(),today=todayYmd();
+  const wdCls=['sun','','','','','','sat'];
+  let cells='';
+  for(let i=0;i<7;i++)cells+=`<div class="cal-wd ${wdCls[i]}">${WD[i]}</div>`;
+  for(let i=0;i<lead;i++)cells+='<div class="cal-cell blank"></div>';
+  const MAX=3;
+  for(let dn=1;dn<=dim;dn++){
+    const d=new Date(y,m,dn),ds=ymd(d),dow=d.getDay();
+    const items=visible.filter(t=>spansDate(t,ds)).sort(cmpItems);
+    let chips='';
+    items.slice(0,MAX).forEach(t=>{
+      const pr=projectById(t.project),ev=isEvent(t);
+      const pc=pr.real?pr.color:'var(--line-strong)';
+      const cls='cal-chip'+(ev?' ev':(t.done?' done':''));
+      const label=ev?`${t.time?esc(t.time)+' ':''}${esc(t.text)}`:esc(t.text);
+      chips+=`<div class="${cls}" style="--pc:${pc}" title="${esc(t.text)}">${label}</div>`;
+    });
+    if(items.length>MAX)chips+=`<div class="cal-more">+${items.length-MAX}</div>`;
+    cells+=`<div class="cal-cell${ds===today?' today':''}" data-action="goto-day" data-date="${ds}">
+      <div class="cal-daynum ${wdCls[dow]}">${dn}</div>${chips}</div>`;
+  }
+  return `<div class="cal">${cells}</div>`;
 }
 function render(){syncHeader();renderProjects();renderList();}
 
 /* ---------- 동작 ---------- */
-function shiftDate(d){const x=parseYmd(state.ui.selectedDate);x.setDate(x.getDate()+d);state.ui.selectedDate=ymd(x);Store.prefs.save();syncHeader();renderList();}
-function toggleDone(id){const t=taskById(id);if(!t)return;const nd=!t.done;Store.tasks.update(id,{done:nd,doneAt:nd?todayYmd():null});renderProjects();renderList();}
+function shiftDate(dir){
+  const x=parseYmd(state.ui.selectedDate),period=state.ui.period||'day';
+  if(period==='week')x.setDate(x.getDate()+dir*7);
+  else if(period==='month'){x.setDate(1);x.setMonth(x.getMonth()+dir);}
+  else x.setDate(x.getDate()+dir);
+  state.ui.selectedDate=ymd(x);Store.prefs.save();syncHeader();renderList();
+}
+function toggleDone(id){const t=taskById(id);if(!t||isEvent(t))return;const nd=!t.done;Store.tasks.update(id,{done:nd,doneAt:nd?todayYmd():null});renderProjects();renderList();}
 function delTask(id){const t=taskById(id);if(!t)return;if(state.ui.editingId===id)state.ui.editingId=null;Store.tasks.remove(id);renderProjects();renderList();}
 function saveEdit(id){
   const t=taskById(id);if(!t)return;
   const newText=($('ef-text').value.trim())||t.text;
+  const type=$('ef-type').value==='event'?'event':'task';
   let sd=$('ef-date').value||null,ed=$('ef-dateEnd').value||null;
-  if(!sd&&ed){sd=ed;ed=null;}                        // 시작 없이 종료만 입력 → 그 날짜를 할 일 날짜로(단일). 입력한 날짜를 버리지 않음
+  if(!sd&&ed){sd=ed;ed=null;}                        // 시작 없이 종료만 입력 → 그 날짜를 날짜로(단일). 입력한 날짜를 버리지 않음
   else if(sd&&ed&&ed<sd){const tmp=sd;sd=ed;ed=tmp;} // 종료<시작 → 두 날짜 자동 정렬
   if(ed&&ed===sd)ed=null;                            // 시작=종료 → 하루짜리
-  Store.tasks.update(id,{text:newText,project:$('ef-proj').value,priority:$('ef-pri').value,date:sd,endDate:ed,note:$('ef-note').value.trim()});
+  const patch={text:newText,type,project:$('ef-proj').value,date:sd,endDate:ed,time:type==='event'?($('ef-time').value||null):null,note:$('ef-note').value.trim()};
+  if(type!=='event')patch.priority=$('ef-pri').value;
+  if(type==='event'&&t.done){patch.done=false;patch.doneAt=null;}   // 일정으로 바꾸면 완료상태 해제
+  Store.tasks.update(id,patch);
   state.ui.editingId=null;renderProjects();renderList();
 }
 
@@ -834,11 +1008,14 @@ function fallbackCopy(text){
   document.body.removeChild(ta);
 }
 function exportMD(){
-  const lines=['# MAKERS 할 일',''],by={};
-  state.tasks.filter(t=>!t.done).forEach(t=>{const k=t.date||'날짜 미정';(by[k]=by[k]||[]).push(t);});
+  const lines=['# MAKERS 할 일 · 일정',''],by={};
+  state.tasks.filter(t=>isEvent(t)||!t.done).forEach(t=>{const k=t.date||'날짜 미정';(by[k]=by[k]||[]).push(t);});
   Object.keys(by).sort().forEach(k=>{
     lines.push(`## ${k}`);
-    by[k].forEach(t=>{const p=projectById(t.project);const r=(t.endDate&&t.endDate>t.date)?` (${md(t.date)}~${md(t.endDate)})`:'';lines.push(`- [ ] ${PRI_EMOJI[t.priority]} ${p.real?`[${p.name}] `:''}${t.text}${r}`);});
+    by[k].sort(cmpItems).forEach(t=>{const p=projectById(t.project);
+      if(isEvent(t)){lines.push(`- 📅 ${t.time?t.time+' ':''}${p.real?`[${p.name}] `:''}${t.text}`);return;}
+      const r=(t.endDate&&t.endDate>t.date)?` (${md(t.date)}~${md(t.endDate)})`:'';
+      lines.push(`- [ ] ${PRI_EMOJI[t.priority]} ${p.real?`[${p.name}] `:''}${t.text}${r}`);});
     lines.push('');
   });
   const md=lines.join('\n');
@@ -857,6 +1034,9 @@ document.addEventListener('click',e=>{
     case 'pw-open':$('pwNew').value='';$('pwNew2').value='';$('pwErr').hidden=true;showPw(true);setTimeout(()=>$('pwNew').focus(),0);break;
     case 'pw-cancel':showPw(false);break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
+    case 'item-filter':state.ui.itemFilter=el.dataset.f;Store.prefs.save();syncHeader();renderList();break;
+    case 'period':state.ui.period=el.dataset.p;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
+    case 'goto-day':state.ui.period='day';if(el.dataset.date)state.ui.selectedDate=el.dataset.date;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'select-project':state.ui.projectFilter=id;Store.prefs.save();renderProjects();renderList();break;
     case 'share-config':{ e.stopPropagation(); openShareConfig(id); break;}
     case 'share-cancel':{ $('shareScreen').hidden=true; _shareProjId=null; break;}
@@ -901,14 +1081,30 @@ document.addEventListener('change',e=>{
   else if(el.id==='importFile'){if(el.files[0])importJSON(el.files[0]);el.value='';}
   else if(el.id==='showDone'){state.ui.showDone=el.checked;Store.prefs.save();renderList();}
   else if(el.id==='shareMode'){updateShareMembersVis();}
+  else if(el.id==='addType'){toggleAddType();}
+  else if(el.id==='ef-type'){toggleEfType();}
 });
+function toggleAddType(){
+  const ev=$('addType').value==='event';
+  $('addPriority').hidden=ev;$('addTime').hidden=!ev;
+  addText.placeholder=ev?'일정을 입력하고 Enter ↵':'할 일을 입력하고 Enter ↵';
+}
+function toggleEfType(){
+  const sel=$('ef-type');if(!sel)return;const ev=sel.value==='event';
+  const pri=$('ef-pri'),tm=$('ef-time');if(pri)pri.hidden=ev;if(tm)tm.hidden=!ev;
+}
 
 addForm.addEventListener('submit',e=>{
   e.preventDefault();if(!state)return;
   const text=addText.value.trim();if(!text)return;
-  Store.tasks.create({id:uid(),text,project:addProject.value,priority:addPriority.value,done:false,
-    createdAt:Date.now(),date:state.ui.view==='date'?state.ui.selectedDate:ymd(new Date()),endDate:null,doneAt:null,note:''});
-  addText.value='';addText.focus();renderProjects();renderList();
+  const type=$('addType').value==='event'?'event':'task';
+  const time=type==='event'?($('addTime').value||null):null;
+  const period=state.ui.period||'day';
+  // 날짜별 뷰(일/주)면 보고 있는 날짜에, 월 뷰/다른 뷰면 오늘에 추가
+  const date=(state.ui.view==='date'&&period!=='month')?state.ui.selectedDate:ymd(new Date());
+  Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:type==='event'?'mid':addPriority.value,done:false,
+    createdAt:Date.now(),date,endDate:null,time,doneAt:null,note:''});
+  addText.value='';if(type==='event')$('addTime').value='';addText.focus();renderProjects();renderList();
 });
 projForm.addEventListener('submit',e=>{
   e.preventDefault();if(!state)return;
@@ -1019,6 +1215,7 @@ async function enterApp(){
   if(Store.mode!=='local')await maybeOfferMigration();
   updateAccountUI();
   render();
+  toggleAddType();
   addText.focus();
 }
 const loginForm=$('loginForm');
