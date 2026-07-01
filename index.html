@@ -316,11 +316,13 @@ button{cursor:pointer;border:none;background:none}
 
   /* 리스트 — 큰 터치 영역, FAB 공간 확보 */
   .listwrap{flex:none;overflow:visible;padding:12px 14px 104px}
-  .task{padding:15px 14px;gap:13px}
+  .task{padding:15px 14px;gap:12px}
   .check{width:26px;height:26px}
-  .acts{opacity:1}
-  .iconbtn{width:36px;height:36px;font-size:16px}
   .grip{display:none}
+  /* 폰: 기간 배지·액션버튼 숨겨 내용에 폭 몰아주기 (수정=내용 탭, 삭제=수정창 안 삭제) */
+  .task .acts{display:none}
+  .task .pill.date,.task .pill.range,.task .pill.carry{display:none}
+  .ttext{font-size:15px}
 
   /* 추가바 → 바텀시트(FAB로 열기) */
   .addbar{position:fixed;left:0;right:0;bottom:0;z-index:60;flex-direction:column;gap:11px;align-items:stretch;
