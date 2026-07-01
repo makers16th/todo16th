@@ -270,11 +270,14 @@ button{cursor:pointer;border:none;background:none}
   .datepick{margin-left:0}
 }
 
-/* ---------- 계정/로그아웃 행 (원격 모드 로그인 시) ---------- */
-.acct{display:flex;align-items:center;gap:8px;padding:0 4px 10px;font-size:11.5px;color:var(--cream-soft);font-weight:600}
+/* ---------- 계정 정보/버튼 (원격 모드 로그인 시) — 윗줄 이름(이메일), 아랫줄 버튼 ---------- */
+.acct{display:flex;flex-direction:column;gap:7px;padding:0 4px 10px}
 .acct[hidden]{display:none}
-.acct-email{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.acct-out{color:var(--cream-soft);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 9px;font-weight:700;white-space:nowrap}
+.acct-who{font-size:12px;color:var(--cream-soft);font-weight:600;line-height:1.4;word-break:break-word}
+.acct-who b{color:var(--cream);font-weight:800;font-size:12.5px}
+.acct-who .acct-mail{color:var(--cream-soft);opacity:.85;font-weight:600}
+.acct-actions{display:flex;flex-wrap:wrap;gap:5px}
+.acct-out{flex:1 1 auto;text-align:center;color:var(--cream-soft);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 4px;font-weight:700;white-space:nowrap;font-size:10.5px}
 .acct-out:hover{color:var(--cream);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
 /* 프로젝트 추가 폼: 이름은 한 줄 전체, 공유선택+추가는 다음 줄 */
 .proj-add{flex-wrap:wrap}
@@ -402,10 +405,12 @@ button{cursor:pointer;border:none;background:none}
     </form>
     <div class="side-foot">
       <div class="acct" id="acctRow" hidden>
-        <span class="acct-email" id="acctEmail"></span>
-        <button class="acct-out" data-action="profile-open">정보수정</button>
-        <button class="acct-out" data-action="pw-open">비번변경</button>
-        <button class="acct-out" data-action="logout">로그아웃</button>
+        <div class="acct-who" id="acctEmail"></div>
+        <div class="acct-actions">
+          <button class="acct-out" data-action="profile-open">정보수정</button>
+          <button class="acct-out" data-action="pw-open">비밀번호 변경</button>
+          <button class="acct-out" data-action="logout">로그아웃</button>
+        </div>
       </div>
       <div class="side-stat" id="sideStat"></div>
       <div class="data-btns">
@@ -1277,7 +1282,12 @@ function showProfile(show){const el=$('profileScreen');if(el)el.hidden=!show;}
 function updateAccountUI(){
   const acct=$('acctRow');if(!acct)return;
   const u=(Store.mode!=='local'&&Store.auth.isAuthenticated())?Store.auth.currentUser():null;
-  acct.hidden=!u; if(u){const el=$('acctEmail');el.textContent=(u.name||u.email||'로그인됨');el.title=u.email||'';}
+  acct.hidden=!u;
+  if(u){
+    const el=$('acctEmail'),nm=(u.name||'').trim(),em=u.email||'';
+    el.innerHTML = nm ? `<b>${esc(nm)}</b>${em?` <span class="acct-mail">(${esc(em)})</span>`:''}` : esc(em||'로그인됨');
+    el.title = (nm&&em) ? `${nm} (${em})` : em;
+  }
 }
 async function maybeOfferMigration(){ // 첫 로그인 + 클라우드 비어있음 + 로컬데이터 있음 → 1회 업로드 제안
   if(state.ui._uploadedToCloud)return;
