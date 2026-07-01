@@ -252,22 +252,100 @@ button{cursor:pointer;border:none;background:none}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* 반응형 */
+/* ============================================================
+   📱 폰 버전 — 데스크톱과 완전히 다른 레이아웃
+   상단 고정 앱바(햄버거) · 왼쪽 서랍(프로젝트/계정) · 하단 FAB+바텀시트 추가
+   (mobilebar/fab/scrim 은 데스크톱에선 숨김)
+   ============================================================ */
+.mobilebar,.fab,.scrim{display:none}
+
 @media(max-width:760px){
-  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .sidebar{flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 14px;gap:8px;overflow:visible}
-  .brand{padding:0 6px 0 2px}
-  .side-label{display:none}
-  .proj-nav{flex-direction:row;flex-wrap:wrap;flex:1;gap:6px}
-  .proj-item{width:auto;padding:7px 11px}
-  .proj-item.active::before{display:none}
-  .proj-item .pi-del,.proj-item .pi-share{display:none}
-  .proj-add-btn{margin:0}
-  .proj-add{order:5}
-  .side-foot{margin:0;padding:0;display:flex;align-items:center;gap:10px;width:100%}
-  .side-stat{padding:0;white-space:nowrap}
-  .hint{display:none}
-  .topbar,.datenav,.addbar,.listwrap{padding-left:16px;padding-right:16px}
+  .app{display:block;height:auto;min-height:100vh;overflow:visible}
+  .main{display:block;min-height:100vh;overflow:visible;padding-top:52px}
+
+  /* 상단 앱바(고정) */
+  .mobilebar{display:flex;align-items:center;gap:8px;position:fixed;top:0;left:0;right:0;height:52px;z-index:40;
+    background:var(--brown-800);color:var(--cream);padding:0 10px;box-shadow:0 2px 10px rgba(36,23,16,.2)}
+  .mb-btn{width:40px;height:40px;border-radius:10px;color:var(--cream);font-size:21px;line-height:1;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .mb-btn:active{background:rgba(255,255,255,.12)}
+  .mb-title{flex:1;display:flex;align-items:baseline;gap:6px;min-width:0}
+  .mb-title b{font-size:16px;letter-spacing:.5px}
+  .mb-title span{color:var(--cream-soft);font-size:11px;font-weight:700;letter-spacing:1px}
+
+  /* 서랍(사이드바) — 왼쪽에서 슬라이드 */
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:320px;z-index:60;
+    transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+    flex-direction:column;flex-wrap:nowrap;align-items:stretch;padding:18px 16px;gap:6px;overflow-y:auto;
+    box-shadow:4px 0 26px rgba(0,0,0,.32)}
+  body.nav-open .sidebar{transform:none}
+  .brand{padding:4px 8px 14px}
+  .side-label{display:block}
+  .proj-nav{flex-direction:column;flex-wrap:nowrap;flex:none;gap:2px}
+  .proj-item{width:100%;padding:11px 12px}
+  .proj-item.active::before{display:block}
+  .proj-item .pi-del,.proj-item .pi-share{display:inline}
+  .proj-add-btn{margin-top:4px}
+  .side-foot{margin-top:auto;padding-top:16px;display:block;width:auto}
+  .side-stat{padding:0 8px 10px;white-space:normal}
+  .hint{display:block}
+
+  /* 스크림(서랍/시트 뒤 어둠) */
+  .scrim{display:block;position:fixed;inset:0;z-index:50;background:rgba(20,12,8,.5);
+    opacity:0;pointer-events:none;transition:opacity .24s}
+  body.nav-open .scrim,body.sheet-open .scrim{opacity:1;pointer-events:auto}
+
+  /* 서브헤더(탭/필터/검색) — sticky */
+  .topbar{position:sticky;top:52px;z-index:20;background:var(--paper);gap:9px;padding:11px 14px 2px;
+    flex-wrap:wrap;align-items:center;box-shadow:0 8px 10px -9px rgba(36,23,16,.3)}
+  .tabs{flex:1 1 auto}
+  .tab{flex:1;text-align:center;padding:9px 6px;font-size:13px}
+  .topbar .spacer{display:none}
+  #itemFilter{flex:1 1 100%}
+  #itemFilter button{flex:1}
+  .donetoggle{order:4}
+  .search{order:5;flex:1 1 100%;margin-bottom:2px}
+  .search input,.search input:focus{width:100%;font-size:16px}
+
+  /* 날짜 네비 */
+  .datenav{padding:11px 14px 0;flex-wrap:wrap;gap:8px}
+  .datelabel{font-size:16px}
+  #periodSeg{margin-left:auto!important}
+  #periodSeg button{padding:7px 13px}
   .datepick{margin-left:0}
+
+  /* 리스트 — 큰 터치 영역, FAB 공간 확보 */
+  .listwrap{flex:none;overflow:visible;padding:12px 14px 104px}
+  .task{padding:15px 14px;gap:13px}
+  .check{width:26px;height:26px}
+  .acts{opacity:1}
+  .iconbtn{width:36px;height:36px;font-size:16px}
+  .grip{display:none}
+
+  /* 추가바 → 바텀시트(FAB로 열기) */
+  .addbar{position:fixed;left:0;right:0;bottom:0;z-index:60;flex-direction:column;gap:11px;align-items:stretch;
+    background:var(--paper-2);border-top:1px solid var(--line);border-radius:20px 20px 0 0;
+    padding:20px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 34px rgba(36,23,16,.22);
+    transform:translateY(115%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  body.sheet-open .addbar{transform:none}
+  .addbar::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:42px;height:4px;border-radius:99px;background:var(--line-strong)}
+  .addbar input#addText{width:100%;min-width:0;font-size:16px;padding:14px 15px}
+  .addbar>select,.addbar input[type=time]{width:100%;height:48px;font-size:15px}
+  .add-btn{width:100%;padding:14px;font-size:15px}
+
+  /* FAB(추가) */
+  .fab{display:flex;align-items:center;justify-content:center;position:fixed;right:18px;bottom:22px;z-index:45;
+    width:58px;height:58px;border-radius:50%;background:var(--purple);color:#fff;font-size:32px;line-height:1;
+    box-shadow:0 8px 22px color-mix(in srgb,var(--purple) 45%,transparent)}
+  .fab:active{transform:scale(.93)}
+  body.sheet-open .fab{opacity:0;pointer-events:none;transform:scale(.6)}
+
+  /* 로그인/모달은 최상단 */
+  .loginscreen{z-index:70}
+  .login-card{width:100%}
+  .login-card input,.login-card select{font-size:16px}
+  .ef-text,.ef-row input,.ef-row select,.ef-note{font-size:16px}
 }
 
 /* ---------- 계정 정보/버튼 (원격 모드 로그인 시) — 윗줄 이름(이메일), 아랫줄 버튼 ---------- */
@@ -352,13 +430,14 @@ button{cursor:pointer;border:none;background:none}
 .wk-time{font-weight:800;color:var(--purple);flex:0 0 auto;font-size:10.5px}
 .wk-empty{color:var(--ink-soft);opacity:.35;font-size:12px;text-align:center;padding:10px 0}
 @media(max-width:760px){
-  .wk{gap:3px}
-  .wk-col{min-height:120px;border-radius:8px}
-  .wk-head{padding:4px 5px}
-  .wk-head .d{font-size:12px}.wk-head .wd{font-size:9.5px}
-  .wk-body{padding:3px;gap:3px}
-  .wk-item{font-size:9.5px;padding:2px 4px;gap:3px}
-  .wk-check{width:12px;height:12px}
+  /* 폰: 7열 격자 대신 넓은 열을 좌우로 스와이프 */
+  .wk{display:flex;overflow-x:auto;gap:8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  .wk-col{flex:0 0 78%;scroll-snap-align:start;min-height:220px;border-radius:12px}
+  .wk-head{padding:10px 12px}
+  .wk-head .d{font-size:16px}.wk-head .wd{font-size:12px}
+  .wk-body{padding:8px;gap:6px}
+  .wk-item{font-size:13px;padding:7px 9px;gap:7px}
+  .wk-check{width:17px;height:17px}
 }
 
 /* ---------- 월 뷰(달력 그리드) ---------- */
@@ -425,6 +504,11 @@ button{cursor:pointer;border:none;background:none}
 
   <!-- 메인 -->
   <main class="main">
+    <!-- 폰 전용 상단 앱바 -->
+    <div class="mobilebar">
+      <button class="mb-btn" data-action="toggle-drawer" aria-label="메뉴 열기">☰</button>
+      <div class="mb-title"><b>MAKERS</b><span>_TASKS</span></div>
+    </div>
     <div class="topbar">
       <div class="tabs">
         <button class="tab" data-action="view" data-view="date">날짜별</button>
@@ -472,6 +556,10 @@ button{cursor:pointer;border:none;background:none}
 
     <div class="listwrap" id="listContainer"></div>
   </main>
+
+  <!-- 폰 전용: 추가 FAB + 서랍/시트 뒤 스크림 -->
+  <button class="fab" data-action="open-add" aria-label="할 일·일정 추가">＋</button>
+  <div class="scrim" data-action="close-overlays"></div>
 </div>
 
 <!-- 로그인 화면 (백엔드 연결 후 활성화 · 로컬 모드에선 hidden 유지) -->
@@ -1114,16 +1202,19 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'auth-toggle':{const toSignup=$('loginTitle').textContent.indexOf('회원가입')<0;$('loginTitle').textContent=toSignup?'회원가입':'로그인';$('loginSubmit').textContent=toSignup?'회원가입':'로그인';$('loginName').hidden=!toSignup;$('loginErr').hidden=true;break;}
     case 'logout':Store.auth.signout().then(()=>{showLogin(true);updateAccountUI();});break;
-    case 'pw-open':$('pwNew').value='';$('pwNew2').value='';$('pwErr').hidden=true;showPw(true);setTimeout(()=>$('pwNew').focus(),0);break;
+    case 'pw-open':document.body.classList.remove('nav-open');$('pwNew').value='';$('pwNew2').value='';$('pwErr').hidden=true;showPw(true);setTimeout(()=>$('pwNew').focus(),0);break;
     case 'pw-cancel':showPw(false);break;
-    case 'profile-open':{const u=Store.auth.currentUser()||{};$('profName').value=u.name||'';$('profEmail').value=u.email||'';$('profErr').hidden=true;showProfile(true);setTimeout(()=>$('profName').focus(),0);break;}
+    case 'profile-open':{document.body.classList.remove('nav-open');const u=Store.auth.currentUser()||{};$('profName').value=u.name||'';$('profEmail').value=u.email||'';$('profErr').hidden=true;showProfile(true);setTimeout(()=>$('profName').focus(),0);break;}
     case 'profile-cancel':showProfile(false);break;
+    case 'toggle-drawer':document.body.classList.remove('sheet-open');document.body.classList.toggle('nav-open');break;
+    case 'open-add':document.body.classList.remove('nav-open');document.body.classList.add('sheet-open');setTimeout(()=>{try{addText.focus();}catch(_){}},60);break;
+    case 'close-overlays':document.body.classList.remove('nav-open','sheet-open');break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'item-filter':state.ui.itemFilter=el.dataset.f;Store.prefs.save();syncHeader();renderList();break;
     case 'period':state.ui.period=el.dataset.p;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'goto-day':state.ui.period='day';if(el.dataset.date)state.ui.selectedDate=el.dataset.date;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
-    case 'select-project':state.ui.projectFilter=id;Store.prefs.save();renderProjects();renderList();break;
-    case 'share-config':{ e.stopPropagation(); openShareConfig(id); break;}
+    case 'select-project':state.ui.projectFilter=id;document.body.classList.remove('nav-open');Store.prefs.save();renderProjects();renderList();break;
+    case 'share-config':{ e.stopPropagation(); document.body.classList.remove('nav-open'); openShareConfig(id); break;}
     case 'share-cancel':{ $('shareScreen').hidden=true; _shareProjId=null; break;}
     case 'delete-project':
       e.stopPropagation();
@@ -1189,7 +1280,9 @@ addForm.addEventListener('submit',e=>{
   const date=(state.ui.view==='date'&&period!=='month')?state.ui.selectedDate:ymd(new Date());
   Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:type==='event'?'mid':addPriority.value,done:false,
     createdAt:Date.now(),date,endDate:null,time,doneAt:null,note:''});
-  addText.value='';if(type==='event')$('addTime').value='';addText.focus();renderProjects();renderList();
+  addText.value='';if(type==='event')$('addTime').value='';renderProjects();renderList();
+  if(window.matchMedia&&window.matchMedia('(max-width:760px)').matches){document.body.classList.remove('sheet-open');addText.blur();}
+  else{addText.focus();}
 });
 projForm.addEventListener('submit',e=>{
   e.preventDefault();if(!state)return;
@@ -1203,7 +1296,9 @@ document.addEventListener('submit',e=>{if(!state)return;if(e.target.classList.co
 
 let searchT;
 searchInput.addEventListener('input',()=>{if(!state)return;state.ui.search=searchInput.value.trim();clearTimeout(searchT);searchT=setTimeout(renderList,120);});
-document.addEventListener('keydown',e=>{if(!state)return;if(e.key==='Escape'&&state.ui.editingId){state.ui.editingId=null;renderList();}});
+document.addEventListener('keydown',e=>{if(!state)return;if(e.key!=='Escape')return;
+  if(document.body.classList.contains('nav-open')||document.body.classList.contains('sheet-open')){document.body.classList.remove('nav-open','sheet-open');return;}
+  if(state.ui.editingId){state.ui.editingId=null;renderList();}});
 
 /* ---------- 수동 순서 변경(드래그) — 날짜별 보기의 그립(⠿)으로만 시작 ---------- */
 let dragId=null;
