@@ -142,6 +142,7 @@ button{cursor:pointer;border:none;background:none}
 .datepick{margin-left:auto;border:1px solid var(--line);background:var(--paper-2);
   border-radius:9px;padding:7px 10px;color:var(--ink-soft);outline:none;cursor:pointer}
 .datepick:focus{border-color:var(--purple)}
+.dn-break{display:none}   /* 폰에서만 날짜네비를 두 줄로 강제 분리 */
 
 /* 추가바 */
 .addbar{display:flex;gap:8px;padding:16px 26px 4px;flex-wrap:wrap}
@@ -307,12 +308,13 @@ button{cursor:pointer;border:none;background:none}
   .search{order:5;flex:1 1 100%;margin-bottom:2px}
   .search input,.search input:focus{width:100%;font-size:16px}
 
-  /* 날짜 네비 */
-  .datenav{padding:11px 14px 0;flex-wrap:wrap;gap:8px}
-  .datelabel{font-size:16px}
-  #periodSeg{margin-left:auto!important}
-  #periodSeg button{padding:7px 13px}
-  .datepick{margin-left:0}
+  /* 날짜 네비: 폰에선 의도적으로 두 줄 — [‹ 날짜 › 오늘] / [일주월  날짜선택] */
+  .datenav{padding:11px 14px 4px;flex-wrap:wrap;gap:8px;row-gap:10px;align-items:center}
+  .datenav .datelabel{flex:1 1 auto;min-width:0;font-size:16px}
+  .dn-break{display:block;flex-basis:100%;width:100%;height:0;margin:0}
+  #periodSeg{margin-left:0!important;flex:1 1 auto}
+  #periodSeg button{flex:1;padding:9px 0}
+  .datepick{margin-left:0;flex:0 0 auto}
 
   /* 리스트 — 큰 터치 영역, FAB 공간 확보 */
   .listwrap{flex:none;overflow:visible;padding:12px 14px 104px}
@@ -388,7 +390,7 @@ button{cursor:pointer;border:none;background:none}
 
 /* ---------- 세그먼트(항목 필터 · 기간) ---------- */
 .segbar{display:flex;gap:4px;background:var(--paper-3);padding:3px;border-radius:9px}
-.segbar button{padding:6px 12px;border-radius:7px;font-weight:700;font-size:12px;color:var(--ink-soft);transition:.12s;white-space:nowrap;line-height:1}
+.segbar button{display:flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:7px;font-weight:700;font-size:12px;color:var(--ink-soft);transition:.12s;white-space:nowrap;line-height:1}
 .segbar button:hover{color:var(--ink)}
 .segbar button.active{background:var(--paper-2);color:var(--ink);box-shadow:0 1px 2px rgba(36,23,16,.12)}
 
@@ -532,6 +534,7 @@ button{cursor:pointer;border:none;background:none}
       <div class="datelabel"><span id="dateMain"></span><span class="daybadge" id="dayBadge"></span></div>
       <button data-action="next-day" title="다음">›</button>
       <button class="today-btn" data-action="today">오늘</button>
+      <span class="dn-break" aria-hidden="true"></span>
       <div class="segbar" id="periodSeg" style="margin-left:6px" title="일 / 주 / 월">
         <button data-action="period" data-p="day">일</button>
         <button data-action="period" data-p="week">주</button>
