@@ -784,6 +784,17 @@ function cmpProjGroup(a,b){
   const at=a.time||'99:99',bt=b.time||'99:99';
   return at!==bt?(at<bt?-1:1):0;
 }
+/* 전체 뷰: ①완료 여부 최우선(미완료·일정 먼저, 완료된 할 일은 전부 맨 아래) ②프로젝트별 ③날짜·시간 */
+function cmpAllView(a,b){
+  const ad=(!isEvent(a)&&a.done)?1:0,bd=(!isEvent(b)&&b.done)?1:0;
+  if(ad!==bd)return ad-bd;
+  const pa=projOrder(a.project),pb=projOrder(b.project);
+  if(pa!==pb)return pa-pb;
+  const asd=a.date||'9999',bsd=b.date||'9999';
+  if(asd!==bsd)return asd<bsd?-1:1;
+  const at=a.time||'99:99',bt=b.time||'99:99';
+  return at!==bt?(at<bt?-1:1):0;
+}
 
 function syncHeader(){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===state.ui.view));
@@ -927,8 +938,8 @@ function renderList(){
       html+=`<div class="section-h"><span class="dot" style="background:${g.p.color}"></span>${esc(g.p.name)} <span class="cnt">${g.list.length}</span></div>`;
       html+=progressHTML(g.list)+g.list.map(t=>cardOrEdit(t,'full')).join('');
     }
-  }else{ // all — 프로젝트별로 묶고, 그룹 안에서 완료는 아래로
-    const list=visible.slice().sort((a,b)=>{const pa=projOrder(a.project),pb=projOrder(b.project);return pa!==pb?pa-pb:cmpProjGroup(a,b);});
+  }else{ // all — ①완료 여부(완료는 전부 맨 아래) ②프로젝트별 ③날짜·시간
+    const list=visible.slice().sort(cmpAllView);
     html+=progressHTML(list);
     html+=list.length?list.map(t=>cardOrEdit(t,'full')).join(''):emptyHTML('항목이 없어요','');
   }
