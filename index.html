@@ -301,6 +301,7 @@ button{cursor:pointer;border:none;background:none}
 .share-members label{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);cursor:pointer;line-height:1.3}
 .share-members input{width:16px;height:16px;accent-color:var(--purple);flex:0 0 auto}
 .share-members .empty-dir{color:#9aa6a0;font-size:12.5px;text-align:center;padding:6px 0}
+.share-members .dir-mail{color:var(--ink-soft);font-size:11px;font-weight:500}
 
 /* ---------- 세그먼트(항목 필터 · 기간) ---------- */
 .segbar{display:flex;gap:4px;background:var(--paper-3);padding:3px;border-radius:9px}
@@ -402,6 +403,7 @@ button{cursor:pointer;border:none;background:none}
     <div class="side-foot">
       <div class="acct" id="acctRow" hidden>
         <span class="acct-email" id="acctEmail"></span>
+        <button class="acct-out" data-action="profile-open">정보수정</button>
         <button class="acct-out" data-action="pw-open">비번변경</button>
         <button class="acct-out" data-action="logout">로그아웃</button>
       </div>
@@ -472,6 +474,7 @@ button{cursor:pointer;border:none;background:none}
   <form class="login-card" id="loginForm">
     <div class="brand login-brand"><span class="logo"><i></i><i></i></span><b>MAKERS</b><span>_TASKS</span></div>
     <h2 id="loginTitle">로그인</h2>
+    <input type="text" id="loginName" placeholder="이름" autocomplete="name" hidden>
     <input type="email" id="loginEmail" placeholder="이메일" autocomplete="username">
     <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password">
     <div class="login-err" id="loginErr" hidden></div>
@@ -489,6 +492,18 @@ button{cursor:pointer;border:none;background:none}
     <div class="login-err" id="pwErr" hidden></div>
     <button type="submit" class="btn primary" id="pwSubmit">변경</button>
     <button type="button" class="btn" data-action="pw-cancel">취소</button>
+  </form>
+</div>
+
+<!-- 내 정보 수정 (이름·이메일) -->
+<div class="loginscreen" id="profileScreen" hidden>
+  <form class="login-card" id="profileForm">
+    <h2>내 정보 수정</h2>
+    <input type="text" id="profName" placeholder="이름" autocomplete="name">
+    <input type="email" id="profEmail" placeholder="이메일" autocomplete="email">
+    <div class="login-err" id="profErr" hidden></div>
+    <button type="submit" class="btn primary" id="profSubmit">저장</button>
+    <button type="button" class="btn" data-action="profile-cancel">취소</button>
   </form>
 </div>
 
@@ -599,8 +614,8 @@ const Store = (function(){
   function rowToProj(r){ return {id:r.id,name:r.name,color:r.color,shared:r.shared!==false,members:Array.isArray(r.members)?r.members:[],owner:r.owner||null}; }
   // ---- 인증 토큰 (AUTH_KEY · 로컬 전용 저장) ----
   function decodeJwt(t){ try{ let p=(t||'').split('.')[1]; if(!p)return null; p=p.replace(/-/g,'+').replace(/_/g,'/'); p+='='.repeat((4-p.length%4)%4); return JSON.parse(atob(p)); }catch(e){ return null; } }
-  function loadTok(){ _tok=lsGet(AUTH_KEY); if(_tok&&_tok.access_token&&(!_tok.uid||!_tok.email)){ const o=decodeJwt(_tok.access_token); if(o){ if(!_tok.uid)_tok.uid=o.sub||null; if(!_tok.email)_tok.email=o.email||null; lsSet(AUTH_KEY,_tok); } } }
-  function saveTok(j){ const o=decodeJwt(j.access_token)||{}; _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,email:(j.user&&j.user.email)||o.email||(_tok&&_tok.email)||null,uid:(j.user&&j.user.id)||o.sub||(_tok&&_tok.uid)||null}; lsSet(AUTH_KEY,_tok); }
+  function loadTok(){ _tok=lsGet(AUTH_KEY); if(_tok&&_tok.access_token){ const o=decodeJwt(_tok.access_token); if(o){ let ch=false; if(!_tok.uid){_tok.uid=o.sub||null;ch=true;} if(!_tok.email){_tok.email=o.email||null;ch=true;} if(!_tok.name&&o.user_metadata&&o.user_metadata.name){_tok.name=o.user_metadata.name;ch=true;} if(ch)lsSet(AUTH_KEY,_tok); } } }
+  function saveTok(j){ const o=decodeJwt(j.access_token)||{}; const meta=(j.user&&j.user.user_metadata)||o.user_metadata||{}; _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,email:(j.user&&j.user.email)||o.email||(_tok&&_tok.email)||null,uid:(j.user&&j.user.id)||o.sub||(_tok&&_tok.uid)||null,name:(meta&&meta.name)||(_tok&&_tok.name)||null}; lsSet(AUTH_KEY,_tok); }
   function clearTok(){ _tok=null; try{ localStorage.removeItem(AUTH_KEY); }catch(e){} }
   // ---- HTTP (Supabase REST/Auth) ----
   function restHeaders(prefer){ const h={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((_tok&&_tok.access_token)||SUPABASE_KEY),'Content-Type':'application/json'}; if(prefer)h.Prefer=prefer; return h; }
@@ -704,9 +719,9 @@ const Store = (function(){
     get mode(){ return _mode; },
     isAuthenticated(){ return _mode==='local' ? true : !!(_tok&&_tok.access_token); },
     requiresLogin(){ return _mode!=='local' && !this.isAuthenticated(); },      // 로컬 → 항상 false, 절대 막지 않음
-    currentUser(){ if(_mode==='local')return {id:'local',email:null}; if(_me&&_me.id)return {id:_me.id,email:_me.email}; if(_tok)return {id:_tok.uid||'me',email:_tok.email||null}; return null; },
+    currentUser(){ if(_mode==='local')return {id:'local',email:null,name:null}; const nm=(_me&&_me.user_metadata&&_me.user_metadata.name)||(_tok&&_tok.name)||null; if(_me&&_me.id)return {id:_me.id,email:_me.email,name:nm}; if(_tok)return {id:_tok.uid||'me',email:_tok.email||null,name:nm}; return null; },
     async signin(email,pw){ if(_mode==='local')return null; const j=await authPost('token?grant_type=password',{email:email,password:pw}); saveTok(j); _me=j.user; await pull(); return j.user; },
-    async signup(email,pw){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
+    async signup(email,pw,name){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw,data:{name:name||''}}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
     async signout(){ clearTok(); _me=null; _dir=null; _data.tasks.length=0; _data.projects.length=0; },
     refresh(){ return _mode==='local'?Promise.resolve(null):doRefresh(); },
     async changePassword(newPw){ if(_mode==='local')return null;
@@ -715,13 +730,25 @@ const Store = (function(){
       const j=await r.json().catch(()=>null);
       if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.error||j.error_code))||('변경 실패 '+r.status));
       return j; },
+    async updateProfile(name,email){ if(_mode==='local')return null;
+      const body={data:{name:name||''}};
+      const cur=(_me&&_me.email)||(_tok&&_tok.email)||'';
+      if(email&&email!==cur)body.email=email;                       // 이메일 바뀐 경우만 포함
+      let r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify(body)});
+      if(r.status===401&&await doRefresh())r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify(body)});
+      const j=await r.json().catch(()=>null);
+      if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.error||j.error_code))||('변경 실패 '+r.status));
+      _me=j||_me;
+      if(_tok){ if(j&&j.user_metadata&&('name'in j.user_metadata))_tok.name=j.user_metadata.name; else _tok.name=name||_tok.name; if(j&&j.email)_tok.email=j.email; lsSet(AUTH_KEY,_tok); }
+      _dir=null;                                                    // 이름 갱신 → 디렉터리 캐시 무효화
+      return j; },
     async me(){ if(_mode==='local')return {id:'local',email:null}; if(!_tok)return null;
       try{ let r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:restHeaders()}); if(r.status===401&&await doRefresh())r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:restHeaders()}); if(r.ok){ _me=await r.json(); return _me; } }catch(e){} return null; }
   };
   // ---- 렌더 콜백(원격 비동기 갱신 반영) · 로컬 데이터 접근 · 1회 클라우드 이전 ----
   api.onChange=function(fn){ _onChange=fn; };
   api.localData=function(){ return lsGet(DATA_KEY); };
-  api.directory=async function(){ if(_mode==='local')return []; if(_dir)return _dir; const rows=await rest('GET','profiles?select=id,email&order=email.asc'); _dir=rows||[]; return _dir; };
+  api.directory=async function(){ if(_mode==='local')return []; if(_dir)return _dir; const rows=await rest('GET','profiles?select=*&order=email.asc'); _dir=rows||[]; return _dir; };
   api.migrateLocalToCloud=async function(){
     const local=lsGet(DATA_KEY); if(!local) return {projects:0,tasks:0};
     const projs=(local.projects||[]).map(p=>({id:p.id,name:p.name,color:p.color||null,shared:true})); // 기존 프로젝트는 팀 공유로
@@ -1080,10 +1107,12 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-action]');if(!el)return;
   const a=el.dataset.action,id=el.dataset.id;
   switch(a){
-    case 'auth-toggle':{const signup=$('loginTitle').textContent.indexOf('회원가입')>=0;$('loginTitle').textContent=signup?'로그인':'회원가입';$('loginSubmit').textContent=signup?'로그인':'회원가입';$('loginErr').hidden=true;break;}
+    case 'auth-toggle':{const toSignup=$('loginTitle').textContent.indexOf('회원가입')<0;$('loginTitle').textContent=toSignup?'회원가입':'로그인';$('loginSubmit').textContent=toSignup?'회원가입':'로그인';$('loginName').hidden=!toSignup;$('loginErr').hidden=true;break;}
     case 'logout':Store.auth.signout().then(()=>{showLogin(true);updateAccountUI();});break;
     case 'pw-open':$('pwNew').value='';$('pwNew2').value='';$('pwErr').hidden=true;showPw(true);setTimeout(()=>$('pwNew').focus(),0);break;
     case 'pw-cancel':showPw(false);break;
+    case 'profile-open':{const u=Store.auth.currentUser()||{};$('profName').value=u.name||'';$('profEmail').value=u.email||'';$('profErr').hidden=true;showProfile(true);setTimeout(()=>$('profName').focus(),0);break;}
+    case 'profile-cancel':showProfile(false);break;
     case 'view':state.ui.view=el.dataset.view;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'item-filter':state.ui.itemFilter=el.dataset.f;Store.prefs.save();syncHeader();renderList();break;
     case 'period':state.ui.period=el.dataset.p;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
@@ -1244,10 +1273,11 @@ function ensureDaechi5(){ // '대치5호점' 프로젝트 보장 (딱 한 번만
 function showLogin(show){const ls=$('loginScreen');if(!ls)return;ls.hidden=!show;const app=document.querySelector('.app');if(app)app.style.display=show?'none':'';}
 function hideLogin(){showLogin(false);}
 function showPw(show){const el=$('pwScreen');if(el)el.hidden=!show;}
+function showProfile(show){const el=$('profileScreen');if(el)el.hidden=!show;}
 function updateAccountUI(){
   const acct=$('acctRow');if(!acct)return;
   const u=(Store.mode!=='local'&&Store.auth.isAuthenticated())?Store.auth.currentUser():null;
-  acct.hidden=!u; if(u)$('acctEmail').textContent=(u.email||'로그인됨');
+  acct.hidden=!u; if(u){const el=$('acctEmail');el.textContent=(u.name||u.email||'로그인됨');el.title=u.email||'';}
 }
 async function maybeOfferMigration(){ // 첫 로그인 + 클라우드 비어있음 + 로컬데이터 있음 → 1회 업로드 제안
   if(state.ui._uploadedToCloud)return;
@@ -1274,9 +1304,12 @@ if(loginForm)loginForm.addEventListener('submit',async e=>{
   e.preventDefault();
   const isSignup=$('loginTitle').textContent.indexOf('회원가입')>=0;
   const err=$('loginErr');err.hidden=true;
+  const email=$('loginEmail').value.trim(),pw=$('loginPw').value,name=$('loginName').value.trim();
+  if(isSignup&&!name){err.textContent='이름을 입력해 주세요';err.hidden=false;$('loginName').focus();return;}
   const btn=$('loginSubmit');btn.disabled=true;
   try{
-    await (isSignup?Store.auth.signup:Store.auth.signin).call(Store.auth,$('loginEmail').value.trim(),$('loginPw').value);
+    if(isSignup)await Store.auth.signup(email,pw,name);
+    else await Store.auth.signin(email,pw);
     await enterApp();
   }catch(ex){err.textContent=(ex&&ex.message)?('실패: '+ex.message):'로그인에 실패했어요';err.hidden=false;}
   finally{btn.disabled=false;}
@@ -1290,6 +1323,17 @@ if(pwForm)pwForm.addEventListener('submit',async e=>{
   const btn=$('pwSubmit');btn.disabled=true;
   try{ await Store.auth.changePassword(np); showPw(false); toast('비밀번호를 변경했어요'); }
   catch(ex){ err.textContent=(ex&&ex.message)?('실패: '+ex.message):'변경에 실패했어요'; err.hidden=false; }
+  finally{ btn.disabled=false; }
+});
+const profileForm=$('profileForm');
+if(profileForm)profileForm.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const name=$('profName').value.trim(), email=$('profEmail').value.trim(), err=$('profErr');err.hidden=true;
+  if(!name){err.textContent='이름을 입력해 주세요';err.hidden=false;return;}
+  if(!email){err.textContent='이메일을 입력해 주세요';err.hidden=false;return;}
+  const btn=$('profSubmit');btn.disabled=true;
+  try{ await Store.auth.updateProfile(name,email); showProfile(false); updateAccountUI(); toast('정보를 저장했어요'); }
+  catch(ex){ err.textContent=(ex&&ex.message)?('실패: '+ex.message):'저장에 실패했어요'; err.hidden=false; }
   finally{ btn.disabled=false; }
 });
 
@@ -1313,7 +1357,7 @@ async function openShareConfig(pid){
   const others=dir.filter(u=>u.id!==meId && !/@example\.com$/i.test(u.email||'')); // 테스트 계정(@example.com) 숨김
   const sel=new Set(p.members||[]);
   box.innerHTML = others.length
-    ? others.map(u=>`<label><input type="checkbox" value="${u.id}"${sel.has(u.id)?' checked':''}> ${esc(u.email||u.id)}</label>`).join('')
+    ? others.map(u=>{const nm=(u.name||'').trim();const label=nm?`${esc(nm)} <span class="dir-mail">${esc(u.email||'')}</span>`:esc(u.email||u.id);return `<label><input type="checkbox" value="${u.id}"${sel.has(u.id)?' checked':''}> ${label}</label>`;}).join('')
     : '<div class="empty-dir">공유할 다른 가입자가 없어요.<br>(상대가 먼저 이 보드에 가입해야 해요)</div>';
 }
 const shareForm=$('shareForm');
