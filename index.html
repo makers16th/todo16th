@@ -319,16 +319,43 @@ button{cursor:pointer;border:none;background:none}
   font-size:12px;background:color-mix(in srgb,var(--purple) 16%,white)}
 .pill.time{color:var(--purple);background:color-mix(in srgb,var(--purple) 15%,white);font-weight:800}
 
-/* ---------- 주 뷰(요일별 아젠다) ---------- */
-.day-sec{display:flex;align-items:baseline;gap:7px;font-weight:800;font-size:14px;color:var(--ink);
-  margin:22px 2px 10px;padding-bottom:7px;border-bottom:1px solid var(--line);cursor:pointer}
-.day-sec:hover{border-color:var(--line-strong)}
-.day-sec.today{color:var(--purple);border-color:color-mix(in srgb,var(--purple) 40%,var(--line))}
-.day-sec .wd{font-size:12px;color:var(--ink-soft);font-weight:700}
-.day-sec.today .wd{color:var(--purple)}
-.day-sec .cnt{background:var(--paper-3);border-radius:999px;padding:1px 9px;font-size:11px;margin-left:auto;color:var(--ink-soft)}
-.day-sec.today .cnt{background:color-mix(in srgb,var(--purple) 14%,white);color:var(--purple)}
-.day-empty{color:var(--ink-soft);opacity:.5;font-size:12.5px;padding:0 2px 6px}
+/* ---------- 주 뷰(요일 7열 그리드 · 한눈에) ---------- */
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px;align-items:stretch}
+.wk-col{border:1px solid var(--line);border-radius:10px;background:var(--paper-2);display:flex;flex-direction:column;min-height:220px;overflow:hidden}
+.wk-col.today{border-color:var(--purple);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple) 16%,transparent)}
+.wk-head{padding:7px 9px;border-bottom:1px solid var(--line);background:var(--paper-3);cursor:pointer;
+  display:flex;flex-direction:column;gap:1px;transition:.12s}
+.wk-head:hover{background:var(--paper-3);filter:brightness(.98)}
+.wk-head .d{font-weight:800;font-size:15px;color:var(--ink);line-height:1.1}
+.wk-head .wd{font-size:11px;color:var(--ink-soft);font-weight:700}
+.wk-head .sun{color:#d4524f}.wk-head .sat{color:#4b7bd4}
+.wk-col.today .wk-head{background:color-mix(in srgb,var(--purple) 11%,white)}
+.wk-col.today .wk-head .d,.wk-col.today .wk-head .wd{color:var(--purple)}
+.wk-body{padding:6px;display:flex;flex-direction:column;gap:4px;flex:1}
+.wk-item{display:flex;align-items:center;gap:5px;font-size:11.5px;line-height:1.3;
+  padding:4px 6px;border-radius:7px;border-left:3px solid var(--pc,var(--line-strong));
+  background:var(--paper-3);cursor:pointer;transition:.1s}
+.wk-item:hover{filter:brightness(.97)}
+.wk-item.ev{border-left-color:var(--purple);background:color-mix(in srgb,var(--purple) 9%,white)}
+.wk-item.done{opacity:.5}
+.wk-item.done .wk-t{text-decoration:line-through;text-decoration-color:var(--line-strong)}
+.wk-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.wk-check{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);flex:0 0 auto;position:relative;transition:.12s}
+.wk-check:hover{border-color:var(--green)}
+.wk-check::after{content:'';position:absolute;left:3px;top:.5px;width:3.5px;height:7px;border:2px solid #fff;border-top:0;border-left:0;transform:rotate(45deg) scale(0);transition:transform .12s}
+.wk-item.done .wk-check{background:var(--green);border-color:var(--green)}
+.wk-item.done .wk-check::after{transform:rotate(45deg) scale(1)}
+.wk-time{font-weight:800;color:var(--purple);flex:0 0 auto;font-size:10.5px}
+.wk-empty{color:var(--ink-soft);opacity:.35;font-size:12px;text-align:center;padding:10px 0}
+@media(max-width:760px){
+  .wk{gap:3px}
+  .wk-col{min-height:120px;border-radius:8px}
+  .wk-head{padding:4px 5px}
+  .wk-head .d{font-size:12px}.wk-head .wd{font-size:9.5px}
+  .wk-body{padding:3px;gap:3px}
+  .wk-item{font-size:9.5px;padding:2px 4px;gap:3px}
+  .wk-check{width:12px;height:12px}
+}
 
 /* ---------- 월 뷰(달력 그리드) ---------- */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
@@ -919,20 +946,33 @@ function renderDay(visible){
   }
   return html;
 }
+function weekItemHTML(t,ds){
+  const p=projectById(t.project),ev=isEvent(t);
+  const pc=p.real?p.color:'var(--line-strong)';
+  const lead=ev
+    ? `<span class="wk-time">${t.time?esc(t.time):'📅'}</span>`
+    : `<button class="wk-check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button>`;
+  return `<div class="wk-item${ev?' ev':''}${(!ev&&t.done)?' done':''}" style="--pc:${pc}" data-action="goto-day" data-date="${ds}" title="${esc(t.text)}${t.note?' · '+esc(t.note):''}">
+    ${lead}<span class="wk-t">${esc(t.text)}</span></div>`;
+}
 function renderWeek(visible){
   const base=parseYmd(state.ui.selectedDate),start=new Date(base);
   start.setDate(base.getDate()-base.getDay());   // 일요일 시작
-  const today=todayYmd();let html='';
+  const today=todayYmd();const wdCls=['sun','','','','','','sat'];let cols='';
   for(let i=0;i<7;i++){
-    const d=new Date(start);d.setDate(start.getDate()+i);const ds=ymd(d);
+    const d=new Date(start);d.setDate(start.getDate()+i);const ds=ymd(d),dow=d.getDay();
     const items=visible.filter(t=>spansDate(t,ds)).sort(cmpItems);
     const isT=ds===today;
-    html+=`<div class="day-sec${isT?' today':''}" data-action="goto-day" data-date="${ds}">
-      <span>${d.getMonth()+1}.${d.getDate()}</span><span class="wd">(${WD[d.getDay()]})${isT?' · 오늘':''}</span>
-      <span class="cnt">${items.length}</span></div>`;
-    html+=items.length?items.map(t=>cardOrEdit(t,'compact')).join(''):`<div class="day-empty">—</div>`;
+    const body=items.length?items.map(t=>weekItemHTML(t,ds)).join(''):'<div class="wk-empty">—</div>';
+    cols+=`<div class="wk-col${isT?' today':''}">
+      <div class="wk-head" data-action="goto-day" data-date="${ds}" title="${ds} 상세 보기">
+        <span class="d ${wdCls[dow]}">${d.getDate()}${isT?' · 오늘':''}</span>
+        <span class="wd">${d.getMonth()+1}월 (${WD[dow]})</span>
+      </div>
+      <div class="wk-body">${body}</div>
+    </div>`;
   }
-  return html;
+  return `<div class="wk">${cols}</div>`;
 }
 function renderMonth(visible){
   const base=parseYmd(state.ui.selectedDate),y=base.getFullYear(),m=base.getMonth();
