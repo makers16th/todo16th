@@ -102,6 +102,24 @@ main{padding:26px 0 80px}
   border:1px solid var(--line-strong);padding:1px 7px;border-radius:999px}
 .p-head .role.own{color:var(--gold-ink);border-color:color-mix(in srgb,var(--gold) 45%,white)}
 .p-head .pc{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink-soft)}
+.p-head .share-edit{font-size:10.5px;font-weight:700;color:var(--gold-ink);
+  border:1px solid color-mix(in srgb,var(--gold) 40%,white);padding:3px 9px;transition:.13s;white-space:nowrap}
+.p-head .share-edit:hover{background:color-mix(in srgb,var(--gold) 10%,white);border-color:var(--gold)}
+/* 공유 설정 편집 폼 (프로젝트 블록 안, 소유 계정 화면에서만) */
+.share-form{padding:11px 14px;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--gold) 4%,var(--card));display:flex;flex-direction:column;gap:9px}
+.share-form select{background:var(--paper);border:1px solid var(--line);padding:8px 10px;outline:none;font-weight:600;color:var(--ink)}
+.share-form select:focus{border-color:var(--gold)}
+.share-people{display:flex;flex-direction:column;gap:7px;max-height:180px;overflow:auto;
+  border:1px solid var(--line);background:var(--paper);padding:10px}
+.share-people label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.share-people input{width:15px;height:15px;accent-color:var(--pine);flex:0 0 auto}
+.share-people .dir-mail{color:var(--ink-soft);font-size:11px}
+.share-acts{display:flex;gap:7px}
+.share-acts .share-save{background:var(--forest);color:var(--cream);font-weight:700;padding:8px 16px;transition:.13s}
+.share-acts .share-save:hover{background:var(--forest-deep)}
+.share-acts .share-cancel{border:1px solid var(--line);background:var(--card);font-weight:700;padding:8px 14px;transition:.13s}
+.share-acts .share-cancel:hover{border-color:var(--line-strong)}
 .rows{padding:4px 0}
 .row{display:flex;align-items:center;gap:9px;padding:7px 14px;font-size:13.5px}
 .row+.row{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
@@ -178,7 +196,7 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
 
 </main>
 
-<footer><div class="wrap">MAKERS · 마스터 대시보드 — 내용 조회는 읽기 전용 (수정은 각 계정의 보드에서) · 계정 삭제 가능</div></footer>
+<footer><div class="wrap">MAKERS · 마스터 대시보드 — 할 일 내용은 읽기 전용 (수정은 각 계정의 보드에서) · 계정 삭제 / 프로젝트 공유 설정 변경 가능</div></footer>
 
 <script>
 "use strict";
@@ -336,8 +354,13 @@ function renderDetail(){
   const blocks=[];
   for(const p of ups){
     const list=vis.filter(t=>t.project===p.id).sort(cmpRow);
-    const role=p.owner===u.id?'<span class="role own">소유</span>':(p.members.includes(u.id)?'<span class="role">지정 공유</span>':'<span class="role">전원 공유</span>');
-    blocks.push(`<div class="proj"><div class="p-head"><span class="p-dot" style="background:${esc(p.color)}"></span><b>${esc(p.name)}</b>${role}<span class="pc">${list.filter(t=>!isEvent(t)&&!t.done).length}건 남음</span></div>
+    const mine=p.owner===u.id;
+    const state=p.shared?'전원 공유':(p.members.length?`지정 ${p.members.length}명`:'개인');
+    const role=mine?`<span class="role own">소유</span><span class="role">${state}</span>`
+                   :(p.members.includes(u.id)?'<span class="role">지정 공유</span>':'<span class="role">전원 공유</span>');
+    const shareBtn=mine?`<button class="share-edit" data-share-edit="${esc(p.id)}">공유 설정</button>`:'';
+    blocks.push(`<div class="proj"><div class="p-head"><span class="p-dot" style="background:${esc(p.color)}"></span><b>${esc(p.name)}</b>${role}<span class="pc">${list.filter(t=>!isEvent(t)&&!t.done).length}건 남음</span>${shareBtn}</div>
+      ${editingShare===p.id?shareFormHTML(p):''}
       <div class="rows">${list.map(taskRowHTML).join('')||'<div class="p-empty">항목 없음</div>'}</div></div>`);
   }
   const accIds=new Set(ups.map(p=>p.id));
@@ -381,8 +404,40 @@ $('btnBackLogin').addEventListener('click',logout);
 $('btnRefresh').addEventListener('click',async()=>{try{await loadAll();renderAll();}catch(e){alert(e.message);}});
 $('userList').addEventListener('click',e=>{
   const b=e.target.closest('.u-item');if(!b)return;
-  selected=b.dataset.id;renderUsers();renderDetail();
+  selected=b.dataset.id;editingShare=null;renderUsers();renderDetail();
 });
+
+/* ---------- 공유 설정 변경 (소유 계정 화면에서만 · 서버측 set_project_sharing RPC가 최종 검문) ---------- */
+let editingShare=null;   // 편집 중인 프로젝트 id
+function shareFormHTML(p){
+  const mode=p.shared?'team':(p.members.length?'some':'personal');
+  const candidates=profiles.filter(x=>x.id!==p.owner);   // 소유자는 항상 접근 가능 → 목록에서 제외
+  return `<div class="share-form" data-pid="${esc(p.id)}">
+    <select class="share-mode">
+      <option value="team"${mode==='team'?' selected':''}>팀 전원 공유</option>
+      <option value="some"${mode==='some'?' selected':''}>특정 팀원에게만</option>
+      <option value="personal"${mode==='personal'?' selected':''}>개인 (소유자만)</option>
+    </select>
+    <div class="share-people"${mode!=='some'?' hidden':''}>
+      ${candidates.map(c=>`<label><input type="checkbox" value="${esc(c.id)}"${p.members.includes(c.id)?' checked':''}> ${esc(c.name||c.email||c.id.slice(0,8))}${c.name?` <span class="dir-mail">${esc(c.email||'')}</span>`:''}</label>`).join('')
+        ||'<div class="p-empty">다른 가입자가 없습니다</div>'}
+    </div>
+    <div class="share-acts"><button class="share-save">저장</button><button class="share-cancel">취소</button></div>
+  </div>`;
+}
+async function saveSharing(form){
+  const pid=form.dataset.pid;
+  const mode=form.querySelector('.share-mode').value;
+  const members=mode==='some'?[...form.querySelectorAll('.share-people input:checked')].map(i=>i.value):[];
+  if(mode==='some'&&!members.length&&!confirm('선택된 팀원이 없습니다. 이대로 저장하면 사실상 개인(소유자만) 프로젝트가 됩니다. 계속할까요?'))return;
+  const r=await authFetch('/rest/v1/rpc/set_project_sharing',{method:'POST',
+    body:JSON.stringify({pid,p_shared:mode==='team',p_members:members})});
+  if(r.status===404){alert('공유 설정 SQL(set_project_sharing)이 아직 실행되지 않았습니다.');return;}
+  if(!r.ok){let m='저장하지 못했습니다';try{m=(await r.json()).message||m;}catch(e){}alert(m);return;}
+  editingShare=null;
+  try{await loadAll();}catch(e){alert(e.message);}
+  renderAll();
+}
 
 /* ---------- 계정 삭제 (마스터 전용 · 서버측 delete_account RPC가 최종 검문) ---------- */
 async function deleteAccount(id,mail,name){
@@ -401,8 +456,18 @@ async function deleteAccount(id,mail,name){
   renderAll();
 }
 $('detailBox').addEventListener('click',e=>{
-  const b=e.target.closest('.del-acct');if(!b)return;
-  deleteAccount(b.dataset.del,b.dataset.mail,b.dataset.name);
+  const del=e.target.closest('.del-acct');
+  if(del){deleteAccount(del.dataset.del,del.dataset.mail,del.dataset.name);return;}
+  const ed=e.target.closest('[data-share-edit]');
+  if(ed){editingShare=(editingShare===ed.dataset.shareEdit)?null:ed.dataset.shareEdit;renderDetail();return;}
+  if(e.target.closest('.share-cancel')){editingShare=null;renderDetail();return;}
+  const sv=e.target.closest('.share-save');
+  if(sv){saveSharing(sv.closest('.share-form'));return;}
+});
+$('detailBox').addEventListener('change',e=>{
+  if(!e.target.classList.contains('share-mode'))return;
+  const form=e.target.closest('.share-form');
+  form.querySelector('.share-people').hidden=(e.target.value!=='some');
 });
 
 /* ---------- 부팅 ---------- */
