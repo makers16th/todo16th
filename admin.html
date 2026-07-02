@@ -268,7 +268,7 @@ async function checkMaster(){
 }
 
 /* ---------- 데이터 ---------- */
-let profiles=[],projects=[],tasks=[],selected=null;
+let profiles=[],projects=[],tasks=[],prefsMap={},selected=null;
 async function fetchAll(path){       // Max Rows(기본 1000) 잘림 방지 — 페이지 순회
   const out=[],PAGE=1000;
   for(let off=0;off<50000;off+=PAGE){
@@ -287,6 +287,8 @@ async function loadAll(){
   ]);
   profiles=a;projects=b;tasks=c;
   projects.forEach(p=>{p.color=themeColor(p.color);p.members=Array.isArray(p.members)?p.members:[];});
+  prefsMap={};   // 계정별 프로젝트 순서 — 테이블이 아직 없어도 대시보드는 정상 동작
+  try{(await fetchAll('/rest/v1/user_prefs?select=id,proj_order')).forEach(r=>{prefsMap[r.id]=Array.isArray(r.proj_order)?r.proj_order:[];});}catch(e){}
 }
 
 /* ---------- '그 계정이 보는 것' 재구성 (보드 RLS와 동일 규칙) ---------- */
@@ -350,7 +352,9 @@ function renderDetail(){
     <span class="chip late">기한 지남 ${vt.filter(isLate).length}</span>
     <span class="chip done">완료 ${vt.filter(t=>t.done).length}</span>
     <span class="chip">일정 ${vis.filter(isEvent).length}</span></div>`;
-  const ups=userProjects(u.id);
+  const ord=prefsMap[u.id]||[];   // 그 계정이 정한 프로젝트 순서 그대로
+  const pos=id=>{const i=ord.indexOf(id);return i<0?9999:i;};
+  const ups=userProjects(u.id).sort((a,b)=>pos(a.id)-pos(b.id));
   const blocks=[];
   for(const p of ups){
     const list=vis.filter(t=>t.project===p.id).sort(cmpRow);
