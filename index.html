@@ -624,7 +624,7 @@ const PROJECT_COLORS=['#c58f23','#2f6b4e','#a81d2b','#4a6d8c','#b3702f','#7f9a48
    다른 팀원 소유 프로젝트는 RLS 때문에 DB값을 못 바꾸므로 화면단에서 흡수한다. */
 const LEGACY_PROJECT_COLORS={'#7c5cff':'#7a4650','#9b7bff':'#7a4650','#2fd98a':'#2f6b4e','#3dd6c0':'#3f8577',
   '#ff8a5c':'#b3702f','#ffc24b':'#c58f23','#4bc0ff':'#4a6d8c','#5ac8fa':'#8b9a8f','#ff6b9d':'#a81d2b','#ff6b6b':'#a81d2b'};
-const themeColor=c=>LEGACY_PROJECT_COLORS[(c||'').toLowerCase()]||c;
+const themeColor=c=>{c=(c||'').toLowerCase();c=LEGACY_PROJECT_COLORS[c]||c;return /^#[0-9a-f]{3,8}$/.test(c)?c:'#8b9a8f';}; // hex만 허용(style 주입 차단)
 const PRI_EMOJI={high:'🔴',mid:'🟡',low:'🟢'};
 const WD=['일','월','화','수','목','금','토'];
 
