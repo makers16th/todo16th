@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#162e23">
+<meta name="robots" content="noindex">
+<title>MAKERS · 마스터 대시보드</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* MAKERS 브랜드 팔레트 — index.html·수석코치 문서와 동일 계열 */
+:root{
+  --forest:#162e23; --forest-deep:#0e1f17;
+  --gold:#c58f23; --gold-ink:#8f6512;
+  --pine:#2f6b4e; --red:#a81d2b;
+  --paper:#f6f4eb; --card:#fffefb; --chip:#eeebdd;
+  --line:#e3ded2; --line-strong:#ccc4b0;
+  --ink:#1f2a24; --ink-soft:#5c6b62;
+  --cream:#f2efe3; --cream-soft:#9db1a2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+  background:var(--paper);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+::selection{background:color-mix(in srgb,var(--gold) 25%,white)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+/* 헤더 — 수석코치 문서의 포레스트 히어로 축소판 */
+header{background:var(--forest);color:var(--cream);padding:26px 0 22px}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);font-weight:700;margin-bottom:6px}
+header h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.head-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.head-row .grow{flex:1}
+.me{font-size:12px;color:var(--cream-soft);text-align:right}
+.me b{color:var(--cream);font-weight:700}
+.out-btn,.refresh-btn{font-size:11.5px;font-weight:700;color:var(--cream-soft);
+  border:1px solid rgba(255,255,255,.22);padding:6px 12px;transition:.13s;white-space:nowrap}
+.out-btn:hover,.refresh-btn:hover{color:var(--cream);border-color:rgba(255,255,255,.45)}
+
+main{padding:26px 0 80px}
+[hidden]{display:none!important}
+
+/* 로그인 / 안내 카드 */
+.gate{max-width:360px;margin:60px auto;background:var(--card);border:1px solid var(--line);
+  border-top:3px solid var(--gold);padding:28px;display:flex;flex-direction:column;gap:11px}
+.gate h2{font-size:17px;font-weight:800;color:var(--forest);text-align:center;margin-bottom:4px}
+.gate p{font-size:13px;color:var(--ink-soft);text-align:center}
+.gate input{background:var(--paper);border:1px solid var(--line);padding:11px 13px;outline:none;transition:.13s}
+.gate input:focus{border-color:var(--gold)}
+.gate .go{background:var(--forest);color:var(--cream);font-weight:700;padding:12px;transition:.13s}
+.gate .go:hover{background:var(--forest-deep)}
+.gate .err{color:var(--red);font-size:12.5px;font-weight:600;text-align:center}
+.gate .sub-btn{color:var(--gold-ink);font-weight:700;font-size:12.5px;padding:2px}
+
+/* 상단 통계 스트립 */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--gold);padding:12px 14px}
+.stat .n{font-size:22px;font-weight:800;color:var(--forest);line-height:1.2}
+.stat .l{font-size:11.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.04em}
+
+/* 2단: 계정 목록 + 상세 */
+.cols{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start}
+.userlist{background:var(--card);border:1px solid var(--line);overflow:hidden}
+.userlist .ul-head{background:var(--forest);color:var(--cream);font-size:12px;font-weight:700;
+  letter-spacing:.06em;padding:9px 14px}
+.u-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 14px;
+  border-bottom:1px solid var(--line);transition:.12s}
+.u-item:last-child{border-bottom:none}
+.u-item:hover{background:var(--paper)}
+.u-item.active{background:color-mix(in srgb,var(--gold) 10%,white);box-shadow:inset 3px 0 0 var(--gold)}
+.u-item .who{flex:1;min-width:0}
+.u-item .who b{display:block;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-item .who span{display:block;font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-item .cnt{font-size:11px;font-weight:800;color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 14%,white);
+  padding:2px 8px;border-radius:999px;white-space:nowrap}
+.u-item .cnt.zero{color:var(--ink-soft);background:var(--chip)}
+
+/* 상세 패널 */
+.detail{min-width:0}
+.d-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--forest);padding-bottom:10px;margin-bottom:14px}
+.d-head h2{font-size:19px;font-weight:800;color:var(--forest)}
+.d-head .mail{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.d-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--chip);color:var(--ink-soft)}
+.chip.todo{color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 14%,white)}
+.chip.late{color:var(--red);background:color-mix(in srgb,var(--red) 9%,white)}
+.chip.done{color:var(--pine);background:color-mix(in srgb,var(--pine) 11%,white)}
+
+.proj{background:var(--card);border:1px solid var(--line);margin-bottom:12px}
+.p-head{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--chip) 45%,var(--card))}
+.p-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.p-head b{font-size:13.5px;color:var(--forest)}
+.p-head .role{font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--ink-soft);
+  border:1px solid var(--line-strong);padding:1px 7px;border-radius:999px}
+.p-head .role.own{color:var(--gold-ink);border-color:color-mix(in srgb,var(--gold) 45%,white)}
+.p-head .pc{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink-soft)}
+.rows{padding:4px 0}
+.row{display:flex;align-items:center;gap:9px;padding:7px 14px;font-size:13.5px}
+.row+.row{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
+.mark{flex:0 0 auto;width:17px;height:17px;border-radius:50%;border:2px solid color-mix(in srgb,var(--ink-soft) 55%,var(--line-strong));position:relative}
+.mark.done{background:var(--pine);border-color:var(--pine)}
+.mark.done::after{content:'';position:absolute;left:4px;top:1px;width:4px;height:8px;border:2px solid #fff;border-top:0;border-left:0;transform:rotate(45deg)}
+.mark.ev{border:none;width:auto;height:auto;font-size:13px}
+.row .txt{flex:1;min-width:0;word-break:break-word;font-weight:500}
+.row.done .txt{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-strong)}
+.pdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.pdot.high{background:var(--red)} .pdot.mid{background:var(--gold)} .pdot.low{background:#8b9a8f}
+.dt{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.dt.late{color:var(--red)}
+.dt.time{color:var(--gold-ink)}
+.note-i{font-size:11px;opacity:.6;cursor:help}
+.p-empty{padding:10px 14px;font-size:12.5px;color:var(--ink-soft);opacity:.7}
+.d-placeholder{text-align:center;color:var(--ink-soft);padding:70px 0;background:var(--card);border:1px dashed var(--line-strong)}
+
+footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color:var(--ink-soft);letter-spacing:.03em}
+
+@media(max-width:760px){
+  .cols{grid-template-columns:1fr}
+  .userlist{max-height:280px;overflow-y:auto}
+  header h1{font-size:19px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="grow">
+      <div class="eyebrow">MAKERS · MASTER DASHBOARD</div>
+      <h1>마스터 대시보드</h1>
+    </div>
+    <div class="me" id="meBox" hidden><b id="meName"></b><br><span id="meMail"></span></div>
+    <button class="refresh-btn" id="btnRefresh" hidden>새로고침</button>
+    <button class="out-btn" id="btnOut" hidden>로그아웃</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 로그인 -->
+  <div class="gate" id="loginView" hidden>
+    <h2>마스터 로그인</h2>
+    <p>마스터로 등록된 계정만 접근할 수 있습니다.</p>
+    <input id="inEmail" type="email" placeholder="이메일" autocomplete="username">
+    <input id="inPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <div class="err" id="loginErr" hidden></div>
+    <button class="go" id="btnLogin">들어가기</button>
+  </div>
+
+  <!-- 마스터 아님 / 설정 전 -->
+  <div class="gate" id="deniedView" hidden>
+    <h2>접근 권한 없음</h2>
+    <p id="deniedMsg">이 계정은 마스터로 등록되어 있지 않습니다.</p>
+    <button class="go" id="btnBackLogin">다른 계정으로 로그인</button>
+  </div>
+
+  <!-- 대시보드 -->
+  <div id="dashView" hidden>
+    <div class="stats" id="statsBox"></div>
+    <div class="cols">
+      <aside class="userlist">
+        <div class="ul-head">계정 목록</div>
+        <div id="userList"></div>
+      </aside>
+      <section class="detail" id="detailBox">
+        <div class="d-placeholder">왼쪽에서 계정을 선택하면 그 계정이 보드에서 보는 내용이 표시됩니다.</div>
+      </section>
+    </div>
+  </div>
+
+</main>
+
+<footer><div class="wrap">MAKERS · 마스터 대시보드 — 읽기 전용 (수정은 각 계정의 보드에서)</div></footer>
+
+<script>
+"use strict";
+/* ============================================================
+   MAKERS 마스터 대시보드 — 읽기 전용
+   - masters 테이블 + is_master() + 마스터 SELECT 정책(RLS)이 서버측 근거.
+   - 여기서는 마스터 토큰으로 전체 profiles/projects/tasks를 읽어
+     각 계정이 보드에서 보는 그대로(소유+공유)를 재구성해 보여준다.
+   ============================================================ */
+const SB='https://bmejvuxyszbibjdegnxz.supabase.co';
+const KEY='sb_publishable_GbCZImWWSbQhBp1m5BPq6A_-QBcFLMz';
+const AUTH_KEY='makers_admin_auth_v1';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* 구팔레트 프로젝트색 → 새 MAKERS 팔레트 (index.html과 동일 규칙) */
+const LEGACY_COLORS={'#7c5cff':'#7a4650','#9b7bff':'#7a4650','#2fd98a':'#2f6b4e','#3dd6c0':'#3f8577',
+  '#ff8a5c':'#b3702f','#ffc24b':'#c58f23','#4bc0ff':'#4a6d8c','#5ac8fa':'#8b9a8f','#ff6b9d':'#a81d2b','#ff6b6b':'#a81d2b'};
+/* 색은 style 속성에 들어가므로 hex만 허용(주입 차단) — 형식이 다르면 기본 회색 */
+const themeColor=c=>{c=(c||'').toLowerCase();c=LEGACY_COLORS[c]||c;return /^#[0-9a-f]{3,8}$/.test(c)?c:'#8b9a8f';};
+
+/* ---------- 인증 ---------- */
+let tok=null, me=null;
+function saveAuth(d){localStorage.setItem(AUTH_KEY,JSON.stringify({rt:d.refresh_token}));}
+function clearAuth(){localStorage.removeItem(AUTH_KEY);}
+function parseJwt(t){try{const p=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(escape(atob(p))));}catch(e){return {};}}
+function setSession(d){
+  tok=d.access_token;
+  const c=parseJwt(tok);
+  me={id:c.sub,email:c.email||'',name:(c.user_metadata&&c.user_metadata.name)||''};
+  saveAuth(d);
+}
+async function authFetch(path,opt){
+  opt=opt||{};
+  const doFetch=()=>fetch(SB+path,Object.assign({},opt,{
+    headers:Object.assign({apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},opt.headers||{})}));
+  let r=await doFetch();
+  if(r.status===401&&await tryRestore())r=await doFetch();   // 토큰 만료 → 1회 갱신 후 재시도
+  return r;
+}
+async function login(email,pw){
+  const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',
+    headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error_description||d.msg||'로그인 실패');
+  setSession(d);
+}
+async function tryRestore(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');}catch(e){}
+  if(!s||!s.rt)return false;
+  let r;
+  try{
+    r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',
+      headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.rt})});
+  }catch(e){return false;}                                   // 네트워크 오류: 토큰은 지우지 않음
+  if(!r.ok){if(r.status>=400&&r.status<500)clearAuth();return false;} // 진짜 무효일 때만 폐기
+  setSession(await r.json());return true;
+}
+async function logout(){
+  try{if(tok)await fetch(SB+'/auth/v1/logout',{method:'POST',
+    headers:{apikey:KEY,Authorization:'Bearer '+tok}});}catch(e){}   // 서버측 refresh token 폐기
+  clearAuth();tok=null;me=null;selected=null;show('loginView');
+}
+async function checkMaster(){
+  const r=await authFetch('/rest/v1/rpc/is_master',{method:'POST',body:'{}'});
+  if(r.status===404)return 'nosetup';           // 함수 없음 = 설정 SQL 미실행
+  if(!r.ok)return false;
+  return (await r.json())===true;
+}
+
+/* ---------- 데이터 ---------- */
+let profiles=[],projects=[],tasks=[],selected=null;
+async function fetchAll(path){       // Max Rows(기본 1000) 잘림 방지 — 페이지 순회
+  const out=[],PAGE=1000;
+  for(let off=0;off<50000;off+=PAGE){
+    const r=await authFetch(path,{headers:{'Range-Unit':'items',Range:off+'-'+(off+PAGE-1)}});
+    if(!r.ok)throw new Error('데이터를 불러오지 못했습니다 ('+r.status+')');
+    const rows=await r.json();out.push(...rows);
+    if(rows.length<PAGE)break;
+  }
+  return out;
+}
+async function loadAll(){
+  const [a,b,c]=await Promise.all([
+    fetchAll('/rest/v1/profiles?select=*'),
+    fetchAll('/rest/v1/projects?select=*&order=created_at.asc'),           // 보드 사이드바와 동일 순서
+    fetchAll('/rest/v1/tasks?select=*&order=sort.asc.nullslast,created_at.asc'), // 보드 수동 정렬 반영
+  ]);
+  profiles=a;projects=b;tasks=c;
+  projects.forEach(p=>{p.color=themeColor(p.color);p.members=Array.isArray(p.members)?p.members:[];});
+}
+
+/* ---------- '그 계정이 보는 것' 재구성 (보드 RLS와 동일 규칙) ---------- */
+const canSee=(uid,p)=>p.shared===true||p.owner===uid||p.members.includes(uid);
+function userProjects(uid){return projects.filter(p=>canSee(uid,p));}
+function userTasks(uid){
+  const acc=new Set(userProjects(uid).map(p=>p.id));
+  return tasks.filter(t=>t.owner===uid||acc.has(t.project));
+}
+const isEvent=t=>t.type==='event';
+const today=()=>{const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());};
+const isLate=t=>!isEvent(t)&&!t.done&&(t.end_date||t.start_date)&&(t.end_date||t.start_date)<today();
+
+/* ---------- 렌더 ---------- */
+function fmtD(s){if(!s)return '';const m=s.split('-');return m.length===3?(+m[1])+'/'+(+m[2]):s;}
+function statHTML(n,l){return `<div class="stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`;}
+function renderStats(){
+  const t=tasks.filter(x=>!isEvent(x));
+  $('statsBox').innerHTML=
+    statHTML(profiles.length,'계정')+statHTML(projects.length,'프로젝트')+
+    statHTML(t.filter(x=>!x.done).length,'미완료 할 일')+statHTML(t.filter(x=>x.done).length,'완료')+
+    statHTML(tasks.filter(isEvent).length,'일정');
+}
+function renderUsers(){
+  const rows=profiles.slice().sort((a,b)=>(a.name||a.email||'').localeCompare(b.name||b.email||'','ko'));
+  $('userList').innerHTML=rows.map(u=>{
+    const n=userTasks(u.id).filter(t=>!isEvent(t)&&!t.done).length;   // 상세 '미완료' 칩과 동일 기준
+    return `<button class="u-item${selected===u.id?' active':''}" data-id="${esc(u.id)}">
+      <span class="who"><b>${esc(u.name||'(이름 없음)')}</b><span>${esc(u.email||'')}</span></span>
+      <span class="cnt${n?'':' zero'}">${n}</span></button>`;
+  }).join('')||'<div class="p-empty">가입된 계정이 없습니다.</div>';
+}
+function taskRowHTML(t){
+  const late=isLate(t);
+  const mark=isEvent(t)?'<span class="mark ev">📅</span>':`<span class="mark${t.done?' done':''}"></span>`;
+  const pd=isEvent(t)?'':`<span class="pdot ${esc(t.priority||'mid')}"></span>`;
+  const note=t.note?`<span class="note-i" title="${esc(t.note)}">📝</span>`:'';
+  let dt='';
+  if(isEvent(t)){
+    const range=t.start_date?esc(fmtD(t.start_date))+(t.end_date&&t.end_date!==t.start_date?'~'+esc(fmtD(t.end_date)):''):'날짜 미정';
+    dt=`<span class="dt time">${range}${t.event_time?' '+esc(t.event_time):''}</span>`;
+  }
+  else if(t.start_date)dt=`<span class="dt${late?' late':''}">${esc(fmtD(t.start_date))}${t.end_date&&t.end_date!==t.start_date?'~'+esc(fmtD(t.end_date)):''}${late?' 지남':''}</span>`;
+  return `<div class="row${t.done?' done':''}">${mark}${pd}<span class="txt">${esc(t.title)}${note?' '+note:''}</span>${dt}</div>`;
+}
+function cmpRow(a,b){
+  const d=(a.done?1:0)-(b.done?1:0);if(d)return d;
+  const ea=isEvent(a)?0:1,eb=isEvent(b)?0:1;if(ea!==eb)return ea-eb;
+  const da=a.start_date||'9999',db=b.start_date||'9999';
+  if(da!==db)return da<db?-1:1;
+  const ta=a.event_time||'99',tb=b.event_time||'99';
+  return ta<tb?-1:ta>tb?1:0;   // 동률은 0 → 안정정렬로 보드의 수동 순서 유지
+}
+function renderDetail(){
+  if(!selected){$('detailBox').innerHTML='<div class="d-placeholder">왼쪽에서 계정을 선택하면 그 계정이 보드에서 보는 내용이 표시됩니다.</div>';return;}
+  const u=profiles.find(x=>x.id===selected);
+  if(!u){selected=null;renderUsers();$('detailBox').innerHTML='<div class="d-placeholder">선택했던 계정이 더 이상 없습니다. 다른 계정을 선택하세요.</div>';return;}
+  const vis=userTasks(u.id), vt=vis.filter(t=>!isEvent(t));
+  const chips=`<div class="d-chips">
+    <span class="chip todo">미완료 ${vt.filter(t=>!t.done).length}</span>
+    <span class="chip late">기한 지남 ${vt.filter(isLate).length}</span>
+    <span class="chip done">완료 ${vt.filter(t=>t.done).length}</span>
+    <span class="chip">일정 ${vis.filter(isEvent).length}</span></div>`;
+  const ups=userProjects(u.id);
+  const blocks=[];
+  for(const p of ups){
+    const list=vis.filter(t=>t.project===p.id).sort(cmpRow);
+    const role=p.owner===u.id?'<span class="role own">소유</span>':(p.members.includes(u.id)?'<span class="role">지정 공유</span>':'<span class="role">전원 공유</span>');
+    blocks.push(`<div class="proj"><div class="p-head"><span class="p-dot" style="background:${esc(p.color)}"></span><b>${esc(p.name)}</b>${role}<span class="pc">${list.filter(t=>!isEvent(t)&&!t.done).length}건 남음</span></div>
+      <div class="rows">${list.map(taskRowHTML).join('')||'<div class="p-empty">항목 없음</div>'}</div></div>`);
+  }
+  const accIds=new Set(ups.map(p=>p.id));
+  const etc=vis.filter(t=>t.owner===u.id&&!accIds.has(t.project)).sort(cmpRow);
+  if(etc.length)blocks.push(`<div class="proj"><div class="p-head"><span class="p-dot" style="background:#8b9a8f"></span><b>기타(프로젝트 없음)</b><span class="pc">${etc.filter(t=>!isEvent(t)&&!t.done).length}건 남음</span></div>
+    <div class="rows">${etc.map(taskRowHTML).join('')}</div></div>`);
+  $('detailBox').innerHTML=`<div class="d-head"><h2>${esc(u.name||'(이름 없음)')}</h2><span class="mail">${esc(u.email||'')}</span></div>`
+    +chips+(blocks.join('')||'<div class="d-placeholder">이 계정이 볼 수 있는 항목이 없습니다.</div>');
+}
+function renderAll(){renderStats();renderUsers();renderDetail();}
+
+/* ---------- 화면 전환 ---------- */
+function show(view){
+  ['loginView','deniedView','dashView'].forEach(v=>$(v).hidden=(v!==view));
+  const inDash=view==='dashView';
+  $('meBox').hidden=$('btnOut').hidden=(view==='loginView');
+  $('btnRefresh').hidden=!inDash;
+  if(view!=='loginView'&&me){$('meName').textContent=me.name||me.email;$('meMail').textContent=me.name?me.email:'';}
+}
+async function enter(){
+  const m=await checkMaster();
+  if(m==='nosetup'){$('deniedMsg').textContent='마스터 설정 SQL이 아직 실행되지 않았습니다. (masters / is_master)';show('deniedView');return;}
+  if(!m){show('deniedView');$('deniedMsg').textContent='이 계정은 마스터로 등록되어 있지 않습니다.';return;}
+  await loadAll();
+  if(!selected&&profiles.length)selected=profiles[0].id;
+  renderAll();show('dashView');
+}
+
+/* ---------- 이벤트 ---------- */
+$('btnLogin').addEventListener('click',async()=>{
+  $('loginErr').hidden=true;
+  try{await login($('inEmail').value.trim(),$('inPw').value);await enter();}
+  catch(e){$('loginErr').textContent=e.message||'로그인 실패';$('loginErr').hidden=false;}
+});
+$('inPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnLogin').click();});
+$('btnOut').addEventListener('click',logout);
+$('btnBackLogin').addEventListener('click',logout);
+$('btnRefresh').addEventListener('click',async()=>{try{await loadAll();renderAll();}catch(e){alert(e.message);}});
+$('userList').addEventListener('click',e=>{
+  const b=e.target.closest('.u-item');if(!b)return;
+  selected=b.dataset.id;renderUsers();renderDetail();
+});
+
+/* ---------- 부팅 ---------- */
+(async()=>{
+  try{ if(await tryRestore()){await enter();return;} }
+  catch(e){ /* 일시적 오류 — 토큰은 유지하고 로그인 화면으로 */ }
+  show('loginView');
+})();
+</script>
+</body>
+</html>
