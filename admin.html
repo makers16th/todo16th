@@ -83,6 +83,11 @@ main{padding:26px 0 80px}
 .d-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--forest);padding-bottom:10px;margin-bottom:14px}
 .d-head h2{font-size:19px;font-weight:800;color:var(--forest)}
 .d-head .mail{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.del-acct{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--red);
+  border:1px solid color-mix(in srgb,var(--red) 35%,white);padding:5px 11px;transition:.13s;white-space:nowrap}
+.del-acct:hover{background:color-mix(in srgb,var(--red) 8%,white);border-color:var(--red)}
+.me-badge{margin-left:auto;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--gold-ink);
+  border:1px solid color-mix(in srgb,var(--gold) 45%,white);padding:2px 9px;border-radius:999px;white-space:nowrap}
 .d-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .chip{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:999px;background:var(--chip);color:var(--ink-soft)}
 .chip.todo{color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 14%,white)}
@@ -173,7 +178,7 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
 
 </main>
 
-<footer><div class="wrap">MAKERS · 마스터 대시보드 — 읽기 전용 (수정은 각 계정의 보드에서)</div></footer>
+<footer><div class="wrap">MAKERS · 마스터 대시보드 — 내용 조회는 읽기 전용 (수정은 각 계정의 보드에서) · 계정 삭제 가능</div></footer>
 
 <script>
 "use strict";
@@ -339,7 +344,10 @@ function renderDetail(){
   const etc=vis.filter(t=>t.owner===u.id&&!accIds.has(t.project)).sort(cmpRow);
   if(etc.length)blocks.push(`<div class="proj"><div class="p-head"><span class="p-dot" style="background:#8b9a8f"></span><b>기타(프로젝트 없음)</b><span class="pc">${etc.filter(t=>!isEvent(t)&&!t.done).length}건 남음</span></div>
     <div class="rows">${etc.map(taskRowHTML).join('')}</div></div>`);
-  $('detailBox').innerHTML=`<div class="d-head"><h2>${esc(u.name||'(이름 없음)')}</h2><span class="mail">${esc(u.email||'')}</span></div>`
+  const headBtn=u.id===me.id
+    ?'<span class="me-badge">내 계정</span>'
+    :`<button class="del-acct" data-del="${esc(u.id)}" data-mail="${esc(u.email||'')}" data-name="${esc(u.name||'')}">계정 삭제</button>`;
+  $('detailBox').innerHTML=`<div class="d-head"><h2>${esc(u.name||'(이름 없음)')}</h2><span class="mail">${esc(u.email||'')}</span>${headBtn}</div>`
     +chips+(blocks.join('')||'<div class="d-placeholder">이 계정이 볼 수 있는 항목이 없습니다.</div>');
 }
 function renderAll(){renderStats();renderUsers();renderDetail();}
@@ -374,6 +382,27 @@ $('btnRefresh').addEventListener('click',async()=>{try{await loadAll();renderAll
 $('userList').addEventListener('click',e=>{
   const b=e.target.closest('.u-item');if(!b)return;
   selected=b.dataset.id;renderUsers();renderDetail();
+});
+
+/* ---------- 계정 삭제 (마스터 전용 · 서버측 delete_account RPC가 최종 검문) ---------- */
+async function deleteAccount(id,mail,name){
+  const label=(name?name+' ':'')+'('+(mail||'이메일 없음')+')';
+  if(!confirm(`${label} 계정을 삭제할까요?\n\n・이 계정의 할 일·일정·소유 프로젝트가 함께 삭제됩니다\n・이 계정이 만든 공유 프로젝트도 사라집니다 (다른 사람이 그 안에 쓴 할 일은 '기타'로 남음)\n・되돌릴 수 없습니다`))return;
+  const expect=mail||'삭제';   // 이메일 없는 계정이면 '삭제' 입력으로 확인
+  const typed=prompt(mail?`정말 삭제하려면 이 계정의 이메일을 똑같이 입력하세요:\n${mail}`:`이 계정은 이메일이 없습니다. 정말 삭제하려면 "삭제"라고 입력하세요.`);
+  if(typed===null)return;
+  if((typed||'').trim().toLowerCase()!==expect.toLowerCase()){alert('입력이 일치하지 않아 취소했습니다.');return;}
+  const r=await authFetch('/rest/v1/rpc/delete_account',{method:'POST',body:JSON.stringify({target:id})});
+  if(r.status===404){alert('계정 삭제 SQL(delete_account)이 아직 실행되지 않았습니다.');return;}
+  if(!r.ok){let m='삭제하지 못했습니다';try{m=(await r.json()).message||m;}catch(e){}alert(m);return;}
+  alert('삭제했습니다: '+mail);
+  selected=null;
+  try{await loadAll();}catch(e){alert(e.message);}
+  renderAll();
+}
+$('detailBox').addEventListener('click',e=>{
+  const b=e.target.closest('.del-acct');if(!b)return;
+  deleteAccount(b.dataset.del,b.dataset.mail,b.dataset.name);
 });
 
 /* ---------- 부팅 ---------- */
