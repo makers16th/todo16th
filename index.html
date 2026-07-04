@@ -86,18 +86,31 @@ button{cursor:pointer;border:none;background:none}
 .proj-item .pi-name{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .proj-item .pi-cnt{font-size:11px;color:var(--cream-soft);font-weight:700;
   background:rgba(0,0,0,.22);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
-.proj-item .pi-del{opacity:0;color:var(--cream-soft);font-size:15px;line-height:1;
-  padding:0 2px;border-radius:4px;transition:.13s}
-.proj-item:hover .pi-del{opacity:.7}
+/* ↑↓·공유·삭제 아이콘: 평상시엔 숨겨(display:none) 이름 열에 폭을 몰아주고, hover 때만 노출 */
+.proj-item .pi-del{display:none;color:var(--cream-soft);font-size:15px;line-height:1;
+  padding:0 2px;border-radius:4px}
+.proj-item:hover .pi-del{display:inline;opacity:.7}
 .proj-item .pi-del:hover{opacity:1;color:color-mix(in srgb,var(--red) 45%,white)}
-.proj-item .pi-move{opacity:0;color:var(--cream-soft);font-size:12px;font-weight:800;line-height:1;
-  padding:0 2px;border-radius:4px;transition:.13s}
-.proj-item:hover .pi-move{opacity:.55}
+.proj-item .pi-move{display:none;color:var(--cream-soft);font-size:12px;font-weight:800;line-height:1;
+  padding:0 2px;border-radius:4px}
+.proj-item:hover .pi-move{display:inline;opacity:.55}
 .proj-item .pi-move:hover{opacity:1;color:var(--gold)}
-.proj-item .pi-share{opacity:0;color:var(--cream-soft);font-size:13px;line-height:1;
-  padding:0 3px;border-radius:4px;transition:.13s}
-.proj-item:hover .pi-share{opacity:.7}
+.proj-item .pi-share{display:none;color:var(--cream-soft);font-size:13px;line-height:1;
+  padding:0 3px;border-radius:4px}
+.proj-item:hover .pi-share{display:inline;opacity:.7}
 .proj-item .pi-share:hover{opacity:1;color:var(--gold)}
+/* hover 불가(터치) 기기 — 아이패드 등 760px 초과 포함: hover로 드러낼 수 없으니 컨트롤을 항상 노출 */
+@media(hover:none){.proj-item .pi-move,.proj-item .pi-del,.proj-item .pi-share{display:inline;opacity:.7}}
+/* 고정 체크박스(주로 쓰는 프로젝트만 보기) · '전체/고정' 행 정렬용 여백 */
+.proj-item .pi-pad{width:17px;flex:0 0 auto;text-align:center;font-size:12px;line-height:1}
+.proj-item .pi-pin{width:17px;height:17px;border-radius:5px;border:1.7px solid var(--cream-soft);
+  flex:0 0 auto;position:relative;transition:.12s;opacity:.5}
+.proj-item:hover .pi-pin{opacity:.85}
+.proj-item .pi-pin:hover{border-color:var(--gold);opacity:1}
+.proj-item .pi-pin.on{background:var(--gold);border-color:var(--gold);opacity:1}
+.proj-item .pi-pin.on::after{content:'';position:absolute;left:5px;top:1.5px;width:4px;height:8px;
+  border:2px solid var(--forest-900);border-top:0;border-left:0;transform:rotate(45deg)}
+.proj-hint{font-size:10.5px;color:var(--cream-soft);opacity:.8;padding:0 8px 7px;line-height:1.45}
 
 .proj-add-btn{margin-top:4px;padding:9px 10px;border-radius:10px;color:var(--cream-soft);
   font-weight:600;text-align:left;transition:.13s;border:1px dashed rgba(255,255,255,.16)}
@@ -289,6 +302,11 @@ button{cursor:pointer;border:none;background:none}
   .proj-item.active::before{display:block}
   .proj-item .pi-del,.proj-item .pi-share{display:inline}
   .proj-item .pi-move{display:inline;opacity:.55;padding:0 5px;font-size:14px}
+  .proj-item .pi-pin{width:22px;height:22px;opacity:.8;margin-right:2px}
+  .proj-item .pi-pin.on::after{left:6.5px;top:3px;width:5px;height:9px}
+  /* 터치 영역 확대(세로+왼쪽 여백 쪽으로만 — 이름 영역은 안 뺏음): 오탭 감소 */
+  .proj-item .pi-pin::before{content:'';position:absolute;top:-11px;bottom:-11px;left:-10px;right:-2px}
+  .proj-item .pi-pad{width:22px}
   .proj-add-btn{margin-top:4px}
   .side-foot{margin-top:auto;padding-top:16px;display:block;width:auto}
   .side-stat{padding:0 8px 10px;white-space:normal}
@@ -480,6 +498,7 @@ button{cursor:pointer;border:none;background:none}
       <b>MAKERS</b><span>_TASKS</span>
     </div>
     <div class="side-label">프로젝트</div>
+    <div class="proj-hint">☑ 프로젝트를 체크하면 그 프로젝트 항목만 보여요 (‘전체’로 모두 보기)</div>
     <nav class="proj-nav" id="sidebarProjects"></nav>
     <button class="proj-add-btn" data-action="show-add-project">＋ 프로젝트 추가</button>
     <form class="proj-add" id="projForm" hidden>
@@ -671,16 +690,17 @@ function defaultState(){
   return{
     tasks:[],
     projects:[{id:p1,name:'랜딩',color:'#c58f23',shared:true,members:[]},{id:p2,name:'간판',color:'#2f6b4e',shared:true,members:[]}],
-    ui:{view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[]}
+    ui:{view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[]}
   };
 }
 function migrate(s){
   s.tasks=Array.isArray(s.tasks)?s.tasks:[];
   s.projects=Array.isArray(s.projects)?s.projects:[];
-  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[]},s.ui||{});
+  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[]},s.ui||{});
   s.ui.selectedDate=ymd(new Date()); // 열 때 항상 오늘로
   s.ui.editingId=null;
   if(!Array.isArray(s.ui.projSort))s.ui.projSort=[];
+  if(!Array.isArray(s.ui.projFilter))s.ui.projFilter=[];
   if(['day','week','month'].indexOf(s.ui.period)<0)s.ui.period='day';
   if(['all','task','event'].indexOf(s.ui.itemFilter)<0)s.ui.itemFilter='all';
   s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';t.type=(t.type==='event'?'event':'task');if(!('time'in t))t.time=null;if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
@@ -750,10 +770,24 @@ const Store = (function(){
     ]);
     _data.projects.length=0; (res[0]||[]).forEach(r=>_data.projects.push(rowToProj(r)));
     _data.tasks.length=0;    (res[1]||[]).forEach(r=>_data.tasks.push(rowToTask(r)));
-    // 계정별 프로젝트 순서(user_prefs) — 테이블이 아직 없어도 앱은 정상 동작해야 하므로 비치명적.
-    // 행이 없으면 명시적으로 []: 직전 계정의 순서가 새 계정으로 새지 않게.
-    try{ if(_tok&&_tok.uid){ const pr=await rest('GET','user_prefs?select=proj_order&id=eq.'+enc(_tok.uid));
-      _prefs.projSort=(pr&&pr[0]&&Array.isArray(pr[0].proj_order))?pr[0].proj_order:[]; flagPrefs(); } }catch(e){}
+    // 계정별 UI 설정(user_prefs) — 프로젝트 순서(proj_order) + 고정 필터(proj_filter).
+    // 테이블/컬럼이 아직 없어도 앱은 정상 동작(비치명적). 행이 없으면 명시적으로 []:
+    // 직전 계정 값이 새 계정으로 새지 않게. 단, proj_filter 컬럼 미생성 시엔 로컬 값을 지우지 않고 유지.
+    try{ if(_tok&&_tok.uid){
+      let row=null, hasFilter=true;
+      try{ const pr=await rest('GET','user_prefs?select=proj_order,proj_filter&id=eq.'+enc(_tok.uid)); row=(pr&&pr[0])||null; }
+      catch(colErr){
+        // proj_filter 컬럼이 아직 없을 때만 폴백. 판별 신호는 에러 '본문'에만 있는 42703/"does not exist"로 한정
+        // (요청 경로에 'proj_filter' 문자열이 들어가 있어 그걸로 매칭하면 일시적 5xx도 오판됨 — 경로에 없는 신호만 사용).
+        // 그 외(일시적 5xx/네트워크)는 바깥 catch로 던져 기존 projSort/projFilter를 그대로 보존.
+        if(!/42703|does not exist/i.test(String((colErr&&colErr.message)||''))) throw colErr;
+        hasFilter=false;
+        const pr=await rest('GET','user_prefs?select=proj_order&id=eq.'+enc(_tok.uid)); row=(pr&&pr[0])||null;
+      }
+      _prefs.projSort=(row&&Array.isArray(row.proj_order))?row.proj_order:[];
+      if(hasFilter)_prefs.projFilter=(row&&Array.isArray(row.proj_filter))?row.proj_filter:[];
+      flagPrefs();
+    } }catch(e){}
   }
   function fail(msg){ toast(msg||'동기화 실패 — 새로고침 해주세요'); pull().then(()=>{ if(_onChange)_onChange(); }).catch(()=>{}); }
   // ---- 앱에서 localStorage 를 만지는 유일한 통로 ----
@@ -819,7 +853,9 @@ const Store = (function(){
     snapshot(){ return {tasks:_data.tasks, projects:_data.projects, ui:_prefs}; }, // 내보내기 = 오늘과 동일한 결합 형태
     prefs:{ get(){ return _prefs; }, save(){ flagPrefs(); },
       saveProjOrder(arr){ _prefs.projSort=arr.slice(); flagPrefs();   // 로컬엔 항상, 원격엔 계정별(user_prefs) 저장
-        if(_mode!=='local'&&_tok&&_tok.uid){ rest('POST','user_prefs?on_conflict=id',[{id:_tok.uid,proj_order:_prefs.projSort}],'resolution=merge-duplicates').catch(function(e){}); } } },
+        if(_mode!=='local'&&_tok&&_tok.uid){ rest('POST','user_prefs?on_conflict=id',[{id:_tok.uid,proj_order:_prefs.projSort}],'resolution=merge-duplicates').catch(function(e){}); } },
+      saveProjFilter(arr){ _prefs.projFilter=arr.slice(); flagPrefs();  // 고정 필터도 동일: 로컬 항상 + 원격 계정별(proj_filter 컬럼만 갱신, proj_order 보존)
+        if(_mode!=='local'&&_tok&&_tok.uid){ rest('POST','user_prefs?on_conflict=id',[{id:_tok.uid,proj_filter:_prefs.projFilter}],'resolution=merge-duplicates').catch(function(e){}); } } },
     tasks:null, projects:null, auth:null
   };
   api.tasks=entity(_data.tasks,'tasks',taskToRow,taskPatchToRow,rowToTask);
@@ -832,7 +868,7 @@ const Store = (function(){
     currentUser(){ if(_mode==='local')return {id:'local',email:null,name:null}; const nm=(_me&&_me.user_metadata&&_me.user_metadata.name)||(_tok&&_tok.name)||null; if(_me&&_me.id)return {id:_me.id,email:_me.email,name:nm}; if(_tok)return {id:_tok.uid||'me',email:_tok.email||null,name:nm}; return null; },
     async signin(email,pw){ if(_mode==='local')return null; const j=await authPost('token?grant_type=password',{email:email,password:pw}); saveTok(j); _me=j.user; await pull(); return j.user; },
     async signup(email,pw,name){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw,data:{name:name||''}}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
-    async signout(){ clearTok(); _me=null; _dir=null; _data.tasks.length=0; _data.projects.length=0; _prefs.projSort=[]; flagPrefs(); },
+    async signout(){ clearTok(); _me=null; _dir=null; _data.tasks.length=0; _data.projects.length=0; _prefs.projSort=[]; _prefs.projFilter=[]; flagPrefs(); },
     refresh(){ return _mode==='local'?Promise.resolve(null):doRefresh(); },
     async changePassword(newPw){ if(_mode==='local')return null;
       let r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
@@ -892,7 +928,9 @@ const sidebarProjects=$('sidebarProjects'),addProject=$('addProject'),addText=$(
 /* ---------- 렌더 ---------- */
 function visibleTasks(){
   let t=state.tasks.slice();
-  if(state.ui.projectFilter!=='all')t=t.filter(x=>x.project===state.ui.projectFilter);
+  const pf=state.ui.projectFilter;
+  if(pf==='pinned'){ const set=new Set(state.ui.projFilter||[]); t=t.filter(x=>set.has(x.project)); }  // 고정: 체크한 프로젝트만
+  else if(pf!=='all')t=t.filter(x=>x.project===pf);                                                     // 단일 프로젝트 드릴다운
   const itf=state.ui.itemFilter||'all';
   if(itf==='task')t=t.filter(x=>x.type!=='event');
   else if(itf==='event')t=t.filter(x=>x.type==='event');
@@ -914,6 +952,31 @@ function moveProject(id,dir){
   list.splice(i,1);list.splice(j,0,id);
   Store.prefs.saveProjOrder(list);
   renderProjects();renderList();
+}
+/* 고정(체크) 토글: 체크한 프로젝트만 보기. 계정별(user_prefs.proj_filter)로 로그인해도 유지 */
+function togglePin(id){
+  if(!id||id==='all'||id==='pinned')return;
+  const set=Array.isArray(state.ui.projFilter)?state.ui.projFilter.slice():[];
+  const i=set.indexOf(id);
+  if(i>=0)set.splice(i,1); else set.push(id);
+  Store.prefs.saveProjFilter(set);                          // 서버+로컬 저장, state.ui.projFilter 즉시 갱신
+  if(set.length)state.ui.projectFilter='pinned';            // 체크하면 바로 '고정만 보기'
+  else if(state.ui.projectFilter==='pinned')state.ui.projectFilter='all';   // 다 풀면 전체로
+  if(set.length&&!state.ui._pinHintSeen){ toast('체크한 프로젝트만 표시돼요 · ‘전체’로 모두 보기'); state.ui._pinHintSeen=true; } // 최초 1회 안내
+  Store.prefs.save();
+  renderProjects();renderList();
+}
+/* 고정 필터 정합성 정리. promote=true(최초 로그인)일 때만 고정 셋이 있으면 기본 뷰를 '고정'으로 승격.
+   리로드(promote 없음)에서는 사용자가 명시적으로 고른 '전체'를 존중(강제 복귀 안 함). */
+function normalizeProjFilter(promote){
+  if(!Array.isArray(state.ui.projFilter))state.ui.projFilter=[];
+  const ids=new Set(state.projects.map(p=>p.id));
+  const cleaned=state.ui.projFilter.filter(id=>ids.has(id));
+  if(cleaned.length!==state.ui.projFilter.length)state.ui.projFilter=cleaned;   // 화면용 정리(재저장은 다음 토글 때)
+  const pf=state.ui.projectFilter;
+  if(pf==='pinned'&&cleaned.length===0)state.ui.projectFilter='all';                       // 고정인데 셋이 비면 전체
+  else if(pf!=='all'&&pf!=='pinned'&&!ids.has(pf)){state.ui.projectFilter=cleaned.length?'pinned':'all';Store.prefs.save();} // 없어진 단일 프로젝트 드릴다운 → 빈 보드 방지
+  else if(promote&&pf==='all'&&cleaned.length>0){state.ui.projectFilter='pinned';Store.prefs.save();}                        // 로그인 시에만 고정을 기본 뷰로
 }
 /* 하루/전체 목록 정렬: ①일정을 위로(시간순) ②그다음 할 일 — 완료는 맨 아래, 미완료는 프로젝트별 */
 function cmpItems(a,b){
@@ -975,11 +1038,17 @@ function syncHeader(){
 function renderProjects(){
   const cnt={};state.tasks.forEach(t=>{if(t.type!=='event'&&!t.done)cnt[t.project]=(cnt[t.project]||0)+1;});
   const all=state.tasks.filter(t=>t.type!=='event'&&!t.done).length;
+  const pinned=new Set(state.ui.projFilter||[]);
   const meId=(Store.mode!=='local'&&Store.auth.isAuthenticated()&&Store.auth.currentUser())?Store.auth.currentUser().id:null;
-  let h=`<button class="proj-item${state.ui.projectFilter==='all'?' active':''}" data-action="select-project" data-id="all" style="--pc:var(--pine)"><span class="pi-name">전체</span><span class="pi-cnt">${all}</span></button>`;
+  let h=`<button class="proj-item${state.ui.projectFilter==='all'?' active':''}" data-action="select-project" data-id="all" style="--pc:var(--pine)"><span class="pi-pad"></span><span class="pi-name">전체</span><span class="pi-cnt">${all}</span></button>`;
+  if(pinned.size){   // 고정 프로젝트가 하나라도 있으면 '고정' 바로가기 노출(체크한 프로젝트만 보기)
+    const pcnt=state.tasks.filter(t=>t.type!=='event'&&!t.done&&pinned.has(t.project)).length;
+    h+=`<button class="proj-item${state.ui.projectFilter==='pinned'?' active':''}" data-action="select-project" data-id="pinned" style="--pc:var(--gold)" title="체크한 프로젝트만 보기"><span class="pi-pad"></span><span class="pi-name">📌 고정 <span class="pi-lock">${pinned.size}</span></span><span class="pi-cnt">${pcnt}</span></button>`;
+  }
   const plist=orderedProjects();
   plist.forEach((p,pi)=>{
     const mine = Store.mode==='local' || (p.owner && meId && p.owner===meId);
+    const on = pinned.has(p.id);
     let badge='';
     if(p.shared!==true){ badge = (p.members&&p.members.length) ? `<span class="pi-lock" title="${p.members.length}명에게 공유">🎯${p.members.length}</span>` : '<span class="pi-lock" title="개인 프로젝트(나만)">🔒</span>'; }
     const up = pi>0?`<span class="pi-move" data-action="proj-up" data-id="${p.id}" title="위로">↑</span>`:'';
@@ -987,12 +1056,17 @@ function renderProjects(){
     const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">👥</span>`:'';
     const del = mine?`<span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span>`:'';
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
+      <span class="pi-pin${on?' on':''}" data-action="toggle-pin" data-id="${p.id}" role="checkbox" aria-checked="${on?'true':'false'}" title="${on?'고정 해제':'이 프로젝트 고정(체크한 것만 보기)'}"></span>
       <span class="pi-dot"></span><span class="pi-name">${esc(p.name)}${badge}</span>
       <span class="pi-cnt">${cnt[p.id]||0}</span>
       ${up}${dn}${cfg}${del}</button>`;
   });
   sidebarProjects.innerHTML=h;
-  addProject.innerHTML=projectOptions(state.ui.projectFilter!=='all'?state.ui.projectFilter:'none');
+  const pf=state.ui.projectFilter;
+  // 추가바 기본 프로젝트: 드릴다운 중이면 그 프로젝트 / 고정 뷰면 첫 고정 프로젝트(안 그러면 '없음'→고정필터에 가려 사라짐) / 그 외 없음
+  const firstPinned=(pf==='pinned')?orderedProjects().find(p=>pinned.has(p.id)):null;
+  const defProj=(pf&&pf!=='all'&&pf!=='pinned')?pf:(firstPinned?firstPinned.id:'none');
+  addProject.innerHTML=projectOptions(defProj);
   const done=state.tasks.filter(t=>t.type!=='event'&&t.done).length;
   sideStat.innerHTML=`할 일 <b>${all}</b> · 완료 <b>${done}</b>`;
 }
@@ -1078,7 +1152,9 @@ function renderList(){
     else if(period==='month')html=renderMonth(visible);
     else html=renderDay(visible);
   }else if(view==='project'){
-    const projs=state.ui.projectFilter==='all'?orderedProjects():state.projects.filter(p=>p.id===state.ui.projectFilter);
+    const projs=state.ui.projectFilter==='all'?orderedProjects()
+      :state.ui.projectFilter==='pinned'?orderedProjects().filter(p=>(state.ui.projFilter||[]).indexOf(p.id)>=0)
+      :state.projects.filter(p=>p.id===state.ui.projectFilter);
     const groups=projs.map(p=>({p,list:visible.filter(t=>t.project===p.id)}));
     if(state.ui.projectFilter==='all'){
       const none=visible.filter(t=>!state.projects.find(p=>p.id===t.project));
@@ -1202,7 +1278,7 @@ function exportJSON(){
 function importJSON(file){
   if(Store.mode!=='local'){toast('원격 모드에선 백업 불러오기를 아직 지원하지 않아요');return;}
   const r=new FileReader();
-  r.onload=()=>{try{Store.importState(JSON.parse(r.result));render();toast('데이터를 불러왔어요');}catch(e){toast('파일을 읽을 수 없어요');}};
+  r.onload=()=>{try{Store.importState(JSON.parse(r.result));normalizeProjFilter();render();toast('데이터를 불러왔어요');}catch(e){toast('파일을 읽을 수 없어요');}};
   r.readAsText(file);
 }
 function fallbackCopy(text){
@@ -1247,6 +1323,7 @@ document.addEventListener('click',e=>{
     case 'period':state.ui.period=el.dataset.p;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'goto-day':state.ui.period='day';if(el.dataset.date)state.ui.selectedDate=el.dataset.date;state.ui.editingId=null;Store.prefs.save();syncHeader();renderList();break;
     case 'select-project':state.ui.projectFilter=id;document.body.classList.remove('nav-open');Store.prefs.save();renderProjects();renderList();break;
+    case 'toggle-pin':e.stopPropagation();togglePin(id);break;
     case 'proj-up':e.stopPropagation();moveProject(id,-1);break;
     case 'proj-down':e.stopPropagation();moveProject(id,1);break;
     case 'share-config':{ e.stopPropagation(); document.body.classList.remove('nav-open'); openShareConfig(id); break;}
@@ -1260,6 +1337,9 @@ document.addEventListener('click',e=>{
           Store.projects.remove(id);
           if(state.ui.projectFilter===id){state.ui.projectFilter='all';Store.prefs.save();}
         });
+        const pfset=state.ui.projFilter||[];   // 고정 셋에 있던 프로젝트면 함께 제거
+        if(pfset.indexOf(id)>=0){ const ns=pfset.filter(x=>x!==id); Store.prefs.saveProjFilter(ns);
+          if(!ns.length&&state.ui.projectFilter==='pinned'){state.ui.projectFilter='all';Store.prefs.save();} }
         renderProjects();renderList();
       }break;
     case 'prev-day':shiftDate(-1);break;
@@ -1428,10 +1508,11 @@ async function maybeOfferMigration(){ // 첫 로그인 + 클라우드 비어있�
   }
   state.ui._uploadedToCloud=true; Store.prefs.save();
 }
-async function enterApp(){
+async function enterApp(fresh){
   hideLogin();
   state=Store.facade();
   if(Store.mode!=='local')await maybeOfferMigration();
+  normalizeProjFilter(fresh===true);   // fresh(최초 로그인)일 때만 고정 뷰로 승격 · 리로드는 저장된 뷰 존중
   updateAccountUI();
   render();
   toggleAddType();
@@ -1448,7 +1529,7 @@ if(loginForm)loginForm.addEventListener('submit',async e=>{
   try{
     if(isSignup)await Store.auth.signup(email,pw,name);
     else await Store.auth.signin(email,pw);
-    await enterApp();
+    await enterApp(true);   // 최초 로그인 = fresh → 고정 셋 있으면 고정 뷰로 기본 진입
   }catch(ex){err.textContent=(ex&&ex.message)?('실패: '+ex.message):'로그인에 실패했어요';err.hidden=false;}
   finally{btn.disabled=false;}
 });
