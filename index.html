@@ -102,8 +102,12 @@ button{cursor:pointer;border:none;background:none}
   padding:0 3px;border-radius:4px}
 .proj-item:hover .pi-share{display:inline;opacity:.7}
 .proj-item .pi-share:hover{opacity:1;color:var(--gold)}
+.proj-item .pi-edit{display:none;color:var(--cream-soft);font-size:12px;line-height:1;
+  padding:0 3px;border-radius:4px}
+.proj-item:hover .pi-edit{display:inline;opacity:.7}
+.proj-item .pi-edit:hover{opacity:1;color:var(--gold)}
 /* hover 불가(터치) 기기 — 아이패드 등 760px 초과 포함: hover로 드러낼 수 없으니 컨트롤을 항상 노출 */
-@media(hover:none){.proj-item .pi-move,.proj-item .pi-del,.proj-item .pi-share{display:inline;opacity:.7}}
+@media(hover:none){.proj-item .pi-move,.proj-item .pi-del,.proj-item .pi-share,.proj-item .pi-edit{display:inline;opacity:.7}}
 /* 고정 체크박스(주로 쓰는 프로젝트만 보기) · '전체/고정' 행 정렬용 여백 */
 .proj-item .pi-pad{width:17px;flex:0 0 auto;text-align:center;font-size:12px;line-height:1}
 .proj-item .pi-pin{width:17px;height:17px;border-radius:5px;border:1.7px solid var(--cream-soft);
@@ -303,7 +307,7 @@ button{cursor:pointer;border:none;background:none}
   .proj-nav{flex-direction:column;flex-wrap:nowrap;flex:none;gap:2px}
   .proj-item{width:100%;padding:11px 12px}
   .proj-item.active::before{display:block}
-  .proj-item .pi-del,.proj-item .pi-share{display:inline}
+  .proj-item .pi-del,.proj-item .pi-share,.proj-item .pi-edit{display:inline}
   .proj-item .pi-move{display:inline;opacity:.55;padding:0 5px;font-size:14px}
   .proj-item .pi-pin{width:22px;height:22px;opacity:.8;margin-right:2px}
   .proj-item .pi-pin.on::after{left:6.5px;top:3px;width:5px;height:9px}
@@ -1056,13 +1060,14 @@ function renderProjects(){
     if(p.shared!==true){ badge = (p.members&&p.members.length) ? `<span class="pi-lock" title="${p.members.length}명에게 공유">🎯${p.members.length}</span>` : '<span class="pi-lock" title="개인 프로젝트(나만)">🔒</span>'; }
     const up = pi>0?`<span class="pi-move" data-action="proj-up" data-id="${p.id}" title="위로">↑</span>`:'';
     const dn = pi<plist.length-1?`<span class="pi-move" data-action="proj-down" data-id="${p.id}" title="아래로">↓</span>`:'';
+    const ren = mine?`<span class="pi-edit" data-action="rename-project" data-id="${p.id}" title="이름 수정">✎</span>`:'';
     const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">👥</span>`:'';
     const del = mine?`<span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span>`:'';
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
       <span class="pi-pin${on?' on':''}" data-action="toggle-pin" data-id="${p.id}" role="checkbox" aria-checked="${on?'true':'false'}" title="${on?'고정 해제':'이 프로젝트 고정(체크한 것만 보기)'}"></span>
       <span class="pi-dot"></span><span class="pi-name">${esc(p.name)}${badge}</span>
       <span class="pi-cnt">${cnt[p.id]||0}</span>
-      ${up}${dn}${cfg}${del}</button>`;
+      ${up}${dn}${ren}${cfg}${del}</button>`;
   });
   sidebarProjects.innerHTML=h;
   const pf=state.ui.projectFilter;
@@ -1329,6 +1334,13 @@ document.addEventListener('click',e=>{
     case 'toggle-pin':e.stopPropagation();togglePin(id);break;
     case 'proj-up':e.stopPropagation();moveProject(id,-1);break;
     case 'proj-down':e.stopPropagation();moveProject(id,1);break;
+    case 'rename-project':{ e.stopPropagation();
+      const p=state.projects.find(x=>x.id===id); if(!p)break;   // 소유자만 버튼이 보이지만, 저장은 서버 RLS(owner=auth.uid())가 강제
+      let nm=prompt('프로젝트 이름을 수정합니다.',p.name); if(nm===null)break;   // 취소
+      nm=nm.trim().slice(0,20); if(!nm){toast('이름을 입력해주세요');break;}
+      if(nm===p.name)break;                                     // 변경 없음
+      Store.projects.update(id,{name:nm}); renderProjects(); renderList(); toast('이름을 바꿨어요');
+      break;}
     case 'share-config':{ e.stopPropagation(); document.body.classList.remove('nav-open'); openShareConfig(id); break;}
     case 'share-cancel':{ $('shareScreen').hidden=true; _shareProjId=null; break;}
     case 'delete-project':
