@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS · _TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 (Pages 재빌드 트리거용) -->
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix (Pages 재빌드 트리거용) -->
 <meta name="app-version" content="projfilter-20260704">
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -670,16 +670,19 @@ function relLabel(s){const t=ymd(new Date());if(s===t)return '오늘';const d=pa
 function md(s){const d=parseYmd(s);return `${d.getMonth()+1}.${d.getDate()}`;}
 function dateDiff(a,b){return Math.round((parseYmd(b)-parseYmd(a))/86400000);}
 const todayYmd=()=>ymd(new Date());
-/* 표시상 '실제 종료일': ①사용자가 지정한 기간 ②미완료+과거시작 → 오늘까지 자동 연장 ③완료/단일 → 자기 날짜까지만(완료하면 오늘로 끌어오지 않음) */
+/* 표시상 '실제 종료일': ①사용자가 지정한 기간 ②완료한 '할 일' → 완료한 날(doneAt)까지 ③미완료+과거시작 → 오늘까지 자동 연장 ④단일/일정 → 자기 날짜까지만 */
 function effEnd(t){
   if(!t.date)return null;
   if(t.endDate&&t.endDate>t.date)return t.endDate;        // 지정 기간(완료 여부 무관)
-  if(t.type!=='event'&&!t.done){const ty=todayYmd();if(t.date<ty)return ty;} // '할 일' 미완료 + 과거 시작 → 오늘까지 자동 연장(일정은 과거에 그대로 둠)
-  return t.date;                                           // 완료/단일/일정 → 시작일까지만
+  if(t.type!=='event'){
+    if(t.done){ return (t.doneAt&&t.doneAt>t.date)?t.doneAt:t.date; } // 완료한 '할 일' → 완료한 날을 종료일로(여러 날 진행한 분량 보존, 첫날로 접히지 않음)
+    const ty=todayYmd(); if(t.date<ty)return ty;          // '할 일' 미완료 + 과거 시작 → 오늘까지 자동 연장
+  }
+  return t.date;                                           // 단일/일정 → 시작일까지만
 }
 /* 작업이 날짜 sd에 표시되는가 (시작~실제종료 사이 모든 날) */
 function spansDate(t,sd){if(!t.date)return false;const end=effEnd(t);return t.date<=sd&&sd<=end;}
-/* 카드 날짜 배지 정보. kind: none | single | range(지정기간) | carry(자동연장 미완료) */
+/* 카드 날짜 배지 정보. kind: none | single | range(지정기간·완료한 여러날 스팬) | carry(자동연장 미완료) */
 function dateMeta(t){
   if(!t.date)return{kind:'none'};
   const explicit=!!(t.endDate&&t.endDate>t.date);
