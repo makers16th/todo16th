@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS · _TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix-r1 (Pages 재빌드 트리거용) -->
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r1 (Pages 재빌드 트리거용) -->
 <meta name="app-version" content="projfilter-20260704">
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -132,10 +132,6 @@ button{cursor:pointer;border:none;background:none}
 .side-foot{margin-top:auto;padding-top:16px}
 .side-stat{font-size:12px;color:var(--cream-soft);padding:0 8px 10px;font-weight:600}
 .side-stat b{color:var(--cream)}
-.data-btns{display:flex;gap:5px;padding:0 4px}
-.data-btns button{flex:1;font-size:11.5px;font-weight:700;color:var(--cream-soft);
-  border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 4px;transition:.13s}
-.data-btns button:hover{color:var(--cream);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
 .hint{font-size:10.5px;color:var(--cream-soft);opacity:.85;padding:10px 8px 0;line-height:1.55}
 
 /* ---------- 메인 ---------- */
@@ -523,13 +519,7 @@ button{cursor:pointer;border:none;background:none}
         </div>
       </div>
       <div class="side-stat" id="sideStat"></div>
-      <div class="data-btns">
-        <button data-action="export-json" title="JSON 백업 내려받기">백업</button>
-        <button data-action="import-json" title="JSON 불러오기">불러오기</button>
-        <button data-action="export-md" title="마크다운으로 복사">MD복사</button>
-      </div>
-      <input type="file" id="importFile" accept="application/json,.json" hidden>
-      <p class="hint">변경사항은 자동 저장돼요.<br>가끔 ‘백업’으로 내려받아 두세요.</p>
+      <p class="hint">변경사항은 자동 저장돼요.</p>
     </div>
   </aside>
 
@@ -933,7 +923,7 @@ const sidebarProjects=$('sidebarProjects'),addProject=$('addProject'),addText=$(
   addPriority=$('addPriority'),addForm=$('addForm'),projForm=$('projForm'),projName=$('projName'),
   dateNav=$('dateNav'),dateMain=$('dateMain'),dayBadge=$('dayBadge'),datePick=$('datePick'),
   listContainer=$('listContainer'),showDone=$('showDone'),
-  importFile=$('importFile'),sideStat=$('sideStat');
+  sideStat=$('sideStat');
 
 /* ---------- 렌더 ---------- */
 function visibleTasks(){
@@ -1280,40 +1270,6 @@ function saveEdit(id){
 let toastT;
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
 
-function exportJSON(){
-  const blob=new Blob([JSON.stringify(Store.snapshot(),null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download=`makers-tasks-${ymd(new Date())}.json`;a.click();URL.revokeObjectURL(url);
-  toast('백업 파일을 내려받았어요');
-}
-function importJSON(file){
-  if(Store.mode!=='local'){toast('원격 모드에선 백업 불러오기를 아직 지원하지 않아요');return;}
-  const r=new FileReader();
-  r.onload=()=>{try{Store.importState(JSON.parse(r.result));normalizeProjFilter();render();toast('데이터를 불러왔어요');}catch(e){toast('파일을 읽을 수 없어요');}};
-  r.readAsText(file);
-}
-function fallbackCopy(text){
-  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-  document.body.appendChild(ta);ta.select();
-  try{document.execCommand('copy');toast('마크다운을 복사했어요');}catch(e){toast('복사 실패 — 백업을 이용하세요');}
-  document.body.removeChild(ta);
-}
-function exportMD(){
-  const lines=['# MAKERS 할 일 · 일정',''],by={};
-  state.tasks.filter(t=>isEvent(t)||!t.done).forEach(t=>{const k=t.date||'날짜 미정';(by[k]=by[k]||[]).push(t);});
-  Object.keys(by).sort().forEach(k=>{
-    lines.push(`## ${k}`);
-    by[k].sort(cmpItems).forEach(t=>{const p=projectById(t.project);
-      if(isEvent(t)){lines.push(`- 📅 ${t.time?t.time+' ':''}${p.real?`[${p.name}] `:''}${t.text}`);return;}
-      const r=(t.endDate&&t.endDate>t.date)?` (${md(t.date)}~${md(t.endDate)})`:'';
-      lines.push(`- [ ] ${PRI_EMOJI[t.priority]} ${p.real?`[${p.name}] `:''}${t.text}${r}`);});
-    lines.push('');
-  });
-  const md=lines.join('\n');
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(md).then(()=>toast('마크다운을 복사했어요')).catch(()=>fallbackCopy(md));
-  else fallbackCopy(md);
-}
-
 /* ---------- 이벤트 ---------- */
 document.addEventListener('click',e=>{
   if(!state)return;
@@ -1377,9 +1333,6 @@ document.addEventListener('click',e=>{
       }
       Store.tasks.update(id,{date:nd,endDate:ne});renderProjects();renderList();toast('내일로 미뤘어요');}break;}
     case 'show-add-project':projForm.hidden=!projForm.hidden;if(!projForm.hidden)projName.focus();break;
-    case 'export-json':exportJSON();break;
-    case 'import-json':importFile.click();break;
-    case 'export-md':exportMD();break;
   }
 });
 
@@ -1387,7 +1340,6 @@ document.addEventListener('change',e=>{
   if(!state)return;
   const el=e.target;
   if(el.id==='datePick'){state.ui.selectedDate=el.value||ymd(new Date());Store.prefs.save();syncHeader();renderList();}
-  else if(el.id==='importFile'){if(el.files[0])importJSON(el.files[0]);el.value='';}
   else if(el.id==='showDone'){state.ui.showDone=el.checked;Store.prefs.save();renderList();}
   else if(el.id==='shareMode'){updateShareMembersVis();}
   else if(el.id==='addType'){toggleAddType();}
