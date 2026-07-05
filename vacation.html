@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#162e23">
+<meta name="robots" content="noindex">
+<title>MAKERS · 휴가 관리</title>
+<!-- build: vacation v1 2026-07-05 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* MAKERS 브랜드 팔레트 — index.html·admin.html과 동일 계열 */
+:root{
+  --forest:#162e23; --forest-deep:#0e1f17;
+  --gold:#c58f23; --gold-ink:#8f6512;
+  --pine:#2f6b4e; --red:#a81d2b;
+  --paper:#f6f4eb; --card:#fffefb; --chip:#eeebdd;
+  --line:#e3ded2; --line-strong:#ccc4b0;
+  --ink:#1f2a24; --ink-soft:#5c6b62;
+  --cream:#f2efe3; --cream-soft:#9db1a2;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(16,30,23,.05), 0 6px 20px rgba(16,30,23,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+  background:var(--paper);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+::selection{background:color-mix(in srgb,var(--gold) 25%,white)}
+[hidden]{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+
+/* 헤더 — admin.html과 동일 문법 */
+header{background:var(--forest);color:var(--cream);padding:26px 0 22px}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);font-weight:700;margin-bottom:6px}
+header h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.head-row{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.head-row .grow{flex:1}
+.me{font-size:12px;color:var(--cream-soft);text-align:right}
+.me b{color:var(--cream);font-weight:700}
+.hbtn{display:inline-block;font-size:11.5px;font-weight:700;color:var(--cream-soft);
+  border:1px solid rgba(255,255,255,.22);padding:6px 12px;transition:.13s;white-space:nowrap;border-radius:9px}
+.hbtn:hover{color:var(--cream);border-color:rgba(255,255,255,.45)}
+
+/* 로그인 게이트 */
+.gate{max-width:360px;margin:60px auto;background:var(--card);border:1px solid var(--line);
+  border-top:3px solid var(--gold);padding:28px;display:flex;flex-direction:column;gap:11px;border-radius:var(--radius);box-shadow:var(--shadow)}
+.gate h2{font-size:17px;font-weight:800;color:var(--forest);text-align:center;margin-bottom:4px}
+.gate p{font-size:13px;color:var(--ink-soft);text-align:center}
+.gate input{background:var(--paper);border:1px solid var(--line);padding:11px 13px;outline:none;transition:.13s;border-radius:10px}
+.gate input:focus{border-color:var(--gold)}
+.gate .go{background:var(--forest);color:var(--cream);font-weight:700;padding:12px;transition:.13s;border-radius:10px}
+.gate .go:hover{background:var(--forest-deep)}
+.gate .err{color:var(--red);font-size:12.5px;font-weight:600;text-align:center}
+
+/* 본문 카드 */
+main{padding:22px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;font-weight:800;color:var(--forest);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sub{font-size:12px;font-weight:600;color:var(--ink-soft)}
+
+/* 사람 선택 칩 (마스터) */
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:7px 14px;
+  font-weight:700;font-size:12.5px;color:var(--ink-soft);transition:.12s}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.chip.active{background:var(--forest);border-color:var(--forest);color:var(--cream)}
+
+/* 요약 스탯 */
+.sum-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.sum-head b{font-size:16px;font-weight:800}
+.sum-head .mail{font-size:12px;color:var(--ink-soft)}
+.sum-meta{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;line-height:1.7}
+.sum-meta b{color:var(--gold-ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:9px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 8px;text-align:center}
+.stat .n{font-size:20px;font-weight:800;color:var(--forest);letter-spacing:-.02em}
+.stat .l{font-size:11px;color:var(--ink-soft);font-weight:600;margin-top:3px}
+.stat.hero{background:var(--forest);border-color:var(--forest)}
+.stat.hero .n{color:var(--gold)}
+.stat.hero .l{color:var(--cream-soft)}
+.stat .n small{font-size:12px;font-weight:700}
+.neg{color:var(--red)!important}
+.stat.hero .n.neg{color:#f0a2a8!important}  /* 포레스트 배경 위 음수는 밝은 레드(대비 확보) */
+/* 적립 공휴일 상세 */
+details.acc{margin-top:12px}
+details.acc summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--gold-ink);user-select:none}
+details.acc .acc-list{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.acc-item{font-size:11.5px;font-weight:600;background:var(--chip);border-radius:8px;padding:4px 9px;color:var(--ink-soft)}
+.hire-edit{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:12.5px}
+.hire-edit input[type=date]{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
+.hire-edit input[type=date]:focus{border-color:var(--gold)}
+.mini-btn{background:var(--forest);color:var(--cream);font-weight:700;font-size:12px;padding:8px 14px;border-radius:9px;transition:.13s}
+.mini-btn:hover{background:var(--forest-deep)}
+.mini-btn.ghost{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}
+.mini-btn.ghost:hover{color:var(--ink);border-color:var(--line-strong)}
+.notice{background:color-mix(in srgb,var(--gold) 9%,var(--paper));border:1px solid color-mix(in srgb,var(--gold) 30%,var(--line));
+  border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--gold-ink);font-weight:600}
+
+/* 기록 추가 폼 */
+.addrow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;background:var(--paper);
+  border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:12px}
+.addrow input,.addrow select{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;font-size:13px}
+.addrow input:focus,.addrow select:focus{border-color:var(--gold)}
+.addrow .note{flex:1;min-width:120px}
+.addrow .lbl{font-size:11.5px;font-weight:700;color:var(--ink-soft)}
+.addrow input[type=number]{width:76px}
+
+/* 기록 리스트 */
+.rec{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);font-size:13px}
+.rec:last-child{border-bottom:none}
+.rec .d{font-weight:700;min-width:120px}
+.rec .d small{color:var(--ink-soft);font-weight:600}
+.badge{font-size:10.5px;font-weight:800;border-radius:7px;padding:2.5px 7px;white-space:nowrap}
+.badge.use{background:color-mix(in srgb,var(--pine) 14%,white);color:var(--pine)}
+.badge.half{background:color-mix(in srgb,var(--gold) 16%,white);color:var(--gold-ink)}
+.badge.adj{background:color-mix(in srgb,var(--red) 10%,white);color:var(--red)}
+.rec .amt{font-weight:800;min-width:46px;text-align:right}
+.rec .amt.plus{color:var(--pine)}
+.rec .amt.minus{color:var(--ink)}
+.rec .nt{flex:1;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec .del{color:var(--line-strong);font-size:15px;padding:2px 7px;border-radius:6px;transition:.12s}
+.rec .del:hover{color:var(--red)}
+.rec-empty{color:var(--ink-soft);font-size:13px;padding:14px 4px}
+.rec-toggle{margin-top:10px;font-size:12px;font-weight:700;color:var(--gold-ink);padding:4px}
+.ysep{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.08em;padding:12px 4px 4px;border-bottom:1px solid var(--line)}
+
+/* 전체 현황(마스터) 표 */
+.ovwrap{overflow-x:auto}
+table.ov{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+table.ov th{font-size:11px;color:var(--ink-soft);font-weight:700;text-align:right;padding:7px 8px;border-bottom:1.5px solid var(--line-strong);white-space:nowrap}
+table.ov th:first-child,table.ov td:first-child{text-align:left}
+table.ov td{padding:8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.ov tr.sel td{background:color-mix(in srgb,var(--gold) 7%,transparent)}
+table.ov tbody tr{cursor:pointer}
+table.ov tbody tr:hover td{background:color-mix(in srgb,var(--gold) 5%,transparent)}
+table.ov td.nm{font-weight:700}
+table.ov td.rm{font-weight:800;color:var(--forest)}
+
+/* 공휴일 달력 */
+.hol-years{display:flex;gap:6px;margin-bottom:12px}
+.hol-cols{columns:2 240px;column-gap:24px}
+.hol{display:flex;align-items:center;gap:8px;padding:5.5px 2px;font-size:12.5px;break-inside:avoid}
+.hol .hd{font-weight:700;min-width:86px}
+.hol .hn{flex:1;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hol.wknd{opacity:.5}
+.hol.wknd .hn::after{content:' · 주말(적립 제외)';font-size:10.5px}
+.hol.past{opacity:.75}
+.hol .del{color:var(--line-strong);font-size:14px;padding:1px 6px;border-radius:6px}
+.hol .del:hover{color:var(--red)}
+.hol-add{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.hol-add input{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;font-size:13px}
+.hol-add input:focus{border-color:var(--gold)}
+
+/* 계산 기준 각주 */
+.rules{font-size:12px;color:var(--ink-soft);line-height:1.9;padding:4px 6px 30px}
+.rules b{color:var(--gold-ink)}
+
+footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color:var(--ink-soft);letter-spacing:.03em}
+
+/* 토스트 */
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+  background:var(--ink);color:var(--card);padding:11px 20px;border-radius:11px;
+  font-weight:600;font-size:13.5px;box-shadow:0 8px 30px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:.25s;z-index:50}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:760px){
+  .wrap{padding:0 14px}
+  header{padding:18px 0 16px}
+  .head-row{align-items:center}
+  .me{display:none}
+  .card{padding:15px}
+  .gate input,.addrow input,.addrow select,.hol-add input{font-size:16px}  /* iOS 확대 방지 */
+  .rec .d{min-width:96px}
+  .stats{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="grow">
+      <div class="eyebrow">MAKERS · VACATION</div>
+      <h1>휴가 관리</h1>
+    </div>
+    <div class="me" id="meBox" hidden><b id="meName"></b><br><span id="meMail"></span></div>
+    <a class="hbtn" href="index.html">📋 할 일 보드</a>
+    <a class="hbtn" id="lnkAdmin" href="admin.html" hidden>📊 대시보드</a>
+    <button class="hbtn" id="btnOut" hidden>로그아웃</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 로그인 (보드와 동일 계정·동일 세션 공유) -->
+  <div class="gate" id="loginView" hidden>
+    <h2>휴가 관리 로그인</h2>
+    <p>할 일 보드와 같은 계정입니다.<br>보드에 로그인돼 있으면 자동으로 들어와요.</p>
+    <input id="inEmail" type="email" placeholder="이메일" autocomplete="username">
+    <input id="inPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <div class="err" id="loginErr" hidden></div>
+    <button class="go" id="btnLogin">들어가기</button>
+  </div>
+
+  <div id="appView" hidden>
+    <!-- 마스터: 조회 대상 선택 -->
+    <div class="chips" id="whoChips" hidden></div>
+
+    <!-- 요약 -->
+    <section class="card" id="sumCard"></section>
+
+    <!-- 사용 기록 -->
+    <section class="card" id="recCard">
+      <h2>휴가 기록 <span class="sub" id="recSub"></span></h2>
+      <form class="addrow" id="useForm">
+        <span class="lbl">휴가 추가</span>
+        <input type="date" id="useDate" required>
+        <select id="useKind"><option value="1">종일 (1일)</option><option value="0.5">반차 (0.5일)</option></select>
+        <span class="lbl">~</span>
+        <input type="date" id="useEnd" title="기간으로 추가(선택) — 모든 날짜가 1일씩 기록돼요">
+        <input type="text" class="note" id="useNote" placeholder="메모 (선택)" maxlength="60">
+        <button type="submit" class="mini-btn">추가</button>
+      </form>
+      <form class="addrow" id="adjForm" hidden>
+        <span class="lbl">조정(마스터)</span>
+        <input type="date" id="adjDate" required>
+        <input type="number" id="adjDays" step="0.5" min="-30" max="30" value="1" required title="+ 지급 / − 차감">
+        <input type="text" class="note" id="adjNote" placeholder="사유 (예: 이월분, 포상휴가)" maxlength="60">
+        <button type="submit" class="mini-btn ghost">조정 추가</button>
+      </form>
+      <div id="recList"></div>
+      <button class="rec-toggle" id="recToggle" hidden></button>
+    </section>
+
+    <!-- 전체 현황 (마스터) -->
+    <section class="card" id="ovCard" hidden>
+      <h2>전체 현황 <span class="sub">행을 누르면 그 사람 상세로 이동</span></h2>
+      <div class="ovwrap"><table class="ov">
+        <thead><tr><th>이름</th><th>입사일</th><th>근속</th><th>법정연차</th><th>공휴일 적립</th><th>조정</th><th>사용</th><th>예정</th><th>잔여</th></tr></thead>
+        <tbody id="ovBody"></tbody>
+      </table></div>
+    </section>
+
+    <!-- 공휴일 달력 -->
+    <section class="card" id="holCard">
+      <h2>공휴일 달력 <span class="sub">평일(월~금) 공휴일 = 휴가 1일 적립 · 주말 공휴일은 적립 제외</span></h2>
+      <div class="hol-years" id="holYears"></div>
+      <div class="hol-cols" id="holList"></div>
+      <form class="hol-add" id="holForm" hidden>
+        <input type="date" id="holDate" required>
+        <input type="text" id="holName" placeholder="이름 (예: 임시공휴일)" maxlength="40" required>
+        <button type="submit" class="mini-btn ghost">공휴일 추가</button>
+      </form>
+    </section>
+
+    <p class="rules">
+      <b>계산 기준</b> —
+      ① 법정연차는 근로기준법 제60조 최소 기준, <b>입사일(기념일) 기준 연차연도</b>로 계산해요: 1년 미만 매월 1일(최대 11일) · 1년 이상 15일 · 3년 이상 2년마다 +1일(최대 25일).
+      ② <b>공휴일 적립</b>: 공휴일 근무가 원칙이라, 월~금에 해당하는 공휴일 하루당 휴가 1일이 적립돼요. 개인 근무 요일과 무관하며(월~금 기준), 토·일에 놓인 공휴일은 제외(대체공휴일은 평일이라 포함).
+      ③ 휴가 사용은 <b>날짜 단위 기록</b>(반차 0.5일)이에요 — 근무일이 저마다 달라 자동 차감은 하지 않아요.
+      ④ 연차 이월은 자동 계산하지 않아요 — 필요하면 마스터가 '조정'으로 반영해요.
+      ⑤ 노동절(5/1)은 <b>2026년부터 법정공휴일</b>이라 2026년부터 적립 대상이에요(2025년까지는 별도 유급휴일). 제헌절은 2026년 7/17부터 공휴일로 재지정.
+    </p>
+  </div>
+</main>
+
+<footer><div class="wrap">MAKERS · 휴가 관리 — 본인 기록은 직접 추가/삭제, 입사일·조정·공휴일 편집은 마스터 전용</div></footer>
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   MAKERS 휴가 관리 — index.html(보드)과 같은 Supabase·같은 로그인 세션 공유
+   - 인증 토큰: localStorage 'makers_auth_v1' (보드와 동일 형태 {access_token,refresh_token,expires_at,email,uid,name})
+   - 서버: vac_employees(입사일) / vac_records(사용·조정) / vac_holidays(공휴일) — RLS로 본인/마스터 권한 강제
+   - 마스터 판정: POST /rest/v1/rpc/is_master (admin.html과 동일)
+   ============================================================ */
+const SB='https://bmejvuxyszbibjdegnxz.supabase.co';
+const KEY='sb_publishable_GbCZImWWSbQhBp1m5BPq6A_-QBcFLMz';
+const AUTH_KEY='makers_auth_v1';
+
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function parseYmd(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+const todayYmd=()=>ymd(new Date());
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+const WD=['일','월','화','수','목','금','토'];
+function fmtD(s){if(!s)return '—';const d=parseYmd(s);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;}
+function fmtMD(s){const d=parseYmd(s);return `${d.getMonth()+1}/${d.getDate()} (${WD[d.getDay()]})`;}
+function fmtDays(n){const v=Math.round(n*100)/100;return (v%1===0?String(v):v.toFixed(1))+'일';}
+let toastT;
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
+
+/* ---------- 인증 (보드 index.html과 동일 키·동일 형태 — 세션 공유) ---------- */
+let _tok=null;
+function lsGet(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null;}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function decodeJwt(t){try{let p=(t||'').split('.')[1];if(!p)return null;p=p.replace(/-/g,'+').replace(/_/g,'/');p+='='.repeat((4-p.length%4)%4);return JSON.parse(decodeURIComponent(escape(atob(p))));}catch(e){return null;}}
+function loadTok(){_tok=lsGet(AUTH_KEY);if(_tok&&!_tok.access_token)_tok=null;}
+function saveTok(j){const o=decodeJwt(j.access_token)||{};const meta=(j.user&&j.user.user_metadata)||o.user_metadata||{};
+  _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,
+    email:(j.user&&j.user.email)||o.email||(_tok&&_tok.email)||null,
+    uid:(j.user&&j.user.id)||o.sub||(_tok&&_tok.uid)||null,
+    name:(meta&&meta.name)||(_tok&&_tok.name)||null};
+  lsSet(AUTH_KEY,_tok);}
+function clearTok(){_tok=null;try{localStorage.removeItem(AUTH_KEY);}catch(e){}}
+function me(){if(!_tok)return null;return {id:_tok.uid,email:_tok.email||'',name:_tok.name||''};}
+
+function restHeaders(prefer){const h={'apikey':KEY,'Authorization':'Bearer '+((_tok&&_tok.access_token)||KEY),'Content-Type':'application/json'};if(prefer)h.Prefer=prefer;return h;}
+async function authPost(path,body){
+  const r=await fetch(SB+'/auth/v1/'+path,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.error||j.error_code))||('auth '+r.status));
+  return j;}
+async function doRefresh(){
+  // 보드(index.html)와 토큰 키를 공유 — 다른 탭이 이미 회전시킨 최신 토큰이 있으면 그걸 채택(세션 클로버 방지)
+  const stored=lsGet(AUTH_KEY);
+  if(stored&&stored.access_token&&(!_tok||stored.access_token!==_tok.access_token)){_tok=stored;return true;}
+  if(!_tok||!_tok.refresh_token)return false;
+  try{
+    const j=await authPost('token?grant_type=refresh_token',{refresh_token:_tok.refresh_token});
+    if(j&&j.access_token){saveTok(j);return true;}
+  }catch(e){
+    const definite=/^auth 4\d\d/.test(e.message||'')||/invalid|already used|revoked|expired/i.test(e.message||'');
+    if(definite){ // 진짜 무효 — 단 다른 탭이 그 사이 회전시켰을 수 있으니 마지막으로 재확인
+      const s2=lsGet(AUTH_KEY);
+      if(s2&&s2.access_token&&s2.access_token!==_tok.access_token){_tok=s2;return true;}
+      clearTok();
+    }
+    return false; // 네트워크 등 일시 오류: 토큰 보존
+  }
+  clearTok();return false;}
+function rawRest(method,path,body,prefer,extra){
+  const h=restHeaders(prefer);if(extra)Object.assign(h,extra);
+  return fetch(SB+'/rest/v1/'+path,{method,headers:h,body:body!==undefined?JSON.stringify(body):undefined});}
+async function rest(method,path,body,prefer,extra){
+  let r=await rawRest(method,path,body,prefer,extra);
+  if(r.status===401){if(await doRefresh())r=await rawRest(method,path,body,prefer,extra);}
+  if(!r.ok){const t=await r.text().catch(()=>'');const e=new Error('REST '+r.status+' '+t.slice(0,120));e.status=r.status;throw e;}
+  if(r.status===204)return null;
+  const txt=await r.text();return txt?JSON.parse(txt):null;}
+async function fetchAll(path){  // Max Rows(1000) 잘림 방지
+  const out=[],PAGE=1000;
+  for(let off=0;off<50000;off+=PAGE){
+    const rows=await rest('GET',path,undefined,undefined,{'Range-Unit':'items','Range':off+'-'+(off+PAGE-1)});
+    out.push(...(rows||[]));
+    if(!rows||rows.length<PAGE)break;}
+  return out;}
+
+/* ---------- 휴가 계산 (근로기준법 60조 최소 기준 · 입사일 기준 연차연도) ---------- */
+function monthsCompleted(hire,today){   // 1년 미만 월차: 입사 '일'이 돌아올 때마다 1개월
+  let m=(today.getFullYear()-hire.getFullYear())*12+(today.getMonth()-hire.getMonth());
+  if(today.getDate()<hire.getDate())m--;
+  return Math.max(0,m);}
+function serviceYears(hire,today){      // 만 근속연수
+  let y=today.getFullYear()-hire.getFullYear();
+  const ann=new Date(today.getFullYear(),hire.getMonth(),hire.getDate());
+  if(today<ann)y--;
+  return Math.max(0,y);}
+function leaveYearStart(hire,today){    // 현재 연차연도 시작 = 최근 입사기념일 (1년 미만이면 입사일)
+  const y=serviceYears(hire,today);
+  if(y<1)return new Date(hire.getTime());
+  return new Date(hire.getFullYear()+y,hire.getMonth(),hire.getDate());}
+function leaveYearEnd(hire,start){ // '다음 기념일 하루 전' — 입사 월·일 기준(2/29 입사 윤년 경계 겹침 방지)
+  const e=new Date(start.getFullYear()+1,hire.getMonth(),hire.getDate());
+  e.setDate(e.getDate()-1);return e;}
+function statutoryDays(hire,today){     // <1년: 완료개월(최대11) / ≥1년: 15+floor((근속-1)/2), 최대 25
+  const y=serviceYears(hire,today);
+  if(y<1)return Math.min(11,monthsCompleted(hire,today));
+  return Math.min(25,15+Math.floor((y-1)/2));}
+function isWeekdayYmd(s){const w=parseYmd(s).getDay();return w>=1&&w<=5;}
+
+/* uid 한 명의 이번 연차연도 정산 */
+function calcFor(uidv){
+  const emp=employees[uidv]||{};
+  const hireS=emp.hire_date||null;
+  const t=parseYmd(todayYmd());
+  const recs=records.filter(r=>r.owner===uidv);
+  if(!hireS||parseYmd(hireS)>t){
+    return {hire:hireS,ready:false,recs};
+  }
+  const hire=parseYmd(hireS);
+  const lyS=leaveYearStart(hire,t),lyE=leaveYearEnd(hire,lyS);
+  const lySy=ymd(lyS),lyEy=ymd(lyE),ty=todayYmd();
+  const stat=statutoryDays(hire,t);
+  const accList=holidays.filter(h=>h.hdate>=lySy&&h.hdate<=ty&&h.hdate>=hireS&&isWeekdayYmd(h.hdate));
+  const upcoming=holidays.filter(h=>h.hdate>ty&&h.hdate<=lyEy&&isWeekdayYmd(h.hdate));
+  let used=0,planned=0,adjust=0;
+  recs.forEach(r=>{
+    if(r.vdate<lySy||r.vdate>lyEy)return;
+    const d=Number(r.days)||0;
+    if(r.kind==='adjust')adjust+=d;
+    else if(r.vdate<=ty)used+=d;
+    else planned+=d;});
+  const remain=stat+accList.length+adjust-used-planned;
+  return {hire:hireS,ready:true,recs,lyS:lySy,lyE:lyEy,years:serviceYears(hire,t),
+    months:monthsCompleted(hire,t),stat,accrued:accList.length,accList,upcoming:upcoming.length,
+    nextHol:upcoming[0]||null,used,planned,adjust,remain};}
+
+/* ---------- 상태 ---------- */
+let isMaster=false,profiles=[],employees={},records=[],holidays=[],noSetup=false;
+let viewUid=null,showAllRec=false,holYear=String(new Date().getFullYear());
+const realProfiles=()=>profiles.filter(p=>!(p.email||'').endsWith('@example.com'));
+const profOf=u=>profiles.find(p=>p.id===u)||{id:u,email:'',name:''};
+const dispName=p=>(p.name||'').trim()||p.email||'(이름 없음)';
+
+/* ---------- 데이터 적재 ---------- */
+const isMissingTable=e=>e&&(e.status===404||/42P01|PGRST205|does not exist|Could not find the table/i.test(e.message||''));
+async function loadAll(){
+  const vac=path=>fetchAll(path).catch(e=>{ // 설정 SQL 실행 전(테이블 없음)이면 잠그지 않고 안내 모드로
+    if(isMissingTable(e)){noSetup=true;return [];}
+    throw e;});
+  const [pf,emp,rec,hol]=await Promise.all([
+    fetchAll('profiles?select=id,email,name&order=email.asc'),
+    vac('vac_employees?select=id,hire_date'),
+    vac('vac_records?select=id,owner,vdate,days,kind,note&order=vdate.desc,created_at.desc'),
+    vac('vac_holidays?select=hdate,hname&order=hdate.asc'),
+  ]);
+  profiles=pf;records=rec;holidays=hol;
+  employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date};});
+}
+
+/* ---------- 렌더 ---------- */
+function renderChips(){
+  const box=$('whoChips');
+  if(!isMaster){box.hidden=true;return;}
+  box.hidden=false;
+  const my=me();
+  const ppl=realProfiles().slice().sort((a,b)=>(a.id===my.id?-1:b.id===my.id?1:dispName(a).localeCompare(dispName(b),'ko')));
+  box.innerHTML=ppl.map(p=>`<button class="chip${p.id===viewUid?' active':''}" data-action="sel" data-id="${esc(p.id)}">${esc(dispName(p))}</button>`).join('');
+}
+function renderSummary(){
+  const p=profOf(viewUid),c=calcFor(viewUid),mine=viewUid===(me()&&me().id);
+  let h=`<div class="sum-head"><b>${esc(dispName(p))}</b><span class="mail">${esc(p.email||'')}</span></div>`;
+  if(noSetup){
+    h+=`<div class="notice">휴가 관리 서버 설정(SQL)이 아직 실행되지 않았어요 — ${isMaster?'Supabase SQL Editor에서 supabase-schema.sql의 휴가 관리 섹션을 실행해 주세요.':'마스터(관리자)에게 알려 주세요.'} 실행 전에는 기록·계산이 동작하지 않아요.</div>`;
+    $('sumCard').innerHTML=h;return;
+  }
+  if(!c.ready){
+    h+=`<div class="notice">입사일이 ${c.hire?'미래로 설정돼 있어요':'아직 설정되지 않았어요'} — ${isMaster?'아래에서 입사일을 저장하면 잔여 휴가가 계산돼요.':'마스터(관리자)에게 입사일 등록을 요청하세요.'}</div>`;
+  }else{
+    h+=`<div class="sum-meta">입사 <b>${fmtD(c.hire)}</b> · ${c.years<1?`근속 ${c.months}개월`:`근속 만 ${c.years}년`}
+      · 연차연도 <b>${fmtD(c.lyS)} ~ ${fmtD(c.lyE)}</b>
+      ${c.nextHol?` · 다음 공휴일 <b>${fmtMD(c.nextHol.hdate)}</b> ${esc(c.nextHol.hname)}`:''}
+      ${c.upcoming?` (연차연도 내 적립 예정 ${c.upcoming}일)`:''}</div>`;
+    h+=`<div class="stats">
+      <div class="stat"><div class="n">${fmtDays(c.stat)}</div><div class="l">법정연차${c.years<1?' (월차)':''}</div></div>
+      <div class="stat"><div class="n">+${fmtDays(c.accrued)}</div><div class="l">공휴일 적립</div></div>
+      <div class="stat"><div class="n${c.adjust<0?' neg':''}">${c.adjust>=0?'+':''}${fmtDays(c.adjust)}</div><div class="l">조정</div></div>
+      <div class="stat"><div class="n">−${fmtDays(c.used)}</div><div class="l">사용</div></div>
+      <div class="stat"><div class="n">−${fmtDays(c.planned)}</div><div class="l">사용 예정</div></div>
+      <div class="stat hero"><div class="n${c.remain<0?' neg':''}">${fmtDays(c.remain)}</div><div class="l">잔여 휴가</div></div>
+    </div>`;
+    if(c.accList.length){
+      h+=`<details class="acc"><summary>적립된 공휴일 ${c.accList.length}일 보기</summary><div class="acc-list">`+
+        c.accList.map(x=>`<span class="acc-item">${fmtMD(x.hdate)} ${esc(x.hname)}</span>`).join('')+`</div></details>`;
+    }
+  }
+  if(isMaster){
+    h+=`<div class="hire-edit"><span class="lbl">입사일${mine?'':' ('+esc(dispName(p))+')'}</span>
+      <input type="date" id="hireInput" value="${esc(c.hire||'')}">
+      <button class="mini-btn" data-action="save-hire">저장</button></div>`;
+  }
+  $('sumCard').innerHTML=h;
+}
+function renderRecords(){
+  if(noSetup){$('useForm').hidden=true;$('adjForm').hidden=true;$('recList').innerHTML='<div class="rec-empty">서버 설정 후 이용할 수 있어요.</div>';$('recToggle').hidden=true;$('recSub').textContent='';return;}
+  $('useForm').hidden=false;
+  const c=calcFor(viewUid),my=me();
+  const inYear=r=>c.ready&&r.vdate>=c.lyS&&r.vdate<=c.lyE;
+  const list=showAllRec||!c.ready?c.recs:c.recs.filter(inYear);
+  const older=c.ready?c.recs.length-c.recs.filter(inYear).length:0;
+  $('recSub').textContent=c.ready?(showAllRec?'전체 기간':`이번 연차연도 (${fmtD(c.lyS)}~)`):'';
+  $('useDate').value=$('useDate').value||todayYmd();
+  $('adjDate').value=$('adjDate').value||todayYmd();
+  $('adjForm').hidden=!isMaster;
+  let h='';
+  if(!list.length)h=`<div class="rec-empty">기록이 없어요. 휴가를 쓰면 위에서 추가해 주세요.</div>`;
+  else{
+    let curY='';
+    list.forEach(r=>{
+      const y=r.vdate.slice(0,4);
+      if(showAllRec&&y!==curY){curY=y;h+=`<div class="ysep">${esc(y)}</div>`;}
+      const adj=r.kind==='adjust';
+      const half=!adj&&Number(r.days)===0.5;
+      const badge=adj?`<span class="badge adj">조정</span>`:half?`<span class="badge half">반차</span>`:`<span class="badge use">휴가</span>`;
+      const amt=adj?`<span class="amt ${Number(r.days)>=0?'plus':'minus'}">${Number(r.days)>=0?'+':''}${fmtDays(Number(r.days))}</span>`
+                   :`<span class="amt minus">−${fmtDays(Number(r.days))}</span>`;
+      const canDel=isMaster||(!adj&&r.owner===(my&&my.id));
+      h+=`<div class="rec"><span class="d">${fmtMD(r.vdate)} <small>${esc(y)}</small></span>${badge}${amt}
+        <span class="nt">${esc(r.note||'')}</span>
+        ${canDel?`<button class="del" data-action="del-rec" data-id="${esc(r.id)}" title="삭제">×</button>`:''}</div>`;});
+  }
+  $('recList').innerHTML=h;
+  const tg=$('recToggle');
+  if(c.ready&&(older>0||showAllRec)){tg.hidden=false;tg.textContent=showAllRec?'이번 연차연도만 보기':`전체 기록 보기 (이전 ${older}건 포함)`;}
+  else tg.hidden=true;
+}
+function renderOverview(){
+  const card=$('ovCard');
+  if(!isMaster){card.hidden=true;return;}
+  card.hidden=false;
+  const rows=realProfiles().map(p=>{
+    const c=calcFor(p.id);
+    if(!c.ready)return `<tr class="${p.id===viewUid?'sel':''}" data-action="sel" data-id="${esc(p.id)}">
+      <td class="nm">${esc(dispName(p))}</td><td>—</td><td colspan="6" style="text-align:center;color:var(--ink-soft)">입사일 미설정</td><td class="rm">—</td></tr>`;
+    return `<tr class="${p.id===viewUid?'sel':''}" data-action="sel" data-id="${esc(p.id)}">
+      <td class="nm">${esc(dispName(p))}</td><td>${fmtD(c.hire)}</td><td>${c.years<1?c.months+'개월':'만 '+c.years+'년'}</td>
+      <td>${fmtDays(c.stat)}</td><td>+${fmtDays(c.accrued)}</td><td>${c.adjust>=0?'+':''}${fmtDays(c.adjust)}</td>
+      <td>−${fmtDays(c.used)}</td><td>−${fmtDays(c.planned)}</td><td class="rm${c.remain<0?' neg':''}">${fmtDays(c.remain)}</td></tr>`;
+  }).join('');
+  $('ovBody').innerHTML=rows;
+}
+function renderHolidays(){
+  const years=[...new Set(holidays.map(h=>h.hdate.slice(0,4)))].sort();
+  if(!years.includes(holYear))holYear=years[years.length-1]||String(new Date().getFullYear());
+  $('holYears').innerHTML=years.map(y=>`<button class="chip${y===holYear?' active':''}" data-action="hol-year" data-id="${esc(y)}">${esc(y)}년</button>`).join('');
+  const ty=todayYmd();
+  const list=holidays.filter(h=>h.hdate.slice(0,4)===holYear);
+  $('holList').innerHTML=list.length?list.map(h=>{
+    const wknd=!isWeekdayYmd(h.hdate);
+    return `<div class="hol${wknd?' wknd':''}${h.hdate<ty?' past':''}">
+      <span class="hd">${fmtMD(h.hdate)}</span><span class="hn">${esc(h.hname)}</span>
+      ${isMaster?`<button class="del" data-action="hol-del" data-id="${esc(h.hdate)}" title="삭제">×</button>`:''}</div>`;
+  }).join(''):`<div class="rec-empty">등록된 공휴일이 없어요.${isMaster?' 아래에서 추가하세요.':''}</div>`;
+  $('holForm').hidden=!isMaster;
+}
+function renderAll(){renderChips();renderSummary();renderRecords();renderOverview();renderHolidays();}
+
+/* ---------- 화면 전환 ---------- */
+function show(view){
+  $('loginView').hidden=view!=='login';
+  $('appView').hidden=view!=='app';
+  $('btnOut').hidden=view!=='app';
+  $('meBox').hidden=view!=='app';
+  $('lnkAdmin').hidden=!(view==='app'&&isMaster);
+  const u=me();
+  if(view==='app'&&u){$('meName').textContent=u.name||u.email;$('meMail').textContent=u.name?u.email:'';}
+}
+
+/* ---------- 진입 ---------- */
+async function checkMaster(){
+  try{return (await rest('POST','rpc/is_master',{}))===true;}
+  catch(e){if(e.status===404)return false;throw e;}
+}
+async function enter(){
+  isMaster=await checkMaster();       // 토큰 검증 겸함(401→refresh는 rest()가 처리)
+  await loadAll();
+  const my=me();
+  if(!viewUid||!isMaster)viewUid=my.id;
+  show('app');renderAll();
+}
+async function boot(){
+  loadTok();
+  if(!_tok){show('login');return;}
+  try{await enter();}
+  catch(e){ // 토큰 무효(doRefresh가 clearTok) 또는 일시 오류
+    if(!_tok){show('login');}
+    else{show('login');toast('불러오기 실패 — 다시 로그인해 주세요');}
+  }
+}
+
+/* ---------- 동작 ---------- */
+$('btnLogin').addEventListener('click',async()=>{
+  $('loginErr').hidden=true;
+  const btn=$('btnLogin');btn.disabled=true;
+  try{
+    const j=await authPost('token?grant_type=password',{email:$('inEmail').value.trim(),password:$('inPw').value});
+    saveTok(j);await enter();
+  }catch(e){$('loginErr').textContent=e.message||'로그인 실패';$('loginErr').hidden=false;}
+  finally{btn.disabled=false;}
+});
+$('inPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnLogin').click();});
+$('btnOut').addEventListener('click',async()=>{
+  try{if(_tok)await fetch(SB+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+_tok.access_token}});}catch(e){}
+  clearTok();isMaster=false;viewUid=null;show('login');
+});
+
+$('useForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const d=$('useDate').value,end=$('useEnd').value,days=Number($('useKind').value),note=$('useNote').value.trim();
+  if(!DATE_RE.test(d))return toast('날짜를 선택해 주세요');
+  let dates=[d];
+  if(end){ // 기간 추가: 모든 날짜 1일씩(종일만) — 쉬는 날이 끼면 그 날짜만 삭제
+    if(!DATE_RE.test(end)||end<d)return toast('종료일이 시작일보다 빨라요');
+    if(days!==1)return toast('기간 추가는 종일만 가능해요 (반차는 하루씩)');
+    dates=[];const cur=parseYmd(d),last=parseYmd(end);
+    while(cur<=last){dates.push(ymd(cur));cur.setDate(cur.getDate()+1);}
+    if(dates.length>31)return toast('기간은 최대 31일까지예요');
+    if(!confirm(`${fmtD(d)} ~ ${fmtD(end)} — 총 ${dates.length}일을 기록할까요?\n(모든 날짜가 1일씩 기록돼요. 중간에 쉬는 날이 있으면 그 날짜만 지워 주세요)`))return;
+  }
+  const my=me();
+  let ok=0;
+  try{
+    for(const dt of dates){
+      const row={id:uid(),vdate:dt,days,kind:'use',note};
+      if(isMaster&&viewUid!==my.id)row.owner=viewUid;   // 마스터가 남의 기록 추가
+      await rest('POST','vac_records',row);ok++;
+    }
+    $('useNote').value='';$('useEnd').value='';
+    await reload(`휴가 ${dates.length>1?dates.length+'일':fmtDays(days)} 기록 완료`);
+  }catch(err){ // 중간 실패: 이미 저장된 날짜가 있을 수 있음 — 재조회로 실제 상태 반영(재시도 중복 방지)
+    await reload().catch(()=>{});
+    toast(dates.length>1?`일부만 저장됐어요 (${ok}/${dates.length}일) — 목록을 확인해 주세요`:'저장 실패 — '+(err.message||'다시 시도해 주세요'));
+  }
+});
+
+$('adjForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!isMaster)return;
+  const d=$('adjDate').value,days=Number($('adjDays').value),note=$('adjNote').value.trim();
+  if(!DATE_RE.test(d))return toast('날짜를 선택해 주세요');
+  if(!days||days<-30||days>30||Math.round(days*2)!==days*2)return toast('조정은 ±0.5일 단위로 입력해 주세요');
+  try{
+    await rest('POST','vac_records',{id:uid(),owner:viewUid,vdate:d,days,kind:'adjust',note});
+    $('adjNote').value='';
+    await reload(`조정 ${days>0?'+':''}${fmtDays(days)} 반영 완료`);
+  }catch(err){toast('저장 실패 — '+(err.message||''));}
+});
+
+$('holForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!isMaster)return;
+  const d=$('holDate').value,n=$('holName').value.trim();
+  if(!DATE_RE.test(d)||!n)return toast('날짜와 이름을 입력해 주세요');
+  try{
+    await rest('POST','vac_holidays',{hdate:d,hname:n},'resolution=merge-duplicates');
+    $('holName').value='';holYear=d.slice(0,4);
+    await reload('공휴일을 추가했어요');
+  }catch(err){toast('저장 실패 — '+(err.message||''));}
+});
+
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-action]');if(!el)return;
+  const a=el.dataset.action,id=el.dataset.id;
+  if(a==='sel'){viewUid=id;showAllRec=false;renderAll();}
+  else if(a==='hol-year'){holYear=id;renderHolidays();}
+  else if(a==='save-hire'&&isMaster){
+    const v=$('hireInput').value;
+    if(!DATE_RE.test(v))return toast('입사일을 선택해 주세요');
+    try{
+      await rest('POST','vac_employees?on_conflict=id',{id:viewUid,hire_date:v},'resolution=merge-duplicates');
+      await reload('입사일을 저장했어요');
+    }catch(err){toast('저장 실패 — '+(err.message||''));}
+  }
+  else if(a==='del-rec'){
+    const r=records.find(x=>x.id===id);if(!r)return;
+    if(!confirm(`${fmtMD(r.vdate)} ${r.kind==='adjust'?'조정':'휴가'} 기록을 삭제할까요?`))return;
+    try{await rest('DELETE','vac_records?id=eq.'+encodeURIComponent(id));await reload('삭제했어요');}
+    catch(err){toast('삭제 실패 — '+(err.message||''));}
+  }
+  else if(a==='hol-del'&&isMaster){
+    if(!DATE_RE.test(id))return;
+    if(!confirm(`${fmtMD(id)} 공휴일을 삭제할까요? (전 직원 적립 계산에서 빠져요)`))return;
+    try{await rest('DELETE','vac_holidays?hdate=eq.'+encodeURIComponent(id));await reload('삭제했어요');}
+    catch(err){toast('삭제 실패 — '+(err.message||''));}
+  }
+});
+$('recToggle').addEventListener('click',()=>{showAllRec=!showAllRec;renderRecords();});
+async function reload(msg){await loadAll();renderAll();if(msg)toast(msg);}
+
+boot();
+</script>
+</body>
+</html>
