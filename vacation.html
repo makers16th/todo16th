@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#162e23">
 <meta name="robots" content="noindex">
 <title>MAKERS · 휴가 관리</title>
-<!-- build: vacation v1 2026-07-05 -->
+<!-- build: vacation v2 approval-chain 2026-07-06 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -134,9 +134,31 @@ details.acc .acc-list{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .rec-toggle{margin-top:10px;font-size:12px;font-weight:700;color:var(--gold-ink);padding:4px}
 .ysep{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.08em;padding:12px 4px 4px;border-bottom:1px solid var(--line)}
 
+/* 결재(승인 체인) */
+.badge.pend{background:color-mix(in srgb,var(--gold) 18%,white);color:var(--gold-ink)}
+.badge.rej{background:color-mix(in srgb,var(--red) 12%,white);color:var(--red)}
+.sec-h{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.08em;margin:2px 0 8px}
+.req{border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:9px;background:var(--paper)}
+.req .top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px}
+.req .who{font-weight:800}
+.req .dts{font-weight:700}
+.req .tot{font-weight:800;color:var(--forest)}
+.req .nt{color:var(--ink-soft);font-size:12.5px}
+.req .meta{font-size:11.5px;color:var(--ink-soft);margin-left:auto}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:12px}
+.flow .st{background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-weight:700;color:var(--ink-soft)}
+.flow .st.done{background:color-mix(in srgb,var(--pine) 12%,white);border-color:color-mix(in srgb,var(--pine) 32%,var(--line));color:var(--pine)}
+.flow .st.cur{background:color-mix(in srgb,var(--gold) 16%,white);border-color:var(--gold);color:var(--gold-ink)}
+.flow .arr{color:var(--line-strong);font-weight:800}
+.req .acts2{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.req .hint{font-size:12px;color:var(--ink-soft);margin-top:8px;font-weight:600}
+.req .rejr{font-size:12.5px;color:var(--red);font-weight:600;margin-top:7px}
+.mini-btn.warn{background:var(--card);color:var(--red);border:1px solid color-mix(in srgb,var(--red) 35%,var(--line))}
+.mini-btn.warn:hover{background:var(--card);border-color:var(--red)}
+
 /* 전체 현황(마스터) 표 */
 .ovwrap{overflow-x:auto}
-table.ov{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+table.ov{width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px}
 table.ov th{font-size:11px;color:var(--ink-soft);font-weight:700;text-align:right;padding:7px 8px;border-bottom:1.5px solid var(--line-strong);white-space:nowrap}
 table.ov th:first-child,table.ov td:first-child{text-align:left}
 table.ov td{padding:8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
@@ -223,17 +245,23 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
     <!-- 요약 -->
     <section class="card" id="sumCard"></section>
 
+    <!-- 결재함 (내 승인이 필요한 신청) -->
+    <section class="card" id="apprCard" hidden>
+      <h2>결재함 <span class="sub">내 확인이 필요한 휴가 신청</span></h2>
+      <div id="apprList"></div>
+    </section>
+
     <!-- 사용 기록 -->
     <section class="card" id="recCard">
       <h2>휴가 기록 <span class="sub" id="recSub"></span></h2>
       <form class="addrow" id="useForm">
-        <span class="lbl">휴가 추가</span>
+        <span class="lbl" id="useLbl">휴가 신청</span>
         <input type="date" id="useDate" required>
         <select id="useKind"><option value="1">종일 (1일)</option><option value="0.5">반차 (0.5일)</option></select>
         <span class="lbl">~</span>
-        <input type="date" id="useEnd" title="기간으로 추가(선택) — 모든 날짜가 1일씩 기록돼요">
+        <input type="date" id="useEnd" title="기간으로 신청(선택) — 모든 날짜가 1일씩 기록돼요">
         <input type="text" class="note" id="useNote" placeholder="메모 (선택)" maxlength="60">
-        <button type="submit" class="mini-btn">추가</button>
+        <button type="submit" class="mini-btn" id="useBtn">신청</button>
       </form>
       <form class="addrow" id="adjForm" hidden>
         <span class="lbl">조정(마스터)</span>
@@ -250,7 +278,7 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
     <section class="card" id="ovCard" hidden>
       <h2>전체 현황 <span class="sub">행을 누르면 그 사람 상세로 이동</span></h2>
       <div class="ovwrap"><table class="ov">
-        <thead><tr><th>이름</th><th>입사일</th><th>근속</th><th>법정연차</th><th>공휴일 적립</th><th>조정</th><th>사용</th><th>예정</th><th>잔여</th></tr></thead>
+        <thead><tr><th>이름</th><th>직속 상관</th><th>입사일</th><th>근속</th><th>법정연차</th><th>공휴일 적립</th><th>조정</th><th>사용</th><th>예정</th><th>잔여</th></tr></thead>
         <tbody id="ovBody"></tbody>
       </table></div>
     </section>
@@ -274,19 +302,23 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
       ③ 휴가 사용은 <b>날짜 단위 기록</b>(반차 0.5일)이에요 — 근무일이 저마다 달라 자동 차감은 하지 않아요.
       ④ 연차 이월은 자동 계산하지 않아요 — 필요하면 마스터가 '조정'으로 반영해요.
       ⑤ 노동절(5/1)은 <b>2026년부터 법정공휴일</b>이라 2026년부터 적립 대상이에요(2025년까지는 별도 유급휴일). 제헌절은 2026년 7/17부터 공휴일로 재지정.
+      ⑥ <b>휴가 결재</b>: 휴가 신청은 직속 상관 → 그 위 상관 → … → 마스터 순서로 <b>전원 승인</b>해야 기록·잔여 계산에 반영돼요(직속 상관은 마스터가 지정). 승인 전에는 '승인 대기', 반려되면 사유와 함께 표시돼요. 승인된 기록의 삭제(휴가 취소)는 마스터에게 요청하세요.
     </p>
   </div>
 </main>
 
-<footer><div class="wrap">MAKERS · 휴가 관리 — 본인 기록은 직접 추가/삭제, 입사일·조정·공휴일 편집은 마스터 전용</div></footer>
+<footer><div class="wrap">MAKERS · 휴가 관리 — 휴가는 결재라인(직속 상관 → 마스터) 승인 후 반영 · 입사일·직속 상관·조정·공휴일 편집은 마스터 전용</div></footer>
 <div id="toast"></div>
 
 <script>
 /* ============================================================
    MAKERS 휴가 관리 — index.html(보드)과 같은 Supabase·같은 로그인 세션 공유
    - 인증 토큰: localStorage 'makers_auth_v1' (보드와 동일 형태 {access_token,refresh_token,expires_at,email,uid,name})
-   - 서버: vac_employees(입사일) / vac_records(사용·조정) / vac_holidays(공휴일) — RLS로 본인/마스터 권한 강제
+   - 서버: vac_employees(입사일·직속 상관) / vac_records(사용·조정·결재 상태) / vac_holidays(공휴일) — RLS로 권한 강제
    - 마스터 판정: POST /rest/v1/rpc/is_master (admin.html과 동일)
+   - 결재라인: 직원 휴가 신청 = status 'pending' → 직속 상관 체인 순서대로 승인 + 마스터 최종 승인 시 'approved'.
+     승인/반려는 rpc/vac_decide(서버 함수)로만 — 클라이언트에서 status 직접 수정 불가(RLS).
+     체인 표시는 rpc/vac_chain_info. 마스터의 직접 추가는 즉시 'approved'(최종 결재권자).
    ============================================================ */
 const SB='https://bmejvuxyszbibjdegnxz.supabase.co';
 const KEY='sb_publishable_GbCZImWWSbQhBp1m5BPq6A_-QBcFLMz';
@@ -351,7 +383,9 @@ function rawRest(method,path,body,prefer,extra){
 async function rest(method,path,body,prefer,extra){
   let r=await rawRest(method,path,body,prefer,extra);
   if(r.status===401){if(await doRefresh())r=await rawRest(method,path,body,prefer,extra);}
-  if(!r.ok){const t=await r.text().catch(()=>'');const e=new Error('REST '+r.status+' '+t.slice(0,120));e.status=r.status;throw e;}
+  if(!r.ok){const t=await r.text().catch(()=>'');
+    let m=t.slice(0,160);try{const j=JSON.parse(t);if(j&&j.message)m=j.message;}catch(_){}  // RPC의 raise exception 메시지를 그대로 노출
+    const e=new Error('REST '+r.status+' '+m);e.status=r.status;throw e;}
   if(r.status===204)return null;
   const txt=await r.text();return txt?JSON.parse(txt):null;}
 async function fetchAll(path){  // Max Rows(1000) 잘림 방지
@@ -400,20 +434,24 @@ function calcFor(uidv){
   const stat=statutoryDays(hire,t);
   const accList=holidays.filter(h=>h.hdate>=lySy&&h.hdate<=ty&&h.hdate>=hireS&&isWeekdayYmd(h.hdate));
   const upcoming=holidays.filter(h=>h.hdate>ty&&h.hdate<=lyEy&&isWeekdayYmd(h.hdate));
-  let used=0,planned=0,adjust=0;
+  let used=0,planned=0,adjust=0,pend=0;
   recs.forEach(r=>{
     if(r.vdate<lySy||r.vdate>lyEy)return;
     const d=Number(r.days)||0;
+    const st=r.status||'approved';           // 결재 전 컬럼이 없던 시절 방어
+    if(st==='rejected')return;               // 반려 = 미반영
+    if(st==='pending'){if(r.kind!=='adjust')pend+=d;return;}  // 승인 대기 = 잔여 미반영, 별도 표시
     if(r.kind==='adjust')adjust+=d;
     else if(r.vdate<=ty)used+=d;
     else planned+=d;});
   const remain=stat+accList.length+adjust-used-planned;
   return {hire:hireS,ready:true,recs,lyS:lySy,lyE:lyEy,years:serviceYears(hire,t),
     months:monthsCompleted(hire,t),stat,accrued:accList.length,accList,upcoming:upcoming.length,
-    nextHol:upcoming[0]||null,used,planned,adjust,remain};}
+    nextHol:upcoming[0]||null,used,planned,adjust,pend,remain};}
 
 /* ---------- 상태 ---------- */
 let isMaster=false,profiles=[],employees={},records=[],holidays=[],noSetup=false;
+let chains={};   // uid → {chain:[{uid,name,master}], needs_master} (rpc/vac_chain_info 캐시)
 let viewUid=null,showAllRec=false,holYear=String(new Date().getFullYear());
 const realProfiles=()=>profiles.filter(p=>!(p.email||'').endsWith('@example.com'));
 const profOf=u=>profiles.find(p=>p.id===u)||{id:u,email:'',name:''};
@@ -422,18 +460,73 @@ const dispName=p=>(p.name||'').trim()||p.email||'(이름 없음)';
 /* ---------- 데이터 적재 ---------- */
 const isMissingTable=e=>e&&(e.status===404||/42P01|PGRST205|does not exist|Could not find the table/i.test(e.message||''));
 async function loadAll(){
-  const vac=path=>fetchAll(path).catch(e=>{ // 설정 SQL 실행 전(테이블 없음)이면 잠그지 않고 안내 모드로
+  noSetup=false;  // 매번 재판정 — SQL 실행 후 reload만으로 안내 모드가 풀리게
+  const vac=path=>fetchAll(path).catch(e=>{ // 설정 SQL 실행 전(테이블/컬럼 없음)이면 잠그지 않고 안내 모드로
     if(isMissingTable(e)){noSetup=true;return [];}
     throw e;});
   const [pf,emp,rec,hol]=await Promise.all([
     fetchAll('profiles?select=id,email,name&order=email.asc'),
-    vac('vac_employees?select=id,hire_date'),
-    vac('vac_records?select=id,owner,vdate,days,kind,note&order=vdate.desc,created_at.desc'),
+    vac('vac_employees?select=id,hire_date,supervisor'),
+    vac('vac_records?select=id,owner,vdate,days,kind,note,status,grp,approvals,created_at&order=vdate.desc,created_at.desc'),
     vac('vac_holidays?select=hdate,hname&order=hdate.asc'),
   ]);
   profiles=pf;records=rec;holidays=hol;
-  employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date};});
+  employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date,supervisor:e.supervisor||null};});
+  // 결재 체인 프리페치(표시용) — 본인 + 대기 중 신청의 소유자들 + (마스터면 전 직원)
+  chains={};
+  if(!noSetup){
+    const my=me();
+    const need=new Set(my?[my.id]:[]);
+    records.forEach(r=>{if(r.status==='pending')need.add(r.owner);});
+    if(isMaster)realProfiles().forEach(p=>need.add(p.id));
+    await Promise.all([...need].map(u=>
+      rest('POST','rpc/vac_chain_info',{p_user:u}).then(ci=>{chains[u]=ci;}).catch(()=>{chains[u]=null;})));  // 함수 미설치/권한 등 — 체인 표시만 생략
+  }
 }
+
+/* ---------- 결재 체인 표시 헬퍼 ---------- */
+function chainStages(ownerUid){ // [{uid|null,name,master}] — 체인이 마스터로 안 끝나면 가상 '마스터' 단계를 붙임. 정보 없으면 null
+  const ci=chains[ownerUid];
+  if(!ci||!Array.isArray(ci.chain))return null;
+  const st=ci.chain.map(s=>({uid:s.uid,name:s.name||'(알 수 없음)',master:!!s.master}));
+  if(ci.needs_master)st.push({uid:null,name:'마스터',master:true});
+  return st;}
+function apprState(rep){ // rep: 묶음 대표 행 → {stages:[{…,state:'done'|'cur'|'wait'}], next} (체인 정보 없으면 null)
+  const stages=chainStages(rep.owner);
+  if(!stages)return null;
+  const appr=Array.isArray(rep.approvals)?rep.approvals:[];
+  const done=new Set(appr.filter(a=>a&&!a.rejected).map(a=>a.uid));
+  let next=null;
+  const out=stages.map(s=>{
+    const isDone=s.uid?done.has(s.uid):(rep.status==='approved');
+    let state=isDone?'done':'wait';
+    if(!isDone&&!next){state='cur';next=s;}
+    return Object.assign({},s,{state});});
+  return {stages:out,next};}
+function flowHtml(st){
+  if(!st)return '';
+  return `<div class="flow">`+st.stages.map(s=>
+    `<span class="st ${s.state}">${s.state==='done'?'✓ ':''}${esc(s.name)}</span>`).join('<span class="arr">→</span>')+`</div>`;}
+function groupReqs(list){ // pending/rejected 행들을 신청 묶음(grp) 단위로 — 날짜순 정렬, 시작 빠른 묶음부터
+  const m=new Map();
+  list.forEach(r=>{const k=r.owner+'|'+(r.grp||r.id);if(!m.has(k))m.set(k,[]);m.get(k).push(r);});
+  const gs=[...m.values()].map(rows=>{
+    rows.sort((a,b)=>a.vdate<b.vdate?-1:a.vdate>b.vdate?1:0);
+    const total=rows.reduce((s,r)=>s+(Number(r.days)||0),0);
+    return {grp:rows[0].grp,owner:rows[0].owner,rows,rep:rows[0],last:rows[rows.length-1],total,note:rows[0].note||''};});
+  gs.sort((a,b)=>a.rep.vdate<b.rep.vdate?-1:1);
+  return gs;}
+function reqDatesHtml(g){
+  const one=g.rows.length===1;
+  const half=one&&Number(g.rep.days)===0.5;
+  return `<span class="dts">${fmtMD(g.rep.vdate)}${one?'':' ~ '+fmtMD(g.last.vdate)}</span>`+
+    `<span class="tot">${half?'반차 ':''}${fmtDays(g.total)}</span>`;}
+function rejReason(g){ // 마지막 반려 항목의 사유·사람
+  const appr=Array.isArray(g.rep.approvals)?g.rep.approvals:[];
+  const r=appr.slice().reverse().find(a=>a&&a.rejected);
+  if(!r)return '';
+  const who=dispName(profOf(r.uid));
+  return `<div class="rejr">반려 — ${esc(who)}${r.note?` · ${esc(r.note)}`:''}</div>`;}
 
 /* ---------- 렌더 ---------- */
 function renderChips(){
@@ -454,10 +547,13 @@ function renderSummary(){
   if(!c.ready){
     h+=`<div class="notice">입사일이 ${c.hire?'미래로 설정돼 있어요':'아직 설정되지 않았어요'} — ${isMaster?'아래에서 입사일을 저장하면 잔여 휴가가 계산돼요.':'마스터(관리자)에게 입사일 등록을 요청하세요.'}</div>`;
   }else{
+    const stg=chainStages(viewUid);
+    const lineTxt=(stg&&stg.length&&!(mine&&isMaster))?` · 결재라인 <b>${stg.map(s=>esc(s.name)).join(' → ')}</b>`:'';
     h+=`<div class="sum-meta">입사 <b>${fmtD(c.hire)}</b> · ${c.years<1?`근속 ${c.months}개월`:`근속 만 ${c.years}년`}
       · 연차연도 <b>${fmtD(c.lyS)} ~ ${fmtD(c.lyE)}</b>
       ${c.nextHol?` · 다음 공휴일 <b>${fmtMD(c.nextHol.hdate)}</b> ${esc(c.nextHol.hname)}`:''}
-      ${c.upcoming?` (연차연도 내 적립 예정 ${c.upcoming}일)`:''}</div>`;
+      ${c.upcoming?` (연차연도 내 적립 예정 ${c.upcoming}일)`:''}${lineTxt}
+      ${c.pend?` · 승인 대기 <b>${fmtDays(c.pend)}</b>`:''}</div>`;
     h+=`<div class="stats">
       <div class="stat"><div class="n">${fmtDays(c.stat)}</div><div class="l">법정연차${c.years<1?' (월차)':''}</div></div>
       <div class="stat"><div class="n">+${fmtDays(c.accrued)}</div><div class="l">공휴일 적립</div></div>
@@ -475,6 +571,14 @@ function renderSummary(){
     h+=`<div class="hire-edit"><span class="lbl">입사일${mine?'':' ('+esc(dispName(p))+')'}</span>
       <input type="date" id="hireInput" value="${esc(c.hire||'')}">
       <button class="mini-btn" data-action="save-hire">저장</button></div>`;
+    if(!mine&&!noSetup){ // 직속 상관 지정(마스터 본인 제외) — 미지정 = 마스터 직속
+      const supCur=(employees[viewUid]&&employees[viewUid].supervisor)||'';
+      const opts=realProfiles().filter(q=>q.id!==viewUid)
+        .map(q=>`<option value="${esc(q.id)}"${q.id===supCur?' selected':''}>${esc(dispName(q))}</option>`).join('');
+      h+=`<div class="hire-edit"><span class="lbl">직속 상관</span>
+        <select id="supInput"><option value="">(없음 — 마스터 직속)</option>${opts}</select>
+        <button class="mini-btn ghost" data-action="save-sup">저장</button></div>`;
+    }
   }
   $('sumCard').innerHTML=h;
 }
@@ -482,15 +586,42 @@ function renderRecords(){
   if(noSetup){$('useForm').hidden=true;$('adjForm').hidden=true;$('recList').innerHTML='<div class="rec-empty">서버 설정 후 이용할 수 있어요.</div>';$('recToggle').hidden=true;$('recSub').textContent='';return;}
   $('useForm').hidden=false;
   const c=calcFor(viewUid),my=me();
+  $('useLbl').textContent=isMaster?'휴가 추가':'휴가 신청';
+  $('useBtn').textContent=isMaster?'추가':'신청';
+  const stOf=r=>r.status||'approved';
+  const apr=c.recs.filter(r=>stOf(r)==='approved');
   const inYear=r=>c.ready&&r.vdate>=c.lyS&&r.vdate<=c.lyE;
-  const list=showAllRec||!c.ready?c.recs:c.recs.filter(inYear);
-  const older=c.ready?c.recs.length-c.recs.filter(inYear).length:0;
+  const list=showAllRec||!c.ready?apr:apr.filter(inYear);
+  const older=c.ready?apr.length-apr.filter(inYear).length:0;
   $('recSub').textContent=c.ready?(showAllRec?'전체 기간':`이번 연차연도 (${fmtD(c.lyS)}~)`):'';
   $('useDate').value=$('useDate').value||todayYmd();
   $('adjDate').value=$('adjDate').value||todayYmd();
   $('adjForm').hidden=!isMaster;
   let h='';
-  if(!list.length)h=`<div class="rec-empty">기록이 없어요. 휴가를 쓰면 위에서 추가해 주세요.</div>`;
+  // 승인 대기 / 반려 — 연차연도 필터와 무관하게 전부 표시(신청은 미래 연차연도일 수도 있음)
+  const pendG=groupReqs(c.recs.filter(r=>stOf(r)==='pending'));
+  const rejG=groupReqs(c.recs.filter(r=>stOf(r)==='rejected'));
+  if(pendG.length){
+    h+=`<div class="sec-h">승인 대기 중 신청</div>`;
+    pendG.forEach(g=>{
+      const st=apprState(g.rep);
+      const canCancel=g.owner===(my&&my.id)||isMaster;
+      h+=`<div class="req"><div class="top"><span class="badge pend">승인 대기</span>${reqDatesHtml(g)}
+        ${g.note?`<span class="nt">${esc(g.note)}</span>`:''}
+        ${canCancel&&g.grp?`<button class="del" data-action="req-cancel" data-owner="${esc(g.owner)}" data-grp="${esc(g.grp)}" title="신청 취소">×</button>`:''}</div>
+        ${flowHtml(st)}</div>`;});
+  }
+  if(rejG.length){
+    h+=`<div class="sec-h">반려된 신청</div>`;
+    rejG.forEach(g=>{
+      const canDis=g.owner===(my&&my.id)||isMaster;
+      h+=`<div class="req"><div class="top"><span class="badge rej">반려</span>${reqDatesHtml(g)}
+        ${g.note?`<span class="nt">${esc(g.note)}</span>`:''}
+        ${canDis&&g.grp?`<button class="del" data-action="rej-dismiss" data-owner="${esc(g.owner)}" data-grp="${esc(g.grp)}" title="기록 지우기">×</button>`:''}</div>
+        ${rejReason(g)}</div>`;});
+  }
+  if((pendG.length||rejG.length)&&list.length)h+=`<div class="sec-h">확정된 기록</div>`;
+  if(!list.length&&!pendG.length&&!rejG.length)h+=`<div class="rec-empty">기록이 없어요. 휴가를 쓰려면 위에서 ${isMaster?'추가':'신청'}해 주세요.</div>`;
   else{
     let curY='';
     list.forEach(r=>{
@@ -501,30 +632,63 @@ function renderRecords(){
       const badge=adj?`<span class="badge adj">조정</span>`:half?`<span class="badge half">반차</span>`:`<span class="badge use">휴가</span>`;
       const amt=adj?`<span class="amt ${Number(r.days)>=0?'plus':'minus'}">${Number(r.days)>=0?'+':''}${fmtDays(Number(r.days))}</span>`
                    :`<span class="amt minus">−${fmtDays(Number(r.days))}</span>`;
-      const canDel=isMaster||(!adj&&r.owner===(my&&my.id));
+      const canDel=isMaster;   // 승인된 기록 삭제(휴가 취소)는 마스터만 — 결재 우회 방지
       h+=`<div class="rec"><span class="d">${fmtMD(r.vdate)} <small>${esc(y)}</small></span>${badge}${amt}
         <span class="nt">${esc(r.note||'')}</span>
         ${canDel?`<button class="del" data-action="del-rec" data-id="${esc(r.id)}" title="삭제">×</button>`:''}</div>`;});
   }
   $('recList').innerHTML=h;
   const tg=$('recToggle');
-  if(c.ready&&(older>0||showAllRec)){tg.hidden=false;tg.textContent=showAllRec?'이번 연차연도만 보기':`전체 기록 보기 (이전 ${older}건 포함)`;}
+  if(c.ready&&(older>0||showAllRec)){tg.hidden=false;tg.textContent=showAllRec?'이번 연차연도만 보기':`전체 기록 보기 (다른 연차연도 ${older}건 포함)`;}
   else tg.hidden=true;
 }
 function renderOverview(){
   const card=$('ovCard');
   if(!isMaster){card.hidden=true;return;}
   card.hidden=false;
+  const my=me();
+  const supName=u=>{
+    const s=employees[u]&&employees[u].supervisor;
+    if(!s)return u===(my&&my.id)?'—':'마스터 직속';
+    return dispName(profOf(s));};
   const rows=realProfiles().map(p=>{
     const c=calcFor(p.id);
     if(!c.ready)return `<tr class="${p.id===viewUid?'sel':''}" data-action="sel" data-id="${esc(p.id)}">
-      <td class="nm">${esc(dispName(p))}</td><td>—</td><td colspan="6" style="text-align:center;color:var(--ink-soft)">입사일 미설정</td><td class="rm">—</td></tr>`;
+      <td class="nm">${esc(dispName(p))}</td><td>${esc(supName(p.id))}</td><td>—</td><td colspan="6" style="text-align:center;color:var(--ink-soft)">입사일 미설정</td><td class="rm">—</td></tr>`;
     return `<tr class="${p.id===viewUid?'sel':''}" data-action="sel" data-id="${esc(p.id)}">
-      <td class="nm">${esc(dispName(p))}</td><td>${fmtD(c.hire)}</td><td>${c.years<1?c.months+'개월':'만 '+c.years+'년'}</td>
+      <td class="nm">${esc(dispName(p))}</td><td>${esc(supName(p.id))}</td><td>${fmtD(c.hire)}</td><td>${c.years<1?c.months+'개월':'만 '+c.years+'년'}</td>
       <td>${fmtDays(c.stat)}</td><td>+${fmtDays(c.accrued)}</td><td>${c.adjust>=0?'+':''}${fmtDays(c.adjust)}</td>
       <td>−${fmtDays(c.used)}</td><td>−${fmtDays(c.planned)}</td><td class="rm${c.remain<0?' neg':''}">${fmtDays(c.remain)}</td></tr>`;
   }).join('');
   $('ovBody').innerHTML=rows;
+}
+function renderAppr(){
+  const card=$('apprCard'),my=me();
+  if(noSetup||!my){card.hidden=true;return;}
+  // RLS 덕에 records엔 '본인 것 + (마스터면 전부) + 내가 결재 체인에 있는 대기 건'만 내려옴
+  const groups=groupReqs(records.filter(r=>(r.status||'')==='pending'&&r.owner!==my.id));
+  if(!groups.length){card.hidden=true;return;}
+  card.hidden=false;
+  $('apprList').innerHTML=groups.map(g=>{
+    const p=profOf(g.owner);
+    const st=apprState(g.rep);
+    // 체인 정보를 못 불러온 경우(일시 오류 등)에도 결재를 막지 않는다 — 차례 검증은 어차피 서버(vac_decide)가 최종
+    const myTurn=st?!!(st.next&&(st.next.uid===my.id||(st.next.uid===null&&isMaster))):true;
+    const canReject=myTurn||isMaster;
+    let acts='';
+    if(g.grp&&(myTurn||canReject)){
+      acts=`<div class="acts2">
+        ${myTurn?`<button class="mini-btn" data-action="appr-ok" data-owner="${esc(g.owner)}" data-grp="${esc(g.grp)}">승인</button>`:''}
+        ${canReject?`<button class="mini-btn warn" data-action="appr-no" data-owner="${esc(g.owner)}" data-grp="${esc(g.grp)}">반려</button>`:''}
+      </div>`;
+    }
+    const hint=st?(!myTurn&&st.next?`<div class="hint">${esc(st.next.name)} 승인 대기 중</div>`:'')
+                 :`<div class="hint">결재선 정보를 불러오지 못했어요 — 승인/반려 시 서버가 차례를 다시 확인해요</div>`;
+    const reqAt=g.rep.created_at?`<span class="meta">신청 ${fmtD(String(g.rep.created_at).slice(0,10))}</span>`:'';
+    return `<div class="req"><div class="top"><span class="who">${esc(dispName(p))}</span>${reqDatesHtml(g)}
+      ${g.note?`<span class="nt">${esc(g.note)}</span>`:''}${reqAt}</div>
+      ${flowHtml(st)}${hint}${acts}</div>`;
+  }).join('');
 }
 function renderHolidays(){
   const years=[...new Set(holidays.map(h=>h.hdate.slice(0,4)))].sort();
@@ -540,7 +704,7 @@ function renderHolidays(){
   }).join(''):`<div class="rec-empty">등록된 공휴일이 없어요.${isMaster?' 아래에서 추가하세요.':''}</div>`;
   $('holForm').hidden=!isMaster;
 }
-function renderAll(){renderChips();renderSummary();renderRecords();renderOverview();renderHolidays();}
+function renderAll(){renderChips();renderSummary();renderAppr();renderRecords();renderOverview();renderHolidays();}
 
 /* ---------- 화면 전환 ---------- */
 function show(view){
@@ -596,29 +760,29 @@ $('useForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const d=$('useDate').value,end=$('useEnd').value,days=Number($('useKind').value),note=$('useNote').value.trim();
   if(!DATE_RE.test(d))return toast('날짜를 선택해 주세요');
+  const verb=isMaster?'기록':'신청';
   let dates=[d];
-  if(end){ // 기간 추가: 모든 날짜 1일씩(종일만) — 쉬는 날이 끼면 그 날짜만 삭제
+  if(end){ // 기간: 모든 날짜 1일씩(종일만) — 쉬는 날이 끼면 그 날짜만 취소/삭제
     if(!DATE_RE.test(end)||end<d)return toast('종료일이 시작일보다 빨라요');
-    if(days!==1)return toast('기간 추가는 종일만 가능해요 (반차는 하루씩)');
+    if(days!==1)return toast(`기간 ${verb}은 종일만 가능해요 (반차는 하루씩)`);
     dates=[];const cur=parseYmd(d),last=parseYmd(end);
     while(cur<=last){dates.push(ymd(cur));cur.setDate(cur.getDate()+1);}
     if(dates.length>31)return toast('기간은 최대 31일까지예요');
-    if(!confirm(`${fmtD(d)} ~ ${fmtD(end)} — 총 ${dates.length}일을 기록할까요?\n(모든 날짜가 1일씩 기록돼요. 중간에 쉬는 날이 있으면 그 날짜만 지워 주세요)`))return;
+    if(!confirm(`${fmtD(d)} ~ ${fmtD(end)} — 총 ${dates.length}일을 ${verb}할까요?\n(모든 날짜가 1일씩 기록돼요. 중간에 쉬는 날이 있으면 그 날짜만 지워 주세요)`))return;
   }
   const my=me();
-  let ok=0;
+  const g=uid(); // 신청 묶음 id — 결재는 묶음 단위
+  // 마스터 = 최종 결재권자 → 직접 추가는 즉시 확정(approved). 직원 → 승인 대기(pending), RLS가 자가 승인 차단.
+  const rows=dates.map(dt=>{
+    const row={id:uid(),vdate:dt,days,kind:'use',note,grp:g,status:isMaster?'approved':'pending'};
+    if(isMaster&&viewUid!==my.id)row.owner=viewUid;   // 마스터가 남의 기록 추가
+    return row;});
   try{
-    for(const dt of dates){
-      const row={id:uid(),vdate:dt,days,kind:'use',note};
-      if(isMaster&&viewUid!==my.id)row.owner=viewUid;   // 마스터가 남의 기록 추가
-      await rest('POST','vac_records',row);ok++;
-    }
+    await rest('POST','vac_records',rows);  // 배열 = 단일 INSERT(원자적 — 부분 저장 없음)
     $('useNote').value='';$('useEnd').value='';
-    await reload(`휴가 ${dates.length>1?dates.length+'일':fmtDays(days)} 기록 완료`);
-  }catch(err){ // 중간 실패: 이미 저장된 날짜가 있을 수 있음 — 재조회로 실제 상태 반영(재시도 중복 방지)
-    await reload().catch(()=>{});
-    toast(dates.length>1?`일부만 저장됐어요 (${ok}/${dates.length}일) — 목록을 확인해 주세요`:'저장 실패 — '+(err.message||'다시 시도해 주세요'));
-  }
+    const amount=dates.length>1?dates.length+'일':fmtDays(days);
+    await reload(isMaster?`휴가 ${amount} 기록 완료`:`휴가 ${amount} 신청 완료 — 결재 승인 후 잔여에 반영돼요`);
+  }catch(err){toast(`${verb} 실패 — `+(err.message||'다시 시도해 주세요'));}
 });
 
 $('adjForm').addEventListener('submit',async e=>{
@@ -658,6 +822,47 @@ document.addEventListener('click',async e=>{
       await rest('POST','vac_employees?on_conflict=id',{id:viewUid,hire_date:v},'resolution=merge-duplicates');
       await reload('입사일을 저장했어요');
     }catch(err){toast('저장 실패 — '+(err.message||''));}
+  }
+  else if(a==='save-sup'&&isMaster){
+    const v=$('supInput').value||null;
+    if(v){ // 순환 지정 방지 — 지정할 상관의 상관 체인에 본인이 있으면 안 됨 (마스터는 전 직원 행을 보므로 로컬 검사 가능)
+      let cur=v;const seen=new Set();
+      while(cur){
+        if(cur===viewUid)return toast('순환 지정이에요 — 그 사람의 결재라인에 본인이 있어요');
+        if(seen.has(cur))break;seen.add(cur);
+        cur=(employees[cur]&&employees[cur].supervisor)||null;}
+    }
+    try{
+      await rest('POST','vac_employees?on_conflict=id',{id:viewUid,supervisor:v},'resolution=merge-duplicates');
+      await reload(v?'직속 상관을 저장했어요':'마스터 직속으로 바꿨어요');
+    }catch(err){toast('저장 실패 — '+(err.message||''));}
+  }
+  else if(a==='appr-ok'||a==='appr-no'){
+    const owner=el.dataset.owner,grp=el.dataset.grp;
+    const ok=a==='appr-ok';
+    let note='';
+    if(ok){if(!confirm('이 휴가 신청을 승인할까요?'))return;}
+    else{const inp=prompt('반려 사유를 입력해 주세요 (선택)');if(inp===null)return;note=inp.trim();}
+    try{
+      const res=await rest('POST','rpc/vac_decide',{p_owner:owner,p_grp:grp,p_approve:ok,p_note:note});
+      await reload(ok?((res&&res.status)==='approved'?'최종 승인 완료 — 휴가가 반영됐어요':'승인했어요 — 다음 결재자 승인 대기'):'반려했어요');
+    }catch(err){toast('처리 실패 — '+(err.message||''));}
+  }
+  else if(a==='req-cancel'){
+    const owner=el.dataset.owner,grp=el.dataset.grp;
+    if(!confirm('이 휴가 신청을 취소할까요?'))return;
+    try{
+      await rest('DELETE','vac_records?owner=eq.'+encodeURIComponent(owner)+'&grp=eq.'+encodeURIComponent(grp)+'&status=eq.pending');
+      await reload('신청을 취소했어요');
+    }catch(err){toast('취소 실패 — '+(err.message||''));}
+  }
+  else if(a==='rej-dismiss'){
+    const owner=el.dataset.owner,grp=el.dataset.grp;
+    if(!confirm('반려된 신청 기록을 지울까요?'))return;
+    try{
+      await rest('DELETE','vac_records?owner=eq.'+encodeURIComponent(owner)+'&grp=eq.'+encodeURIComponent(grp)+'&status=eq.rejected');
+      await reload('반려 기록을 지웠어요');
+    }catch(err){toast('삭제 실패 — '+(err.message||''));}
   }
   else if(a==='del-rec'){
     const r=records.find(x=>x.id===id);if(!r)return;
