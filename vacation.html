@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#162e23">
 <meta name="robots" content="noindex">
 <title>MAKERS · 휴가 관리</title>
-<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel 2026-07-07 -->
+<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel + appr-balance 2026-07-07 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -168,6 +168,10 @@ details.acc .acc-list{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .flow .arr{color:var(--line-strong);font-weight:800}
 .req .acts2{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
 .req .hint{font-size:12px;color:var(--ink-soft);margin-top:8px;font-weight:600}
+.req .bal{margin-top:8px;font-size:12.5px;color:var(--ink-soft);font-weight:600;background:color-mix(in srgb,var(--gold) 7%,var(--paper));
+  border:1px solid color-mix(in srgb,var(--gold) 22%,var(--line));border-radius:9px;padding:6px 11px;display:inline-block}
+.req .bal b{color:var(--forest);font-weight:800}
+.req .bal b.neg{color:var(--red)}
 .req .rejr{font-size:12.5px;color:var(--red);font-weight:600;margin-top:7px}
 .mini-btn.warn{background:var(--card);color:var(--red);border:1px solid color-mix(in srgb,var(--red) 35%,var(--line))}
 .mini-btn.warn:hover{background:var(--card);border-color:var(--red)}
@@ -321,6 +325,7 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
       ④ 연차 이월은 자동 계산하지 않아요 — 필요하면 마스터가 '조정'으로 반영해요.
       ⑤ 노동절(5/1)은 <b>2026년부터 법정공휴일</b>이라 2026년부터 적립 대상이에요(2025년까지는 별도 유급휴일). 제헌절은 2026년 7/17부터 공휴일로 재지정.
       ⑥ <b>휴가 결재</b>: 휴가 신청은 직속 상관 → 그 위 상관 → … → 마스터 순서로 <b>전원 승인</b>해야 기록·잔여 계산에 반영돼요(직속 상관은 마스터가 지정). 승인 전에는 '승인 대기', 반려되면 사유와 함께 표시돼요. 승인된 기록의 삭제(휴가 취소)는 마스터에게 요청하세요.
+      ⑦ 결재자는 판단을 돕기 위해 신청자의 <b>잔여 요약</b>(현재 잔여·승인 시 잔여)만 볼 수 있어요 — 입사일이나 지난 휴가 상세 이력은 마스터와 본인만 봐요.
     </p>
   </div>
 </main>
@@ -470,6 +475,7 @@ function calcFor(uidv){
 /* ---------- 상태 ---------- */
 let isMaster=false,profiles=[],employees={},records=[],holidays=[],noSetup=false;
 let chains={};   // uid → {chain:[{uid,name,master}], needs_master} (rpc/vac_chain_info 캐시)
+let balances={}; // uid → 잔여 요약 {ready,stat,accrued,adjust,used,planned,pend,remain} (rpc/vac_balance 캐시, 결재함용)
 let viewUid=null,showAllRec=false,holYear=String(new Date().getFullYear());
 const realProfiles=()=>profiles.filter(p=>!(p.email||'').endsWith('@example.com'));
 const profOf=u=>profiles.find(p=>p.id===u)||{id:u,email:'',name:''};
@@ -491,14 +497,21 @@ async function loadAll(){
   profiles=pf;records=rec;holidays=hol;
   employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date,supervisor:e.supervisor||null};});
   // 결재 체인 프리페치(표시용) — 본인 + 대기 중 신청의 소유자들 + (마스터면 전 직원)
-  chains={};
+  chains={};balances={};
   if(!noSetup){
     const my=me();
     const need=new Set(my?[my.id]:[]);
     records.forEach(r=>{if(r.status==='pending')need.add(r.owner);});
     if(isMaster)realProfiles().forEach(p=>need.add(p.id));
-    await Promise.all([...need].map(u=>
-      rest('POST','rpc/vac_chain_info',{p_user:u}).then(ci=>{chains[u]=ci;}).catch(()=>{chains[u]=null;})));  // 함수 미설치/권한 등 — 체인 표시만 생략
+    // 결재함에 뜰 '남의 대기 신청' 소유자 = 잔여 요약이 필요한 대상(입사일·상세기록 없이 숫자만)
+    const balNeed=new Set();
+    records.forEach(r=>{if((r.status||'')==='pending'&&my&&r.owner!==my.id)balNeed.add(r.owner);});
+    await Promise.all([
+      ...[...need].map(u=>
+        rest('POST','rpc/vac_chain_info',{p_user:u}).then(ci=>{chains[u]=ci;}).catch(()=>{chains[u]=null;})),  // 함수 미설치/권한 등 — 체인 표시만 생략
+      ...[...balNeed].map(u=>
+        rest('POST','rpc/vac_balance',{p_owner:u}).then(b=>{balances[u]=b;}).catch(()=>{balances[u]=null;})),  // 실패 시 잔여 줄만 생략
+    ]);
   }
 }
 
@@ -706,9 +719,16 @@ function renderAppr(){
     const hint=st?(!myTurn&&st.next?`<div class="hint">${esc(st.next.name)} 승인 대기 중</div>`:'')
                  :`<div class="hint">결재선 정보를 불러오지 못했어요 — 승인/반려 시 서버가 차례를 다시 확인해요</div>`;
     const reqAt=g.rep.created_at?`<span class="meta">신청 ${fmtD(String(g.rep.created_at).slice(0,10))}</span>`:'';
+    const bal=balances[g.owner];
+    let balLine='';
+    if(bal&&bal.ready){ // 결재 판단용 잔여 요약 — 상세 이력은 노출 안 함(요약 숫자만 서버 계산)
+      const remain=Number(bal.remain),after=remain-g.total,pend=Number(bal.pend)||0;
+      balLine=`<div class="bal">현재 잔여 <b>${fmtDays(remain)}</b> · 승인 시 <b class="${after<0?'neg':''}">${fmtDays(after)}</b>`+
+        (pend>g.total?` · 이 사람 대기 신청 합계 ${fmtDays(pend)}`:'')+`</div>`;
+    }
     return `<div class="req"><div class="top"><span class="who">${esc(dispName(p))}</span>${reqDatesHtml(g)}
       ${g.note?`<span class="nt">${esc(g.note)}</span>`:''}${reqAt}</div>
-      ${flowHtml(st)}${hint}${acts}</div>`;
+      ${balLine}${flowHtml(st)}${hint}${acts}</div>`;
   }).join('');
 }
 function renderHolidays(){
