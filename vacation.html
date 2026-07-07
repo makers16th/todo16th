@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#162e23">
 <meta name="robots" content="noindex">
 <title>MAKERS · 휴가 관리</title>
-<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel + appr-balance 2026-07-07 -->
+<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel + appr-balance + term-approver + viewer-role 2026-07-07 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -96,7 +96,7 @@ details.acc{margin-top:12px}
 details.acc summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--gold-ink);user-select:none}
 details.acc .acc-list{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .acc-item{font-size:11.5px;font-weight:600;background:var(--chip);border-radius:8px;padding:4px 9px;color:var(--ink-soft)}
-/* 인사 설정(마스터) 패널 — 입사일 · 직속 상관 */
+/* 인사 설정(마스터) 패널 — 입사일 · 1차 결재권자 */
 .medit{margin-top:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:13px 15px 15px}
 .medit .mtitle{display:flex;align-items:baseline;gap:8px;margin-bottom:11px}
 .medit .mtitle b{font-size:12px;font-weight:800;color:var(--forest);letter-spacing:.03em}
@@ -115,6 +115,8 @@ details.acc .acc-list{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 .medit input[type=date]:focus,.medit select:focus{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 16%,transparent)}
 .medit .mini-btn{border-radius:10px;padding:0 16px;min-height:38px}
 .medit .fnote{font-size:11px;color:var(--ink-soft);font-weight:500}
+.medit .vw-tgl{display:flex;align-items:center;gap:8px;min-height:38px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.medit .vw-tgl input{width:16px;height:16px;accent-color:var(--pine);cursor:pointer}
 .mini-btn{background:var(--forest);color:var(--cream);font-weight:700;font-size:12px;padding:8px 14px;border-radius:9px;transition:.13s}
 .mini-btn:hover{background:var(--forest-deep)}
 .mini-btn.ghost{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}
@@ -267,9 +269,9 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
     <!-- 요약 -->
     <section class="card" id="sumCard"></section>
 
-    <!-- 결재함 (내 승인이 필요한 신청) -->
+    <!-- 결재함 (내 승인이 필요한 신청 · 전체 열람자에겐 진행 현황) -->
     <section class="card" id="apprCard" hidden>
-      <h2>결재함 <span class="sub">내 확인이 필요한 휴가 신청</span></h2>
+      <h2>결재함 <span class="sub" id="apprSub">내 확인이 필요한 휴가 신청</span></h2>
       <div id="apprList"></div>
     </section>
 
@@ -296,11 +298,11 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
       <button class="rec-toggle" id="recToggle" hidden></button>
     </section>
 
-    <!-- 전체 현황 (마스터) -->
+    <!-- 전체 현황 (마스터 · 전체 열람자) -->
     <section class="card" id="ovCard" hidden>
       <h2>전체 현황 <span class="sub">행을 누르면 그 사람 상세로 이동</span></h2>
       <div class="ovwrap"><table class="ov">
-        <thead><tr><th>이름</th><th>직속 상관</th><th>입사일</th><th>근속</th><th>법정연차</th><th>공휴일 적립</th><th>조정</th><th>사용</th><th>예정</th><th>잔여</th></tr></thead>
+        <thead><tr><th>이름</th><th>1차 결재권자</th><th>입사일</th><th>근속</th><th>법정연차</th><th>공휴일 적립</th><th>조정</th><th>사용</th><th>예정</th><th>잔여</th></tr></thead>
         <tbody id="ovBody"></tbody>
       </table></div>
     </section>
@@ -324,24 +326,26 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
       ③ 휴가 사용은 <b>날짜 단위 기록</b>(반차 0.5일)이에요 — 근무일이 저마다 달라 자동 차감은 하지 않아요.
       ④ 연차 이월은 자동 계산하지 않아요 — 필요하면 마스터가 '조정'으로 반영해요.
       ⑤ 노동절(5/1)은 <b>2026년부터 법정공휴일</b>이라 2026년부터 적립 대상이에요(2025년까지는 별도 유급휴일). 제헌절은 2026년 7/17부터 공휴일로 재지정.
-      ⑥ <b>휴가 결재</b>: 휴가 신청은 직속 상관 → 그 위 상관 → … → 마스터 순서로 <b>전원 승인</b>해야 기록·잔여 계산에 반영돼요(직속 상관은 마스터가 지정). 승인 전에는 '승인 대기', 반려되면 사유와 함께 표시돼요. 승인된 기록의 삭제(휴가 취소)는 마스터에게 요청하세요.
+      ⑥ <b>휴가 결재</b>: 휴가 신청은 1차 결재권자 → 그 위 결재권자 → … → 마스터 순서로 <b>전원 승인</b>해야 기록·잔여 계산에 반영돼요(1차 결재권자는 마스터가 지정). 승인 전에는 '승인 대기', 반려되면 사유와 함께 표시돼요. 승인된 기록의 삭제(휴가 취소)는 마스터에게 요청하세요.
       ⑦ 결재자는 판단을 돕기 위해 신청자의 <b>잔여 요약</b>(현재 잔여·승인 시 잔여)만 볼 수 있어요 — 입사일이나 지난 휴가 상세 이력은 마스터와 본인만 봐요.
     </p>
   </div>
 </main>
 
-<footer><div class="wrap">MAKERS · 휴가 관리 — 휴가는 결재라인(직속 상관 → 마스터) 승인 후 반영 · 입사일·직속 상관·조정·공휴일 편집은 마스터 전용</div></footer>
+<footer><div class="wrap">MAKERS · 휴가 관리 — 휴가는 결재라인(1차 결재권자 → 마스터) 승인 후 반영 · 입사일·1차 결재권자·조정·공휴일 편집은 마스터 전용</div></footer>
 <div id="toast"></div>
 
 <script>
 /* ============================================================
    MAKERS 휴가 관리 — index.html(보드)과 같은 Supabase·같은 로그인 세션 공유
    - 인증 토큰: localStorage 'makers_auth_v1' (보드와 동일 형태 {access_token,refresh_token,expires_at,email,uid,name})
-   - 서버: vac_employees(입사일·직속 상관) / vac_records(사용·조정·결재 상태) / vac_holidays(공휴일) — RLS로 권한 강제
+   - 서버: vac_employees(입사일·1차 결재권자) / vac_records(사용·조정·결재 상태) / vac_holidays(공휴일) — RLS로 권한 강제
    - 마스터 판정: POST /rest/v1/rpc/is_master (admin.html과 동일)
-   - 결재라인: 직원 휴가 신청 = status 'pending' → 직속 상관 체인 순서대로 승인 + 마스터 최종 승인 시 'approved'.
+   - 결재라인: 직원 휴가 신청 = status 'pending' → 1차 결재권자부터 체인 순서대로 승인 + 마스터 최종 승인 시 'approved'.
      승인/반려는 rpc/vac_decide(서버 함수)로만 — 클라이언트에서 status 직접 수정 불가(RLS).
      체인 표시는 rpc/vac_chain_info. 마스터의 직접 추가는 즉시 'approved'(최종 결재권자).
+   - 전체 열람(viewer): vac_employees.viewer=true 계정은 전 직원 현황·기록을 읽기 전용으로 봄
+     (마스터가 인사 설정에서 지정 — 편집·결재 정책은 그대로라 서버가 쓰기를 거부).
    ============================================================ */
 const SB='https://bmejvuxyszbibjdegnxz.supabase.co';
 const KEY='sb_publishable_GbCZImWWSbQhBp1m5BPq6A_-QBcFLMz';
@@ -473,7 +477,7 @@ function calcFor(uidv){
     nextHol:upcoming[0]||null,used,planned,adjust,pend,remain};}
 
 /* ---------- 상태 ---------- */
-let isMaster=false,profiles=[],employees={},records=[],holidays=[],noSetup=false;
+let isMaster=false,isViewer=false,profiles=[],employees={},records=[],holidays=[],noSetup=false;
 let chains={};   // uid → {chain:[{uid,name,master}], needs_master} (rpc/vac_chain_info 캐시)
 let balances={}; // uid → 잔여 요약 {ready,stat,accrued,adjust,used,planned,pend,remain} (rpc/vac_balance 캐시, 결재함용)
 let viewUid=null,showAllRec=false,holYear=String(new Date().getFullYear());
@@ -490,19 +494,21 @@ async function loadAll(){
     throw e;});
   const [pf,emp,rec,hol]=await Promise.all([
     fetchAll('profiles?select=id,email,name&order=email.asc'),
-    vac('vac_employees?select=id,hire_date,supervisor'),
+    vac('vac_employees?select=*'),   // select=* : viewer 컬럼(2026-07-07)이 아직 없는 서버에서도 동작
     vac('vac_records?select=id,owner,vdate,days,kind,note,status,grp,approvals,created_at&order=vdate.desc,created_at.desc'),
     vac('vac_holidays?select=hdate,hname&order=hdate.asc'),
   ]);
   profiles=pf;records=rec;holidays=hol;
-  employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date,supervisor:e.supervisor||null};});
-  // 결재 체인 프리페치(표시용) — 본인 + 대기 중 신청의 소유자들 + (마스터면 전 직원)
+  employees={};emp.forEach(e=>{employees[e.id]={hire_date:e.hire_date,supervisor:e.supervisor||null,viewer:!!e.viewer};});
+  {const myU=me();isViewer=!isMaster&&!!(myU&&employees[myU.id]&&employees[myU.id].viewer);
+   if(!(isMaster||isViewer)&&viewUid&&myU&&viewUid!==myU.id)viewUid=myU.id;}   // 전체 열람자 판정 — 열람 중 권한이 회수되면 내 화면으로 복귀
+  // 결재 체인 프리페치(표시용) — 본인 + 대기 중 신청의 소유자들 + (마스터·열람자면 전 직원)
   chains={};balances={};
   if(!noSetup){
     const my=me();
     const need=new Set(my?[my.id]:[]);
     records.forEach(r=>{if(r.status==='pending')need.add(r.owner);});
-    if(isMaster)realProfiles().forEach(p=>need.add(p.id));
+    if(isMaster||isViewer)realProfiles().forEach(p=>need.add(p.id));
     // 결재함에 뜰 '남의 대기 신청' 소유자 = 잔여 요약이 필요한 대상(입사일·상세기록 없이 숫자만)
     const balNeed=new Set();
     records.forEach(r=>{if((r.status||'')==='pending'&&my&&r.owner!==my.id)balNeed.add(r.owner);});
@@ -562,7 +568,7 @@ function rejReason(g){ // 마지막 반려 항목의 사유·사람
 /* ---------- 렌더 ---------- */
 function renderChips(){
   const box=$('whoChips');
-  if(!isMaster){box.hidden=true;return;}
+  if(!(isMaster||isViewer)){box.hidden=true;return;}
   box.hidden=false;
   const my=me();
   const ppl=realProfiles().slice().sort((a,b)=>(a.id===my.id?-1:b.id===my.id?1:dispName(a).localeCompare(dispName(b),'ko')));
@@ -602,14 +608,18 @@ function renderSummary(){
     let flds=`<div class="fld"><span class="flbl">입사일</span><div class="frow">
         <input type="date" id="hireInput" value="${esc(c.hire||'')}">
         <button class="mini-btn" data-action="save-hire">저장</button></div></div>`;
-    if(!mine){ // 직속 상관 지정(마스터 본인 제외) — 미지정 = 마스터 직속
+    if(!mine){ // 1차 결재권자 지정(마스터 본인 제외) — 미지정 = 마스터가 바로 결재
       const supCur=(employees[viewUid]&&employees[viewUid].supervisor)||'';
       const opts=realProfiles().filter(q=>q.id!==viewUid)
         .map(q=>`<option value="${esc(q.id)}"${q.id===supCur?' selected':''}>${esc(dispName(q))}</option>`).join('');
-      flds+=`<div class="fld"><span class="flbl">직속 상관</span><div class="frow">
-          <select id="supInput"><option value="">마스터 직속 (기본)</option>${opts}</select>
+      flds+=`<div class="fld"><span class="flbl">1차 결재권자</span><div class="frow">
+          <select id="supInput"><option value="">마스터 (기본)</option>${opts}</select>
           <button class="mini-btn ghost" data-action="save-sup">저장</button></div>
-        <span class="fnote">휴가 결재의 1차 승인자예요 — 전체 결재라인은 위 요약에 표시돼요</span></div>`;
+        <span class="fnote">미지정이면 마스터에게 바로 결재가 가요 — 전체 결재라인은 위 요약에 표시돼요</span></div>`;
+      const vw=!!(employees[viewUid]&&employees[viewUid].viewer);
+      flds+=`<div class="fld"><span class="flbl">전체 열람 권한</span><div class="frow">
+          <label class="vw-tgl"><input type="checkbox" data-action="save-viewer"${vw?' checked':''}> 전 직원 휴가 현황 열람</label></div>
+        <span class="fnote">켜면 이 사람이 모든 직원의 현황·기록을 읽기 전용으로 볼 수 있어요 (편집·결재 권한 아님)</span></div>`;
     }
     h+=`<div class="medit"><div class="mtitle"><b>인사 설정</b><span class="msub">마스터 전용 · ${esc(dispName(p))}</span></div>
       <div class="flds">${flds}</div></div>`;
@@ -618,8 +628,9 @@ function renderSummary(){
 }
 function renderRecords(){
   if(noSetup){$('useForm').hidden=true;$('adjForm').hidden=true;$('recList').innerHTML='<div class="rec-empty">서버 설정 후 이용할 수 있어요.</div>';$('recToggle').hidden=true;$('recSub').textContent='';return;}
-  $('useForm').hidden=false;
   const c=calcFor(viewUid),my=me();
+  const canReq=isMaster||viewUid===(my&&my.id);   // 열람자가 남의 화면을 볼 땐 신청 폼 숨김(신청은 본인 몫만)
+  $('useForm').hidden=!canReq;
   $('useLbl').textContent=isMaster?'휴가 추가':'휴가 신청';
   $('useBtn').textContent=isMaster?'추가':'신청';
   const stOf=r=>r.status||'approved';
@@ -655,7 +666,7 @@ function renderRecords(){
         ${rejReason(g)}</div>`;});
   }
   if((pendG.length||rejG.length)&&list.length)h+=`<div class="sec-h">확정된 기록</div>`;
-  if(!list.length&&!pendG.length&&!rejG.length)h+=`<div class="rec-empty">기록이 없어요. 휴가를 쓰려면 위에서 ${isMaster?'추가':'신청'}해 주세요.</div>`;
+  if(!list.length&&!pendG.length&&!rejG.length)h+=`<div class="rec-empty">기록이 없어요.${canReq?` 휴가를 쓰려면 위에서 ${isMaster?'추가':'신청'}해 주세요.`:''}</div>`;
   else{
     let curY='';
     list.forEach(r=>{
@@ -678,12 +689,16 @@ function renderRecords(){
 }
 function renderOverview(){
   const card=$('ovCard');
-  if(!isMaster){card.hidden=true;return;}
+  if(!(isMaster||isViewer)){card.hidden=true;return;}
   card.hidden=false;
-  const my=me();
+  // 마스터 uid 집합 — 결재권자 미지정 표시를 마스터 행('—')과 일반 행('마스터')으로 구분
+  // (본인이 마스터면 본인, 그 외엔 체인 정보에 master로 표시된 사람들로 판정 — 열람자 화면용)
+  const mUids=new Set();
+  if(isMaster&&me())mUids.add(me().id);
+  Object.values(chains).forEach(ci=>{if(ci&&Array.isArray(ci.chain))ci.chain.forEach(s=>{if(s.master&&s.uid)mUids.add(s.uid);});});
   const supName=u=>{
     const s=employees[u]&&employees[u].supervisor;
-    if(!s)return u===(my&&my.id)?'—':'마스터 직속';
+    if(!s)return mUids.has(u)?'—':'마스터';
     return dispName(profOf(s));};
   const rows=realProfiles().map(p=>{
     const c=calcFor(p.id);
@@ -703,6 +718,7 @@ function renderAppr(){
   const groups=groupReqs(records.filter(r=>(r.status||'')==='pending'&&r.owner!==my.id));
   if(!groups.length){card.hidden=true;return;}
   card.hidden=false;
+  $('apprSub').textContent=isViewer?'승인 진행 중인 휴가 신청':'내 확인이 필요한 휴가 신청';   // 열람자는 대부분 버튼 없는 현황 보기
   $('apprList').innerHTML=groups.map(g=>{
     const p=profOf(g.owner);
     const st=apprState(g.rep);
@@ -768,7 +784,7 @@ async function enter(){
   isMaster=await checkMaster();       // 토큰 검증 겸함(401→refresh는 rest()가 처리)
   await loadAll();
   const my=me();
-  if(!viewUid||!isMaster)viewUid=my.id;
+  if(!viewUid||!(isMaster||isViewer))viewUid=my.id;
   show('app');renderAll();
 }
 async function boot(){
@@ -794,7 +810,7 @@ $('btnLogin').addEventListener('click',async()=>{
 $('inPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnLogin').click();});
 $('btnOut').addEventListener('click',async()=>{
   try{if(_tok)await fetch(SB+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+_tok.access_token}});}catch(e){}
-  clearTok();isMaster=false;viewUid=null;show('login');
+  clearTok();isMaster=false;isViewer=false;viewUid=null;show('login');
 });
 
 $('useForm').addEventListener('submit',async e=>{
@@ -864,9 +880,19 @@ document.addEventListener('click',async e=>{
       await reload('입사일을 저장했어요');
     }catch(err){toast('저장 실패 — '+(err.message||''));}
   }
+  else if(a==='save-viewer'&&isMaster){
+    const v=el.checked;
+    try{
+      await rest('POST','vac_employees?on_conflict=id',{id:viewUid,viewer:v},'resolution=merge-duplicates');
+      await reload(v?'전체 열람 권한을 켰어요':'전체 열람 권한을 껐어요');
+    }catch(err){
+      toast(/viewer/i.test(err.message||'')?'서버에 viewer 컬럼이 없어요 — supabase-schema.sql을 먼저 실행해 주세요':'저장 실패 — '+(err.message||''));
+      renderAll();   // 체크 표시를 실제 저장 상태로 원복
+    }
+  }
   else if(a==='save-sup'&&isMaster){
     const v=$('supInput').value||null;
-    if(v){ // 순환 지정 방지 — 지정할 상관의 상관 체인에 본인이 있으면 안 됨 (마스터는 전 직원 행을 보므로 로컬 검사 가능)
+    if(v){ // 순환 지정 방지 — 지정할 결재권자의 상위 체인에 본인이 있으면 안 됨 (마스터는 전 직원 행을 보므로 로컬 검사 가능)
       let cur=v;const seen=new Set();
       while(cur){
         if(cur===viewUid)return toast('순환 지정이에요 — 그 사람의 결재라인에 본인이 있어요');
@@ -875,7 +901,7 @@ document.addEventListener('click',async e=>{
     }
     try{
       await rest('POST','vac_employees?on_conflict=id',{id:viewUid,supervisor:v},'resolution=merge-duplicates');
-      await reload(v?'직속 상관을 저장했어요':'마스터 직속으로 바꿨어요');
+      await reload(v?'1차 결재권자를 저장했어요':'1차 결재권자를 마스터로 바꿨어요');
     }catch(err){toast('저장 실패 — '+(err.message||''));}
   }
   else if(a==='appr-ok'||a==='appr-no'){
