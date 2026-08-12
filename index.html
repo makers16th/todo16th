@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS · _TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="pwa-20260812">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="resync-20260812">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -919,6 +919,7 @@ const Store = (function(){
   };
   // ---- 렌더 콜백(원격 비동기 갱신 반영) · 로컬 데이터 접근 · 1회 클라우드 이전 ----
   api.onChange=function(fn){ _onChange=fn; };
+  api.resync=async function(){ if(_mode==='local'||!api.auth.isAuthenticated())return false; await pull(); return true; }; // 화면 복귀 시 재동기화용(rest가 401→refresh 처리)
   api.localData=function(){ return lsGet(DATA_KEY); };
   api.directory=async function(){ if(_mode==='local')return []; if(_dir)return _dir; const rows=await rest('GET','profiles?select=*&order=email.asc'); _dir=rows||[]; return _dir; };
   api.migrateLocalToCloud=async function(){
@@ -1612,6 +1613,19 @@ async function boot(){
   await enterApp();
 }
 boot();
+
+// 설치형(홈 화면) 앱엔 사파리의 '당겨서 새로고침'이 없음 → 앱이 화면에 복귀하면 자동 재동기화
+let _lastResync=Date.now();
+async function resyncOnReturn(){
+  if(document.visibilityState!=='visible')return;
+  if(Store.mode==='local'||!Store.auth.isAuthenticated())return;
+  if(state&&state.ui.editingId)return;               // 편집 중엔 입력 보호
+  if(Date.now()-_lastResync<30000)return;            // 30초 이내 재진입은 생략
+  _lastResync=Date.now();
+  try{ if(await Store.resync()) render(); }catch(e){}
+}
+document.addEventListener('visibilitychange',resyncOnReturn);
+window.addEventListener('pageshow',function(e){ if(e.persisted) resyncOnReturn(); });
 </script>
 </body>
 </html>
