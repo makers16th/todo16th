@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS · _TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="resync-20260812">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="enddate-autodone-20260814">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -1159,7 +1159,7 @@ function editHTML(t){
         <input type="time" id="ef-time" value="${t.time||''}"${isEvent(t)?'':' hidden'} title="시간 (선택)">
         <input type="date" id="ef-date" value="${t.date||''}" title="시작일 (비우면 ‘날짜 미정’)">
         <span class="ef-tilde">~</span>
-        <input type="date" id="ef-dateEnd" value="${doneTask?(effEnd(t)||''):(t.endDate||'')}" min="${t.date||''}" title="${doneTask?'완료일 (완료한 날 · 바꾸면 완료 기록도 함께 조정돼요)':'종료일 (선택 · 여러 날에 걸친 일이면 지정)'}">
+        <input type="date" id="ef-dateEnd" value="${doneTask?(effEnd(t)||''):(t.endDate||'')}" min="${t.date||''}" title="${doneTask?'완료일 (완료한 날 · 바꾸면 완료 기록도 함께 조정돼요)':'종료일 (선택 · 여러 날에 걸친 일이면 지정 · 지난 날짜로 지정하면 그 날 완료로 자동 체크)'}">
       </div>
       <textarea class="ef-note" id="ef-note" placeholder="메모 (선택)">${esc(t.note||'')}</textarea>
       <div class="ef-acts">
@@ -1302,9 +1302,11 @@ function saveEdit(id){
   if(type!=='event')patch.priority=$('ef-pri').value;
   if(type==='event'&&t.done){patch.done=false;patch.doneAt=null;}   // 일정으로 바꾸면 완료상태 해제
   else if(t.done&&type!=='event'&&sd){const ne=ed||sd;if(t.doneAt!==ne)patch.doneAt=ne;} // 완료된 할 일: 편집한 날짜가 최우선 — 완료일(doneAt)을 입력한 종료일에 맞춰 화면에도 그대로 반영
+  else if(!t.done&&type!=='event'&&rawEd&&sd){const fin=ed||sd;if(fin<todayYmd()){patch.done=true;patch.doneAt=fin;}} // 미완료 할 일에 지난 날짜로 종료일 지정 → 그 날 완료한 것으로 자동 체크(자동 연장 종료)
   Store.tasks.update(id,patch);
   state.ui.editingId=null;renderProjects();renderList();
-  if(!t.done&&type!=='event'&&rawEd&&!ed&&sd&&sd<todayYmd())toast('미완료 할 일은 완료 전까지 오늘로 자동 연장돼요 · 완료 체크하면 그 날로 정리됩니다');
+  if(patch.done&&!t.done)toast('종료일이 지난 할 일이라 완료 처리했어요 ✓');
+  else if(!t.done&&type!=='event'&&rawEd&&!ed&&sd&&sd<todayYmd())toast('미완료 할 일은 완료 전까지 오늘로 자동 연장돼요 · 완료 체크하면 그 날로 정리됩니다');
 }
 
 let toastT;
@@ -1626,6 +1628,9 @@ async function resyncOnReturn(){
 }
 document.addEventListener('visibilitychange',resyncOnReturn);
 window.addEventListener('pageshow',function(e){ if(e.persisted) resyncOnReturn(); });
+
+// 구버전 Chrome(안드로이드) PWA 설치 조건 충족용 최소 서비스워커(캐싱 없음) — https에서만
+if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
 </body>
 </html>
