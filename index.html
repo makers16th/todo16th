@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="ownerfilter-20260817">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="fluidside-20260817">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -68,7 +68,11 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 button{cursor:pointer;border:none;background:none}
 ::selection{background:color-mix(in srgb,var(--gold) 25%,white)}
 
-.app{display:grid;grid-template-columns:322px 1fr;height:100vh;overflow:hidden}
+/* 사이드바 폭은 창 너비에 따라 연속적으로 늘어난다(760px 이하는 서랍이라 이 값이 무시된다).
+   하한 248px: 이보다 좁으면 프로젝트 이름이 뭉개진다.
+   상한 460px: 큰 모니터에서 프로젝트 목록에 여유를 준다(2222px 이상에서 걸린다).
+   기울기 18vw+60px: 1456px 창에서 322px가 되도록 맞춘 값(기존 고정폭과 동일 지점). */
+.app{display:grid;grid-template-columns:clamp(248px,calc(18vw + 60px),460px) 1fr;height:100vh;overflow:hidden}
 
 /* ---------- 사이드바 ---------- */
 .sidebar{
