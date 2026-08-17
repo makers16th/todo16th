@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
-<title>MAKERS · _TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="enddate-autodone-20260814">
+<title>MAKERS TASKS</title>
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="brandmark-20260817">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 /* ============================================================
-   MAKERS _TASKS  —  색상 컨셉 (여기만 바꾸면 전체 톤이 바뀝니다)
+   MAKERS TASKS  —  색상 컨셉 (여기만 바꾸면 전체 톤이 바뀝니다)
    ============================================================ */
 :root{
   /* 딥 포레스트 그린 — MAKERS 브랜드(랜딩·수석코치 문서와 동일 계열) */
@@ -68,7 +68,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 button{cursor:pointer;border:none;background:none}
 ::selection{background:color-mix(in srgb,var(--gold) 25%,white)}
 
-.app{display:grid;grid-template-columns:248px 1fr;height:100vh;overflow:hidden}
+.app{display:grid;grid-template-columns:322px 1fr;height:100vh;overflow:hidden}
 
 /* ---------- 사이드바 ---------- */
 .sidebar{
@@ -77,12 +77,16 @@ button{cursor:pointer;border:none;background:none}
   padding:20px 14px;gap:6px;overflow-y:auto;
 }
 .brand{display:flex;align-items:center;gap:9px;padding:4px 8px 16px}
-.brand .logo{display:flex;gap:3px}
-.brand .logo i{width:9px;height:9px;border-radius:50%;display:block}
-.brand .logo i:nth-child(1){background:var(--gold)}
-.brand .logo i:nth-child(2){background:var(--red)}
+/* MAKERS 모래시계 마크. 알파 채널만 쓰는 mask라 배경색으로 색을 바꿀 수 있다
+   — 포레스트 사이드바 위에서는 흰색, 크림색 로그인 카드 위에서는 포레스트.
+   외부 파일 대신 data URI인 이유: 이 앱은 CSS·JS를 전부 인라인한 단일 파일이고
+   서비스워커에 캐싱이 없어 파일을 나누면 요청만 하나 더 늘어난다. */
+:root{--logo-mark:url(data:image/png;base64,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)}
+.brand .logo{flex:none;width:17px;height:26px;background:#fff;
+  -webkit-mask:var(--logo-mark) center/contain no-repeat;
+          mask:var(--logo-mark) center/contain no-repeat}
+.login-brand .logo{background:var(--forest-800)}
 .brand b{font-size:15px;letter-spacing:.5px}
-.brand span{color:var(--cream-soft);font-size:12px;font-weight:600;letter-spacing:1px}
 
 .side-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--cream-soft);
   padding:14px 8px 6px;text-transform:uppercase}
@@ -303,7 +307,6 @@ button{cursor:pointer;border:none;background:none}
   .mb-btn:active{background:rgba(255,255,255,.12)}
   .mb-title{flex:1;display:flex;align-items:baseline;gap:6px;min-width:0}
   .mb-title b{font-size:16px;letter-spacing:.5px}
-  .mb-title span{color:var(--cream-soft);font-size:11px;font-weight:700;letter-spacing:1px}
 
   /* 서랍(사이드바) — 왼쪽에서 슬라이드 */
   .sidebar{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:320px;z-index:60;
@@ -510,8 +513,8 @@ button{cursor:pointer;border:none;background:none}
   <!-- 사이드바 -->
   <aside class="sidebar">
     <div class="brand">
-      <span class="logo"><i></i><i></i></span>
-      <b>MAKERS</b><span>_TASKS</span>
+      <span class="logo" role="img" aria-label="MAKERS"></span>
+      <b>MAKERS TASKS</b>
     </div>
     <div class="side-label">프로젝트</div>
     <div class="proj-hint">☑ 프로젝트를 체크하면 그 프로젝트 항목만 보여요 (‘전체’로 모두 보기)</div>
@@ -542,7 +545,7 @@ button{cursor:pointer;border:none;background:none}
     <!-- 폰 전용 상단 앱바 -->
     <div class="mobilebar">
       <button class="mb-btn" data-action="toggle-drawer" aria-label="메뉴 열기">☰</button>
-      <div class="mb-title"><b>MAKERS</b><span>_TASKS</span></div>
+      <div class="mb-title"><b>MAKERS TASKS</b></div>
     </div>
     <div class="topbar">
       <div class="tabs">
@@ -600,7 +603,7 @@ button{cursor:pointer;border:none;background:none}
 <!-- 로그인 화면 (백엔드 연결 후 활성화 · 로컬 모드에선 hidden 유지) -->
 <div class="loginscreen" id="loginScreen" hidden>
   <form class="login-card" id="loginForm">
-    <div class="brand login-brand"><span class="logo"><i></i><i></i></span><b>MAKERS</b><span>_TASKS</span></div>
+    <div class="brand login-brand"><span class="logo" role="img" aria-label="MAKERS"></span><b>MAKERS TASKS</b></div>
     <h2 id="loginTitle">로그인</h2>
     <input type="text" id="loginName" placeholder="이름" autocomplete="name" hidden>
     <input type="email" id="loginEmail" placeholder="이메일" autocomplete="username">
@@ -855,7 +858,7 @@ const Store = (function(){
       if(_mode==='local'){
         let s; const blob = dataRaw ? {tasks:dataRaw.tasks, projects:dataRaw.projects, ui:_prefs} : null;
         if(blob){ s=migrate(blob); }
-        else { s=defaultState(); s.tasks.push({id:uid(),text:'_TASKS 보드 둘러보기 — 할 일을 추가해 보세요 ✏️',project:s.projects[0].id,priority:'mid',done:false,createdAt:Date.now(),date:ymd(new Date()),endDate:null,doneAt:null,note:''}); }
+        else { s=defaultState(); s.tasks.push({id:uid(),text:'MAKERS TASKS 보드 둘러보기 — 할 일을 추가해 보세요 ✏️',project:s.projects[0].id,priority:'mid',done:false,createdAt:Date.now(),date:ymd(new Date()),endDate:null,doneAt:null,note:''}); }
         _data.tasks.length=0;    _data.tasks.push.apply(_data.tasks,s.tasks);
         _data.projects.length=0; _data.projects.push.apply(_data.projects,s.projects);
         _prefs=s.ui;
