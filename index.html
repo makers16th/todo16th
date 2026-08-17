@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="brandmark-20260817">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="ownerfilter-20260817">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -86,7 +86,7 @@ button{cursor:pointer;border:none;background:none}
   -webkit-mask:var(--logo-mark) center/contain no-repeat;
           mask:var(--logo-mark) center/contain no-repeat}
 .login-brand .logo{background:var(--forest-800)}
-.brand b{font-size:15px;letter-spacing:.5px}
+.brand b{font-size:17px;letter-spacing:.5px}
 
 .side-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--cream-soft);
   padding:14px 8px 6px;text-transform:uppercase}
@@ -797,8 +797,21 @@ const Store = (function(){
       rest('GET','projects?select=*&order=created_at.asc'),
       rest('GET','tasks?select=*&order=sort.asc.nullslast,created_at.asc')
     ]);
-    _data.projects.length=0; (res[0]||[]).forEach(r=>_data.projects.push(rowToProj(r)));
-    _data.tasks.length=0;    (res[1]||[]).forEach(r=>_data.tasks.push(rowToTask(r)));
+    // 마스터 계정은 전체 읽기 RLS(projects_select_master/tasks_select_master) 때문에
+    // 남의 '개인' 프로젝트와 그 할 일까지 응답에 실려 온다. 일상 보드에서까지 볼 이유가 없으므로
+    // 일반 계정과 같은 범위(공유 · 내 소유 · 내가 멤버)로 좁혀서 그린다.
+    // 전체 조회가 필요하면 admin.html(마스터 콘솔)을 쓴다.
+    // uid를 모르는 상태(로컬 모드 등)에서는 거르지 않는다 — 잘못 걸러 내 데이터가 사라지는 쪽이 더 위험.
+    const uid=_tok&&_tok.uid;
+    let prows=res[0]||[], trows=res[1]||[];
+    if(uid){
+      prows=prows.filter(r=>r.shared||r.owner===uid||(Array.isArray(r.members)&&r.members.indexOf(uid)>=0));
+      const vis={}; prows.forEach(r=>{vis[r.id]=1;});
+      // 남의 항목이라도 내가 접근 가능한 프로젝트에 속하면 협업 대상이므로 남긴다.
+      trows=trows.filter(t=>t.owner===uid||(t.project&&vis[t.project]));
+    }
+    _data.projects.length=0; prows.forEach(r=>_data.projects.push(rowToProj(r)));
+    _data.tasks.length=0;    trows.forEach(r=>_data.tasks.push(rowToTask(r)));
     // 계정별 UI 설정(user_prefs) — 프로젝트 순서(proj_order) + 고정 필터(proj_filter).
     // 테이블/컬럼이 아직 없어도 앱은 정상 동작(비치명적). 행이 없으면 명시적으로 []:
     // 직전 계정 값이 새 계정으로 새지 않게. 단, proj_filter 컬럼 미생성 시엔 로컬 값을 지우지 않고 유지.
