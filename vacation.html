@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#162e23">
 <meta name="robots" content="noindex">
 <title>MAKERS · 휴가 관리</title>
-<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel + appr-balance + term-approver + viewer-role 2026-07-07 -->
+<!-- build: vacation v2 approval-chain 2026-07-06 · medit-panel + appr-balance + term-approver + viewer-role 2026-07-07 · fiscal-year basis 2026-09-21 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -322,7 +322,7 @@ footer{border-top:1px solid var(--line);padding:18px 0 40px;font-size:12px;color
 
     <p class="rules">
       <b>계산 기준</b> —
-      ① 법정연차는 근로기준법 제60조 최소 기준, <b>입사일(기념일) 기준 연차연도</b>로 계산해요: 1년 미만 매월 1일(최대 11일) · 1년 이상 15일 · 3년 이상 2년마다 +1일(최대 25일).
+      ① 법정연차는 근로기준법 제60조 최소 기준, <b>회계연도(1/1~12/31) 기준</b>으로 계산해요: 입사한 해는 매월 1일(최대 11일) · 다음 해는 15일×(입사한 해 재직일÷365, 0.5일 단위 올림)+1주년 전까지 생기는 월차 · 그 다음 해부터 15일, 이후 2년마다 +1일(최대 25일).
       ② <b>공휴일 적립</b>: 공휴일 근무가 원칙이라, 월~금에 해당하는 공휴일 하루당 휴가 1일이 적립돼요. 개인 근무 요일과 무관하며(월~금 기준), 토·일에 놓인 공휴일은 제외(대체공휴일은 평일이라 포함).
       ③ 휴가 사용은 <b>날짜 단위 기록</b>(반차 0.5일)이에요 — 근무일이 저마다 달라 자동 차감은 하지 않아요.
       ④ 연차 이월은 자동 계산하지 않아요 — 필요하면 마스터가 '조정'으로 반영해요.
@@ -424,7 +424,8 @@ async function fetchAll(path){  // Max Rows(1000) 잘림 방지
     if(!rows||rows.length<PAGE)break;}
   return out;}
 
-/* ---------- 휴가 계산 (근로기준법 60조 최소 기준 · 입사일 기준 연차연도) ---------- */
+/* ---------- 휴가 계산 (근로기준법 60조 최소 기준 · 회계연도 1/1~12/31 기준 — 2026-09-21 입사일 기준에서 전환) ----------
+   서버의 rpc/vac_balance(supabase-schema.sql)가 같은 식을 쓴다. 여기를 고치면 거기도 같이 고칠 것. */
 function monthsCompleted(hire,today){   // 1년 미만 월차: 입사 '일'이 돌아올 때마다 1개월
   let m=(today.getFullYear()-hire.getFullYear())*12+(today.getMonth()-hire.getMonth());
   if(today.getDate()<hire.getDate())m--;
@@ -434,20 +435,22 @@ function serviceYears(hire,today){      // 만 근속연수
   const ann=new Date(today.getFullYear(),hire.getMonth(),hire.getDate());
   if(today<ann)y--;
   return Math.max(0,y);}
-function leaveYearStart(hire,today){    // 현재 연차연도 시작 = 최근 입사기념일 (1년 미만이면 입사일)
-  const y=serviceYears(hire,today);
-  if(y<1)return new Date(hire.getTime());
-  return new Date(hire.getFullYear()+y,hire.getMonth(),hire.getDate());}
-function leaveYearEnd(hire,start){ // '다음 기념일 하루 전' — 입사 월·일 기준(2/29 입사 윤년 경계 겹침 방지)
-  const e=new Date(start.getFullYear()+1,hire.getMonth(),hire.getDate());
-  e.setDate(e.getDate()-1);return e;}
-function statutoryDays(hire,today){     // <1년: 완료개월(최대11) / ≥1년: 15+floor((근속-1)/2), 최대 25
-  const y=serviceYears(hire,today);
-  if(y<1)return Math.min(11,monthsCompleted(hire,today));
-  return Math.min(25,15+Math.floor((y-1)/2));}
+function leaveYearStart(hire,today){    // 회계연도 시작 = 올해 1/1 (올해 입사자는 입사일)
+  const s=new Date(today.getFullYear(),0,1);
+  return hire>s?new Date(hire.getTime()):s;}
+function leaveYearEnd(hire,start){return new Date(start.getFullYear(),11,31);}
+function statutoryDays(hire,today){     // n=올해-입사연도. 0: 완료개월(최대11) / 1: 비례연차+올해 생긴 월차 / ≥2: 15+floor((n-2)/2), 최대 25
+  const n=today.getFullYear()-hire.getFullYear();
+  if(n<=0)return Math.min(11,monthsCompleted(hire,today));
+  if(n===1){
+    const hy=hire.getFullYear(),eoy=new Date(hy,11,31);
+    const worked=Math.round((eoy-hire)/864e5)+1,yearDays=Math.round((new Date(hy+1,0,1)-new Date(hy,0,1))/864e5);
+    const pro=Math.ceil(30*worked/yearDays)/2;            // 15일 × 재직일/연일수, 0.5일 단위 올림
+    return pro+Math.min(11,monthsCompleted(hire,today))-Math.min(11,monthsCompleted(hire,eoy));}
+  return Math.min(25,15+Math.floor((n-2)/2));}
 function isWeekdayYmd(s){const w=parseYmd(s).getDay();return w>=1&&w<=5;}
 
-/* uid 한 명의 이번 연차연도 정산 */
+/* uid 한 명의 올해(회계연도) 정산 */
 function calcFor(uidv){
   const emp=employees[uidv]||{};
   const hireS=emp.hire_date||null;
@@ -473,7 +476,7 @@ function calcFor(uidv){
     else if(r.vdate<=ty)used+=d;
     else planned+=d;});
   const remain=stat+accList.length+adjust-used-planned;
-  return {hire:hireS,ready:true,recs,lyS:lySy,lyE:lyEy,years:serviceYears(hire,t),
+  return {hire:hireS,ready:true,recs,lyS:lySy,lyE:lyEy,years:serviceYears(hire,t),fy:t.getFullYear()-hire.getFullYear(),
     months:monthsCompleted(hire,t),stat,accrued:accList.length,accList,upcoming:upcoming.length,
     nextHol:upcoming[0]||null,used,planned,adjust,pend,remain};}
 
@@ -588,12 +591,12 @@ function renderSummary(){
     const stg=chainStages(viewUid);
     const lineTxt=(stg&&stg.length&&!(mine&&isMaster))?` · 결재라인 <b>${stg.map(s=>esc(s.name)).join(' → ')}</b>`:'';
     h+=`<div class="sum-meta">입사 <b>${fmtD(c.hire)}</b> · ${c.years<1?`근속 ${c.months}개월`:`근속 만 ${c.years}년`}
-      · 연차연도 <b>${fmtD(c.lyS)} ~ ${fmtD(c.lyE)}</b>
+      · 회계연도 <b>${fmtD(c.lyS)} ~ ${fmtD(c.lyE)}</b>
       ${c.nextHol?` · 다음 공휴일 <b>${fmtMD(c.nextHol.hdate)}</b> ${esc(c.nextHol.hname)}`:''}
-      ${c.upcoming?` (연차연도 내 적립 예정 ${c.upcoming}일)`:''}${lineTxt}
+      ${c.upcoming?` (연내 적립 예정 ${c.upcoming}일)`:''}${lineTxt}
       ${c.pend?` · 승인 대기 <b>${fmtDays(c.pend)}</b>`:''}</div>`;
     h+=`<div class="stats">
-      <div class="stat"><div class="n">${fmtDays(c.stat)}</div><div class="l">법정연차${c.years<1?' (월차)':''}</div></div>
+      <div class="stat"><div class="n">${fmtDays(c.stat)}</div><div class="l">법정연차${c.fy<=0?' (월차)':c.fy===1?' (비례+월차)':''}</div></div>
       <div class="stat"><div class="n">+${fmtDays(c.accrued)}</div><div class="l">공휴일 적립</div></div>
       <div class="stat"><div class="n${c.adjust<0?' neg':''}">${c.adjust>=0?'+':''}${fmtDays(c.adjust)}</div><div class="l">조정</div></div>
       <div class="stat"><div class="n">−${fmtDays(c.used)}</div><div class="l">사용</div></div>
@@ -639,12 +642,12 @@ function renderRecords(){
   const inYear=r=>c.ready&&r.vdate>=c.lyS&&r.vdate<=c.lyE;
   const list=showAllRec||!c.ready?apr:apr.filter(inYear);
   const older=c.ready?apr.length-apr.filter(inYear).length:0;
-  $('recSub').textContent=c.ready?(showAllRec?'전체 기간':`이번 연차연도 (${fmtD(c.lyS)}~)`):'';
+  $('recSub').textContent=c.ready?(showAllRec?'전체 기간':`올해 (${fmtD(c.lyS)}~)`):'';
   $('useDate').value=$('useDate').value||todayYmd();
   $('adjDate').value=$('adjDate').value||todayYmd();
   $('adjForm').hidden=!isMaster;
   let h='';
-  // 승인 대기 / 반려 — 연차연도 필터와 무관하게 전부 표시(신청은 미래 연차연도일 수도 있음)
+  // 승인 대기 / 반려 — 연도 필터와 무관하게 전부 표시(신청은 내년일 수도 있음)
   const pendG=groupReqs(c.recs.filter(r=>stOf(r)==='pending'));
   const rejG=groupReqs(c.recs.filter(r=>stOf(r)==='rejected'));
   if(pendG.length){
@@ -685,7 +688,7 @@ function renderRecords(){
   }
   $('recList').innerHTML=h;
   const tg=$('recToggle');
-  if(c.ready&&(older>0||showAllRec)){tg.hidden=false;tg.textContent=showAllRec?'이번 연차연도만 보기':`전체 기록 보기 (다른 연차연도 ${older}건 포함)`;}
+  if(c.ready&&(older>0||showAllRec)){tg.hidden=false;tg.textContent=showAllRec?'올해 기록만 보기':`전체 기록 보기 (다른 연도 ${older}건 포함)`;}
   else tg.hidden=true;
 }
 function renderOverview(){
