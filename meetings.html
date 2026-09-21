@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#162e23">
+<meta name="robots" content="noindex">
+<title>MAKERS · 회의록</title>
+<!-- build: meetings v1 2026-09-20 (안건·논의·결정·액션 / 이월 / 마크다운) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=lime1">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=lime1">
+<style>
+/* MAKERS 브랜드 팔레트 — index.html·vacation.html과 동일 계열 */
+:root{
+  --forest:#162e23; --forest-deep:#0e1f17;
+  --gold:#c58f23; --gold-ink:#8f6512;
+  --pine:#2f6b4e; --red:#a81d2b;
+  --paper:#f6f4eb; --card:#fffefb; --chip:#eeebdd;
+  --line:#e3ded2; --line-strong:#ccc4b0;
+  --ink:#1f2a24; --ink-soft:#5c6b62;
+  --cream:#f2efe3; --cream-soft:#9db1a2;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(16,30,23,.05), 0 6px 20px rgba(16,30,23,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+  background:var(--paper);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+textarea{resize:none;overflow:hidden}
+::selection{background:color-mix(in srgb,var(--gold) 25%,white)}
+[hidden]{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ---------- 헤더 ---------- */
+header{background:var(--forest);color:var(--cream);padding:26px 0 22px}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:var(--gold);font-weight:700;margin-bottom:6px}
+header h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.head-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.head-row .grow{flex:1}
+.me{font-size:12px;color:var(--cream-soft);text-align:right}
+.me b{color:var(--cream);font-weight:700}
+.hbtn{display:inline-block;font-size:11.5px;font-weight:700;color:var(--cream-soft);
+  border:1px solid rgba(255,255,255,.22);padding:6px 12px;transition:.13s;white-space:nowrap;border-radius:9px}
+.hbtn:hover{color:var(--cream);border-color:rgba(255,255,255,.45)}
+.topnav{display:flex;flex-wrap:wrap;gap:3px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:3px}
+.topnav a{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--cream-soft);white-space:nowrap;transition:.13s}
+.topnav a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
+.topnav a.active,.topnav a.active:hover{background:var(--gold);color:#12271d}
+
+/* ---------- 로그인 게이트 ---------- */
+.gate{max-width:360px;margin:60px auto;background:var(--card);border:1px solid var(--line);
+  padding:28px;display:flex;flex-direction:column;gap:11px;border-radius:var(--radius);box-shadow:var(--shadow)}
+.gate h2{font-size:17px;font-weight:800;color:var(--forest);text-align:center;margin-bottom:4px}
+.gate p{font-size:13px;color:var(--ink-soft);text-align:center}
+.gate input{background:var(--paper);border:1px solid var(--line);padding:11px 13px;outline:none;transition:.13s;border-radius:10px}
+.gate input:focus{border-color:var(--gold)}
+.gate .go{background:var(--forest);color:var(--cream);font-weight:700;padding:12px;transition:.13s;border-radius:10px}
+.gate .go:hover{background:var(--forest-deep)}
+.gate .err{color:var(--red);font-size:12.5px;font-weight:600;text-align:center}
+
+main.wrap{padding-top:22px;padding-bottom:40px}
+
+/* ---------- 안내 배너 ---------- */
+.banner{background:#fff8e6;border:1px solid #e8d49a;
+  border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.7}
+.banner b{color:var(--gold-ink)}
+.banner .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.banner pre{background:var(--forest-deep);color:#cfe3d6;border-radius:10px;padding:12px 14px;margin-top:10px;
+  font-size:11.5px;line-height:1.6;max-height:220px;overflow:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* ---------- 레이아웃 ---------- */
+.layout{display:grid;grid-template-columns:288px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 좌측 회의 목록 */
+.side{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px;position:sticky;top:14px}
+@media(max-width:860px){.side{position:static}}
+.side-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.side-head h2{font-size:13px;font-weight:800;color:var(--forest);flex:1;letter-spacing:.02em}
+.side-search{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:9px;
+  padding:8px 11px;outline:none;font-size:13px;margin-bottom:10px}
+.side-search:focus{border-color:var(--gold)}
+.mlist{display:flex;flex-direction:column;gap:3px;max-height:56vh;overflow-y:auto;margin:0 -4px;padding:0 4px}
+@media(max-width:860px){.mlist{max-height:none}}
+.mitem{display:block;width:100%;text-align:left;padding:10px 11px;border-radius:10px;transition:.12s;border:1px solid transparent}
+.mitem:hover{background:var(--paper)}
+.mitem.active{background:var(--paper);border-color:var(--line-strong)}
+.mitem .t{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitem .d{font-size:11.5px;color:var(--ink-soft);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.mitem .d .n{background:var(--chip);border-radius:99px;padding:0 6px;font-weight:700;font-size:10.5px}
+.mitem.active .t{color:var(--forest)}
+.btn-new{width:100%;background:var(--forest);color:var(--cream);font-weight:700;padding:10px;
+  border-radius:10px;transition:.13s;font-size:13px;margin-top:10px}
+.btn-new:hover{background:var(--forest-deep)}
+.side-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:6px;flex-wrap:wrap}
+
+/* 공통 작은 버튼 */
+.sbtn{font-size:11.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);
+  border-radius:8px;padding:5px 10px;transition:.12s;background:var(--card);white-space:nowrap}
+.sbtn:hover{border-color:var(--line-strong);color:var(--ink)}
+.sbtn.danger:hover{border-color:var(--red);color:var(--red)}
+.sbtn.go{background:var(--forest);border-color:var(--forest);color:var(--cream)}
+.sbtn.go:hover{background:var(--forest-deep);color:#fff}
+
+/* ---------- 회의 상세 ---------- */
+.detail{min-width:0}
+.mhead{background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:14px}
+.mtitle{width:100%;font-size:20px;font-weight:800;color:var(--forest);letter-spacing:-.02em;
+  border:none;outline:none;background:transparent;padding:0 0 8px}
+.mtitle::placeholder{color:var(--line-strong)}
+.mmeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.fld{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);
+  border-radius:9px;padding:6px 10px}
+.fld label{font-size:11px;font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.fld input,.fld select{border:none;outline:none;background:transparent;font-size:13px;min-width:70px}
+.fld input.wide{min-width:170px}
+.fld:focus-within{border-color:var(--gold)}
+/* 참석자·공유 대상을 여는 버튼 — 입력칸처럼 보이되 누르면 사람 목록이 뜬다 */
+.pickbtn{font-size:13px;font-weight:600;color:var(--ink);padding:1px 2px;border-radius:6px;
+  text-align:left;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pickbtn:hover{color:var(--gold-ink)}
+.pickbtn.is-blank{color:var(--line-strong);font-weight:500}
+.pickbtn.cnt{font-size:11.5px;font-weight:800;color:var(--gold-ink);background:var(--chip);
+  border:1px solid var(--line);border-radius:99px;padding:3px 9px;margin-left:2px}
+
+/* 사람 고르기 모달 (참석자 / 특정인 공유 공용) */
+.modal{position:fixed;inset:0;background:rgba(14,31,23,.45);display:flex;align-items:center;
+  justify-content:center;z-index:90;padding:20px}
+.modal-card{background:var(--card);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.28);
+  width:100%;max-width:380px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.modal-card h3{font-size:15px;font-weight:800;color:var(--forest)}
+.modal-card .hint{font-size:12.5px;color:var(--ink-soft);margin-top:-6px}
+.dirlist{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:6px;
+  border:1px solid var(--line);border-radius:11px;padding:11px;background:var(--paper)}
+.dirlist label{display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;line-height:1.3}
+.dirlist input{width:16px;height:16px;accent-color:var(--pine);flex:0 0 auto}
+.dirlist .mail{color:var(--ink-soft);font-size:11px;font-weight:500}
+.dirlist .none{color:var(--ink-soft);font-size:12.5px;text-align:center;padding:8px 0}
+.modal-foot{display:flex;gap:7px;justify-content:flex-end}
+.mtools{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.mtools .spacer{flex:1}
+.savestate{font-size:11.5px;color:var(--ink-soft);font-weight:600;align-self:center}
+
+/* 이월 배너 */
+.carry{background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.carry h3{font-size:12.5px;font-weight:800;color:var(--pine);margin-bottom:8px}
+.carry ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.carry li{font-size:12.5px;color:var(--ink-soft);display:flex;gap:7px;align-items:baseline}
+.carry li b{color:var(--ink);font-weight:700}
+.carry .when{font-size:11px;color:var(--gold-ink);font-weight:700;white-space:nowrap}
+
+/* 안건 카드 */
+/* 안건 목록 머리줄 — 개수와 순서 변경 안내를 한 줄로. 안건마다 버튼을 두지 않기 위한 자리 */
+.items-head{display:flex;align-items:baseline;gap:9px;padding:2px 4px 8px}
+.items-head .n{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-soft)}
+.items-head .hint{font-size:11.5px;color:var(--line-strong)}
+/* 손가락으로 쓰는 기기에서는 끌기가 안 되므로 안내를 감춘다 */
+@media (hover:none){.items-head .hint{display:none}}
+
+.items{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;transition:background .15s,border-color .15s}
+
+/* 결과가 정해진 안건은 카드 전체 색조로 구분한다 — 얇은 색선 대신 면으로.
+   결정은 가라앉은 초록, 보류는 따뜻한 황토. 논의는 기본 카드 그대로 둬서
+   색이 붙은 카드만 눈에 들어오게 한다. 안쪽 입력칸은 흰 바탕으로 바꿔 색이 겹치지 않게. */
+.item.s-decided{background:#e9f2ec;border-color:#b6d2c1}
+.item.s-decided .f textarea,.item.s-decided .act{background:#fff;border-color:#d2e2d8}
+.item.s-decided .f.decision textarea{background:#f5faf7;border-color:#bdd8c7}
+.item.s-decided .icat{background:#dcebe1;border-color:#c3dbcb}
+
+.item.s-hold{background:#faf0d9;border-color:#ddc78d}
+.item.s-hold .f textarea,.item.s-hold .act{background:#fff;border-color:#e8d9b4}
+.item.s-hold .icat{background:#f2e4c2;border-color:#dfcd9e}
+.ihead{display:flex;align-items:flex-start;gap:9px;padding:14px 16px}
+/* 안건 번호가 곧 순서 손잡이 — 따로 버튼을 두지 않아 머리줄이 한 줄로 유지된다 */
+.inum{font-size:12px;font-weight:800;color:var(--line-strong);padding-top:3px;min-width:16px;
+  cursor:grab;user-select:none}
+.item:hover .inum{color:var(--ink-soft)}   /* 카드에 올리면 번호가 먼저 살아나 손잡이임을 알린다 */
+.inum:hover{color:var(--gold)}
+.item.dragging{opacity:.45}
+.item.dropzone{background:#f3f7f4}
+.ititle{flex:1;font-size:15px;font-weight:700;border:none;outline:none;background:transparent;padding:2px 0}
+.ititle::placeholder{color:var(--line-strong);font-weight:600}
+.icat{width:88px;font-size:11.5px;font-weight:700;color:var(--gold-ink);background:var(--chip);
+  border:1px solid var(--line);border-radius:99px;padding:4px 9px;outline:none;text-align:center}
+.icat:focus{border-color:var(--gold)}
+.state{font-size:11px;font-weight:800;border-radius:99px;padding:5px 11px;border:1px solid var(--line);white-space:nowrap;transition:.12s}
+.state.open{background:var(--chip);color:var(--ink-soft)}
+.state.decided{background:var(--pine);color:#fff;border-color:var(--pine)}
+.state.hold{background:var(--gold);color:#12271d;border-color:var(--gold)}
+.ix{font-size:16px;color:var(--line-strong);line-height:1;padding:3px 4px;border-radius:6px}
+.ix:hover{color:var(--red)}
+.ibody{padding:0 16px 14px;display:flex;flex-direction:column;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f > span{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase}
+.f textarea{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  padding:9px 12px;outline:none;font-size:13.5px;line-height:1.65;min-height:38px;transition:.12s}
+.f textarea:focus{border-color:var(--gold);background:var(--card)}
+.f.decision textarea{background:#f3f7f4;border-color:#cfe0d5}
+.f.decision textarea:focus{border-color:var(--pine)}
+
+/* 액션 */
+.acts{display:flex;flex-direction:column;gap:6px}
+.acts > span{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-soft)}
+.act{display:flex;align-items:center;gap:7px;background:var(--paper);border:1px solid var(--line);
+  border-radius:10px;padding:7px 10px}
+.act.done{opacity:.55}
+.act.done .a-text{text-decoration:line-through}
+.act input[type=checkbox]{width:16px;height:16px;accent-color:var(--pine);flex:none;cursor:pointer}
+.a-text{flex:1;min-width:90px;border:none;outline:none;background:transparent;font-size:13px}
+.a-who{width:78px;border:none;outline:none;background:transparent;font-size:12px;color:var(--ink-soft);
+  border-left:1px solid var(--line);padding-left:8px}
+.a-due{width:120px;border:none;outline:none;background:transparent;font-size:12px;color:var(--ink-soft);
+  border-left:1px solid var(--line);padding-left:8px}
+.a-due.soon{color:var(--red);font-weight:700}
+.addrow{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px}
+.btn-add{width:100%;border:1px dashed var(--line-strong);color:var(--ink-soft);font-weight:700;
+  padding:12px;border-radius:12px;transition:.12s;font-size:13px;background:var(--card)}
+.btn-add:hover{border-color:var(--gold);color:var(--gold-ink);background:#fffdf6}
+
+.summary{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px;margin-top:14px}
+.summary > span{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-soft)}
+.summary textarea{width:100%;margin-top:6px;background:var(--paper);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;outline:none;font-size:13.5px;line-height:1.65;min-height:60px}
+.summary textarea:focus{border-color:var(--gold);background:var(--card)}
+
+.empty{background:var(--card);border:1px dashed var(--line-strong);border-radius:var(--radius);
+  padding:56px 24px;text-align:center;color:var(--ink-soft)}
+.empty b{display:block;font-size:15px;color:var(--ink);margin-bottom:6px;font-weight:700}
+
+footer{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12px;color:var(--ink-soft)}
+
+/* 토스트 */
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:var(--forest-deep);
+  color:var(--cream);padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;
+  opacity:0;pointer-events:none;transition:.2s;z-index:80;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="grow">
+      <div class="eyebrow">MAKERS · MEETINGS</div>
+      <h1>회의록</h1>
+    </div>
+    <nav class="topnav" id="topnav" hidden>
+      <a href="index.html">📋 할 일 보드</a>
+      <a href="meetings.html" class="active" aria-current="page">🗒 회의록</a>
+      <a href="vacation.html">🏖 휴가 관리</a>
+    </nav>
+    <div class="me" id="meBox" hidden><b id="meName"></b><br><span id="meMail"></span></div>
+    <button class="hbtn" id="btnOut" hidden>로그아웃</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 로그인 (보드와 동일 계정·동일 세션 공유) -->
+  <div class="gate" id="loginView" hidden>
+    <h2>회의록 로그인</h2>
+    <p>할 일 보드와 같은 계정입니다.<br>보드에 로그인돼 있으면 자동으로 들어와요.</p>
+    <input id="inEmail" type="email" placeholder="이메일" autocomplete="username">
+    <input id="inPw" type="password" placeholder="비밀번호" autocomplete="current-password">
+    <div class="err" id="loginErr" hidden></div>
+    <button class="go" id="btnLogin">들어가기</button>
+  </div>
+
+  <div id="appView" hidden>
+
+    <!-- 서버 표가 아직 없을 때 -->
+    <div class="banner" id="setupBanner" hidden>
+      <b>지금은 이 브라우저에만 저장됩니다.</b> 서버에 <code>meetings</code> 표가 아직 없어요.
+      아래 SQL을 Supabase 대시보드 → SQL Editor에 붙여넣고 실행하면 팀과 공유되고 기기 간에도 이어집니다.
+      실행한 뒤 <b>[서버로 올리기]</b>를 누르면 지금까지 쓴 내용이 그대로 올라가요.
+      <div class="row">
+        <button class="sbtn" id="btnCopySql">SQL 복사</button>
+        <button class="sbtn" id="btnToggleSql">SQL 보기</button>
+        <button class="sbtn go" id="btnMigrate">서버로 올리기</button>
+      </div>
+      <pre id="sqlBox" hidden></pre>
+    </div>
+
+    <div class="layout">
+      <!-- 좌: 회의 목록 -->
+      <aside class="side">
+        <div class="side-head"><h2>회의</h2><span class="savestate" id="modeTag"></span></div>
+        <input class="side-search" id="q" placeholder="제목·참석자·안건 검색" autocomplete="off">
+        <div class="mlist" id="mlist"></div>
+        <button class="btn-new" id="btnNew">＋ 새 회의</button>
+        <div class="side-foot">
+          <button class="sbtn" id="btnImport">가져오기</button>
+          <button class="sbtn" id="btnExportAll">전체 내보내기</button>
+          <input type="file" id="fileIn" accept="application/json,.json" hidden>
+        </div>
+      </aside>
+
+      <!-- 우: 회의 상세 -->
+      <section class="detail" id="detail"></section>
+    </div>
+  </div>
+</main>
+
+<!-- 사람 고르기 — 참석자와 '특정인 공유'가 같이 쓴다 -->
+<div class="modal" id="pickModal" hidden>
+  <div class="modal-card">
+    <h3 id="pickTitle">참석자</h3>
+    <p class="hint" id="pickHint"></p>
+    <div class="dirlist" id="pickList"></div>
+    <div class="modal-foot">
+      <button class="sbtn" id="pickCancel">취소</button>
+      <button class="sbtn go" id="pickOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<footer><div class="wrap">MAKERS · 회의록 — 안건마다 배경·논의·결정·액션을 남기고, 미결 안건과 미완료 액션은 다음 회의로 이월돼요.</div></footer>
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   MAKERS 회의록 — index.html(보드)·vacation.html(휴가)과 같은 Supabase·같은 로그인 세션
+   - 인증 토큰: localStorage 'makers_auth_v1' (세 화면이 공유)
+   - 서버: meetings(회의) / meeting_items(안건 — 액션은 jsonb 배열로 안건 안에)
+   - 서버 표가 없으면 localStorage 'makers_meetings_v1'에 저장하고, 표가 생기면 한 번에 올림
+   - 저장은 자동 — 입력 0.7초 후 조용히 저장(구조 변경은 즉시)
+   ============================================================ */
+const SB='https://bmejvuxyszbibjdegnxz.supabase.co';
+const KEY='sb_publishable_GbCZImWWSbQhBp1m5BPq6A_-QBcFLMz';
+const AUTH_KEY='makers_auth_v1';
+const LOCAL_KEY='makers_meetings_v1';
+
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function parseYmd(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+const todayYmd=()=>ymd(new Date());
+const WD=['일','월','화','수','목','금','토'];
+function fmtD(s){if(!s)return '';const d=parseYmd(s);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} (${WD[d.getDay()]})`;}
+function fmtMD(s){if(!s)return '';const d=parseYmd(s);return `${d.getMonth()+1}/${d.getDate()}`;}
+function daysFromToday(s){if(!s)return null;return Math.round((parseYmd(s)-parseYmd(todayYmd()))/864e5);}
+let toastT;
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800);}
+
+/* ---------- 인증 (보드와 동일 키·동일 형태) ---------- */
+let _tok=null;
+function lsGet(k){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null;}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function decodeJwt(t){try{let p=(t||'').split('.')[1];if(!p)return null;p=p.replace(/-/g,'+').replace(/_/g,'/');p+='='.repeat((4-p.length%4)%4);return JSON.parse(decodeURIComponent(escape(atob(p))));}catch(e){return null;}}
+function loadTok(){_tok=lsGet(AUTH_KEY);if(_tok&&!_tok.access_token)_tok=null;}
+function saveTok(j){const o=decodeJwt(j.access_token)||{};const meta=(j.user&&j.user.user_metadata)||o.user_metadata||{};
+  _tok={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at,
+    email:(j.user&&j.user.email)||o.email||(_tok&&_tok.email)||null,
+    uid:(j.user&&j.user.id)||o.sub||(_tok&&_tok.uid)||null,
+    name:(meta&&meta.name)||(_tok&&_tok.name)||null};
+  lsSet(AUTH_KEY,_tok);}
+function clearTok(){_tok=null;try{localStorage.removeItem(AUTH_KEY);}catch(e){}}
+function me(){if(!_tok)return null;return {id:_tok.uid,email:_tok.email||'',name:_tok.name||''};}
+
+function restHeaders(prefer){const h={'apikey':KEY,'Authorization':'Bearer '+((_tok&&_tok.access_token)||KEY),'Content-Type':'application/json'};if(prefer)h.Prefer=prefer;return h;}
+async function authPost(path,body){
+  const r=await fetch(SB+'/auth/v1/'+path,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok)throw new Error((j&&(j.msg||j.error_description||j.error||j.error_code))||('auth '+r.status));
+  return j;}
+async function doRefresh(){
+  // 보드·휴가 화면과 토큰 키를 공유 — 다른 탭이 이미 회전시킨 최신 토큰이 있으면 채택
+  const stored=lsGet(AUTH_KEY);
+  if(stored&&stored.access_token&&(!_tok||stored.access_token!==_tok.access_token)){_tok=stored;return true;}
+  if(!_tok||!_tok.refresh_token)return false;
+  try{
+    const j=await authPost('token?grant_type=refresh_token',{refresh_token:_tok.refresh_token});
+    if(j&&j.access_token){saveTok(j);return true;}
+  }catch(e){
+    const definite=/^auth 4\d\d/.test(e.message||'')||/invalid|already used|revoked|expired/i.test(e.message||'');
+    if(definite){const s2=lsGet(AUTH_KEY);
+      if(s2&&s2.access_token&&s2.access_token!==_tok.access_token){_tok=s2;return true;}
+      clearTok();}
+    return false;
+  }
+  clearTok();return false;}
+function rawRest(method,path,body,prefer,extra){
+  const h=restHeaders(prefer);if(extra)Object.assign(h,extra);
+  return fetch(SB+'/rest/v1/'+path,{method,headers:h,body:body!==undefined?JSON.stringify(body):undefined});}
+async function rest(method,path,body,prefer,extra){
+  let r=await rawRest(method,path,body,prefer,extra);
+  if(r.status===401){if(await doRefresh())r=await rawRest(method,path,body,prefer,extra);}
+  if(!r.ok){const t=await r.text().catch(()=>'');
+    let m=t.slice(0,160);try{const j=JSON.parse(t);if(j&&j.message)m=j.message;}catch(_){}
+    const e=new Error('REST '+r.status+' '+m);e.status=r.status;throw e;}
+  if(r.status===204)return null;
+  const txt=await r.text();return txt?JSON.parse(txt):null;}
+
+/* ============================================================
+   저장소 — 서버(Supabase) 또는 로컬(localStorage)
+   두 모드의 데이터 모양이 같아서 화면 코드는 모드를 몰라도 된다.
+   ============================================================ */
+const Store={
+  mode:'local',          // 'server' | 'local'
+  async detect(){
+    try{ await rest('GET','meetings?select=id&limit=1'); this.mode='server'; }
+    catch(e){ this.mode='local'; }
+    return this.mode;
+  },
+  _local(){ return lsGet(LOCAL_KEY)||{meetings:[],items:[]}; },
+  _saveLocal(d){ lsSet(LOCAL_KEY,d); },
+
+  async load(){
+    if(this.mode==='local'){ const d=this._local(); return {meetings:d.meetings||[],items:d.items||[]}; }
+    const meetings=await rest('GET','meetings?select=*&order=mdate.desc,created_at.desc')||[];
+    const items=await rest('GET','meeting_items?select=*&order=sort.asc')||[];
+    return {meetings,items};
+  },
+  async putMeeting(m){
+    if(this.mode==='local'){ const d=this._local(); const i=(d.meetings||[]).findIndex(x=>x.id===m.id);
+      if(i<0)(d.meetings=d.meetings||[]).push(m); else d.meetings[i]=m; this._saveLocal(d); return; }
+    await rest('POST','meetings',srvMeeting(m),'resolution=merge-duplicates');
+  },
+  async delMeeting(id){
+    if(this.mode==='local'){ const d=this._local();
+      d.meetings=(d.meetings||[]).filter(x=>x.id!==id); d.items=(d.items||[]).filter(x=>x.meeting!==id);
+      this._saveLocal(d); return; }
+    await rest('DELETE','meeting_items?meeting=eq.'+encodeURIComponent(id));
+    await rest('DELETE','meetings?id=eq.'+encodeURIComponent(id));
+  },
+  async putItem(it){
+    if(this.mode==='local'){ const d=this._local(); const i=(d.items||[]).findIndex(x=>x.id===it.id);
+      if(i<0)(d.items=d.items||[]).push(it); else d.items[i]=it; this._saveLocal(d); return; }
+    await rest('POST','meeting_items',srvItem(it),'resolution=merge-duplicates');
+  },
+  async putItems(list){
+    if(!list.length)return;
+    if(this.mode==='local'){ for(const it of list) await this.putItem(it); return; }
+    await rest('POST','meeting_items',list.map(srvItem),'resolution=merge-duplicates');
+  },
+  async delItem(id){
+    if(this.mode==='local'){ const d=this._local(); d.items=(d.items||[]).filter(x=>x.id!==id); this._saveLocal(d); return; }
+    await rest('DELETE','meeting_items?id=eq.'+encodeURIComponent(id));
+  }
+};
+// 서버로 보낼 때만 owner를 붙인다(로컬엔 불필요). 서버 기본값이 auth.uid()라 생략해도 되지만 명시해 둔다.
+function srvMeeting(m){const o=Object.assign({},m); delete o._dirty; o.owner=o.owner||(me()&&me().id)||null; if(!o.owner)delete o.owner; return o;}
+function srvItem(it){const o=Object.assign({},it); delete o._dirty; o.owner=o.owner||(me()&&me().id)||null; if(!o.owner)delete o.owner; return o;}
+
+/* ============================================================
+   상태
+   ============================================================ */
+const state={meetings:[],items:[],sel:null,q:'',projects:[],dir:[]};
+const STATES=[['open','논의'],['decided','결정'],['hold','보류']];
+const stLabel=s=>(STATES.find(x=>x[0]===s)||STATES[0])[1];
+/* 예전에 'talked'로 저장된 안건도 기본 상태(논의)로 흡수한다 */
+const stKey=s=>STATES.some(x=>x[0]===s)?s:'open';
+const CATS=['인사','계약','운영','시설','학생관리','채용','교육','5호점','마케팅','기타'];
+
+const selMeeting=()=>state.meetings.find(m=>m.id===state.sel)||null;
+const itemsOf=id=>state.items.filter(i=>i.meeting===id).sort((a,b)=>(a.sort||0)-(b.sort||0));
+
+/* ---------- 가입자 디렉터리 (보드 '공유 설정'과 같은 profiles 표) ---------- */
+async function loadDir(){
+  try{ state.dir=await rest('GET','profiles?select=id,email,name&order=email.asc')||[]; }
+  catch(e){ state.dir=[]; }
+}
+const dirName=id=>{const p=state.dir.find(x=>x.id===id);return p?(p.name||p.email):null;};
+/* 참석자 표시 — 고른 사람이 있으면 이름으로, 아직 없으면 예전 자유 입력값으로 */
+function attendeeText(m){
+  const ids=Array.isArray(m.attendee_ids)?m.attendee_ids:[];
+  if(!ids.length)return m.attendees||'';
+  const names=ids.map(dirName).filter(Boolean);
+  return names.length?names.join(', '):(m.attendees||'');
+}
+/* 공유 범위: 나만 / 특정인(members) / 팀 전원(shared) */
+function shareMode(m){ return m.shared?'team':((m.members&&m.members.length)?'list':'personal'); }
+
+/* ---------- 자동 저장 (0.7초 디바운스) ---------- */
+const pending={meetings:new Set(),items:new Set()};
+let saveT=null,saving=false;
+function markMeeting(id){pending.meetings.add(id);scheduleSave();}
+function markItem(id){pending.items.add(id);scheduleSave();}
+function scheduleSave(){setSaveState('…');clearTimeout(saveT);saveT=setTimeout(flush,700);}
+function setSaveState(t){const el=$('saveState');if(el)el.textContent=t;}
+async function flush(){
+  if(saving)return;
+  const ms=[...pending.meetings],its=[...pending.items];
+  if(!ms.length&&!its.length){setSaveState('');return;}
+  pending.meetings.clear();pending.items.clear();saving=true;
+  try{
+    for(const id of ms){const m=state.meetings.find(x=>x.id===id);if(m)await Store.putMeeting(m);}
+    const list=its.map(id=>state.items.find(x=>x.id===id)).filter(Boolean);
+    await Store.putItems(list);
+    setSaveState('저장됨');setTimeout(()=>{if(!pending.meetings.size&&!pending.items.size)setSaveState('');},1400);
+  }catch(e){
+    ms.forEach(x=>pending.meetings.add(x));its.forEach(x=>pending.items.add(x));
+    setSaveState('저장 실패');toast('저장 실패 — '+(e.message||''));
+  }finally{saving=false;}
+}
+window.addEventListener('beforeunload',e=>{if(pending.meetings.size||pending.items.size){e.preventDefault();e.returnValue='';}});
+
+/* ============================================================
+   렌더 — 좌측 목록
+   ============================================================ */
+function renderList(){
+  const q=state.q.trim().toLowerCase();
+  let list=state.meetings.slice().sort((a,b)=>(b.mdate||'').localeCompare(a.mdate||''));
+  if(q){
+    list=list.filter(m=>{
+      const hay=[m.title,m.attendees,m.place].join(' ').toLowerCase();
+      if(hay.includes(q))return true;
+      return itemsOf(m.id).some(i=>[i.title,i.category,i.context,i.discussion,i.decision].join(' ').toLowerCase().includes(q));
+    });
+  }
+  $('mlist').innerHTML=list.length?list.map(m=>{
+    const its=itemsOf(m.id);
+    const openN=its.filter(i=>i.state!=='decided').length;
+    return `<button class="mitem${m.id===state.sel?' active':''}" data-m="${esc(m.id)}">
+      <div class="t">${esc(m.title||'제목 없는 회의')}</div>
+      <div class="d"><span>${esc(fmtD(m.mdate))}</span>
+        ${its.length?`<span class="n">안건 ${its.length}</span>`:''}
+        ${openN?`<span class="n" style="color:var(--gold-ink)">미결 ${openN}</span>`:''}
+      </div></button>`;
+  }).join(''):`<div style="padding:18px 6px;font-size:12.5px;color:var(--ink-soft);text-align:center">${q?'검색 결과가 없어요':'아직 회의가 없어요'}</div>`;
+  $('modeTag').textContent=Store.mode==='local'?'이 브라우저':'';
+}
+
+/* ============================================================
+   렌더 — 회의 상세
+   ============================================================ */
+function renderDetail(){
+  const m=selMeeting();
+  if(!m){
+    $('detail').innerHTML=`<div class="empty"><b>회의를 고르거나 새로 만들어 주세요</b>
+      안건마다 배경·논의·결정을 남기면, 다음 회의를 만들 때 미결 안건과 미완료 액션이 자동으로 따라옵니다.</div>`;
+    return;
+  }
+  const its=itemsOf(m.id);
+  const mode=shareMode(m);
+  $('detail').innerHTML=`
+    <div class="mhead">
+      <input class="mtitle" id="fTitle" value="${esc(m.title||'')}" placeholder="회의 제목">
+      <div class="mmeta">
+        <div class="fld"><label>날짜</label><input type="date" id="fDate" value="${esc(m.mdate||'')}"></div>
+        <div class="fld"><label>시간</label><input type="time" id="fTime" value="${esc(m.mtime||'')}"></div>
+        <div class="fld"><label>참석</label>
+          <button class="pickbtn${attendeeText(m)?'':' is-blank'}" data-act="pickWho">${esc(attendeeText(m)||'고르기')}</button></div>
+        <div class="fld"><label>장소</label><input id="fPlace" value="${esc(m.place||'')}"></div>
+        <div class="fld"><label>공유</label><select id="fShared">
+          <option value="personal"${mode==='personal'?' selected':''}>🔒 나만</option>
+          <option value="list"${mode==='list'?' selected':''}>🎯 특정인</option>
+          <option value="team"${mode==='team'?' selected':''}>👥 팀 전원</option></select>
+          ${mode==='list'?`<button class="pickbtn cnt" data-act="pickMembers">${(m.members||[]).length}명</button>`:''}</div>
+      </div>
+      <div class="mtools">
+        <button class="sbtn" data-act="carry">다음 회의로 이월</button>
+        <button class="sbtn" data-act="md">마크다운 복사</button>
+        <span class="spacer"></span>
+        <span class="savestate" id="saveState"></span>
+        <button class="sbtn danger" data-act="delm">회의 삭제</button>
+      </div>
+    </div>
+    ${renderCarry(m)}
+    ${its.length?`<div class="items-head"><span class="n">안건 ${its.length}</span>
+      ${its.length>1?'<span class="hint">번호를 끌어서 순서를 바꿀 수 있습니다</span>':''}</div>`:''}
+    <div class="items" id="items">${its.map((it,i)=>renderItem(it,i)).join('')}</div>
+    <button class="btn-add" data-act="additem">＋ 안건 추가</button>
+    <div class="summary"><span>회의 총평 · 다음 회의 메모</span>
+      <textarea id="fSummary" class="auto" placeholder="이번 회의에서 합의한 큰 방향, 다음에 이어서 볼 것">${esc(m.summary||'')}</textarea></div>
+    <datalist id="catList">${CATS.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`;
+  document.querySelectorAll('textarea.auto').forEach(autoGrow);
+}
+
+function renderItem(it,idx){
+  const acts=Array.isArray(it.actions)?it.actions:[];
+  return `<div class="item s-${esc(stKey(it.state))}" data-i="${esc(it.id)}">
+    <div class="ihead">
+      <span class="inum" title="번호를 끌어서 순서를 바꿀 수 있습니다">${idx+1}</span>
+      <input class="ititle" data-f="title" value="${esc(it.title||'')}" placeholder="안건 제목">
+      <input class="icat" data-f="category" list="catList" value="${esc(it.category||'')}" placeholder="분류">
+      <button class="state ${esc(stKey(it.state))}" data-act="cycle">${esc(stLabel(stKey(it.state)))}</button>
+      <button class="ix" data-act="delitem" title="안건 삭제">×</button>
+    </div>
+    <div class="ibody">
+      <div class="f"><span>배경 · 현황</span><textarea class="auto" data-f="context" placeholder="지금 어떤 상태인지, 왜 안건이 됐는지">${esc(it.context||'')}</textarea></div>
+      <div class="f"><span>논의</span><textarea class="auto" data-f="discussion" placeholder="회의에서 오간 이야기">${esc(it.discussion||'')}</textarea></div>
+      <div class="f decision"><span>결정</span><textarea class="auto" data-f="decision" placeholder="무엇을 하기로 했는지">${esc(it.decision||'')}</textarea></div>
+      <div class="acts"><span>액션</span>
+        ${acts.map((a,ai)=>renderAct(a,ai)).join('')}
+        <button class="sbtn" data-act="addact" style="align-self:flex-start">＋ 액션 추가</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAct(a,ai){
+  const d=daysFromToday(a.due);
+  const soon=(!a.done&&d!==null&&d<=2)?' soon':'';
+  return `<div class="act${a.done?' done':''}" data-a="${ai}">
+    <input type="checkbox" data-act="actdone"${a.done?' checked':''}>
+    <input class="a-text" data-af="text" value="${esc(a.text||'')}" placeholder="할 일">
+    <input class="a-who" data-af="who" value="${esc(a.who||'')}" placeholder="담당">
+    <input class="a-due${soon}" type="date" data-af="due" value="${esc(a.due||'')}">
+    <button class="ix" data-act="delact" title="액션 삭제">×</button>
+  </div>`;
+}
+
+/* 지난 회의에서 넘어온 것들 — 이 회의보다 앞선 회의의 미결 안건·미완료 액션.
+   단, 이미 이 회의로 이월해 둔 안건(제목이 같은 것)은 빼고 "아직 안 가져온 것"만 보여준다.
+   그래서 이월 버튼을 누르고 나면 이 배너는 저절로 사라진다. */
+const CARRY_MAX=8;
+function renderCarry(m){
+  const prev=state.meetings.filter(x=>x.id!==m.id&&(x.mdate||'')<=(m.mdate||''))
+    .sort((a,b)=>(b.mdate||'').localeCompare(a.mdate||''))[0];
+  if(!prev)return '';
+  const mine=new Set(itemsOf(m.id).map(i=>(i.title||'').trim()).filter(Boolean));
+  const its=itemsOf(prev.id).filter(i=>(i.title||'').trim()&&!mine.has(i.title.trim()));
+  const openIts=its.filter(i=>i.state!=='decided');
+  const openActs=[];
+  its.forEach(i=>(i.actions||[]).forEach(a=>{if(!a.done&&(a.text||'').trim())openActs.push({a,i});}));
+  if(!openIts.length&&!openActs.length)return '';
+  const rows=[
+    ...openIts.map(i=>`<li><span class="when">${esc(stLabel(stKey(i.state)))}</span><b>${esc(i.title)}</b></li>`),
+    ...openActs.map(o=>`<li><span class="when">${o.a.due?esc(fmtMD(o.a.due)):'기한 없음'}</span>
+      <b>${esc(o.a.text)}</b><span>${o.a.who?esc(o.a.who)+' · ':''}${esc(o.i.title||'')}</span></li>`)
+  ];
+  const more=rows.length-CARRY_MAX;
+  return `<div class="carry">
+    <h3>지난 회의(${esc(fmtD(prev.mdate))})에서 아직 안 가져온 것 ${rows.length}건</h3>
+    <ul>${rows.slice(0,CARRY_MAX).join('')}
+      ${more>0?`<li style="color:var(--line-strong)">…외 ${more}건</li>`:''}</ul>
+  </div>`;
+}
+
+function autoGrow(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px';}
+
+/* ============================================================
+   조작
+   ============================================================ */
+function newMeeting(fromPrev){
+  const prev=state.meetings.slice().sort((a,b)=>(b.mdate||'').localeCompare(a.mdate||''))[0];
+  // 장소·참석자·공유는 지난 회의 그대로 이어받는다(정기 회의라 대개 같다).
+  // 제목만 비운다 — 회의 성격은 매번 다를 수 있고, 같은 이름이 목록에 겹쳐 보이면 헷갈린다.
+  const ids=prev?(prev.attendee_ids||[]).slice():[];
+  const team=prev?!!prev.shared:false;
+  const m={id:uid(),title:'',mdate:todayYmd(),mtime:'',place:prev?prev.place:'',
+    attendees:prev?prev.attendees:'',attendee_ids:ids,
+    status:'open',summary:'',shared:team,
+    members:team?[]:ids.filter(x=>x!==(me()||{}).id),   // 공유 대상 = 참석자 (팀 전원이면 비움)
+    project:null,created_at:new Date().toISOString()};
+  state.meetings.unshift(m);state.sel=m.id;
+  markMeeting(m.id);
+  if(fromPrev&&prev)carryInto(prev.id,m.id,true);
+  renderList();renderDetail();
+  setTimeout(()=>{const t=$('fTitle');if(t){t.focus();t.select();}},30);
+}
+
+/* 미결 안건과 미완료 액션을 대상 회의로 복사 */
+function carryInto(fromId,toId,silent){
+  const mine=new Set(itemsOf(toId).map(i=>(i.title||'').trim()).filter(Boolean));
+  const src=itemsOf(fromId).filter(i=>(i.title||'').trim()&&!mine.has(i.title.trim())
+    &&(i.state!=='decided'||(i.actions||[]).some(a=>!a.done)));
+  if(!src.length){if(!silent)toast('이월할 안건이 없어요');return 0;}
+  let base=Math.max(0,...itemsOf(toId).map(i=>i.sort||0));
+  src.forEach(i=>{
+    base+=10;
+    const acts=(i.actions||[]).filter(a=>!a.done&&(a.text||'').trim())
+      .map(a=>({id:uid(),text:a.text,who:a.who||'',due:a.due||'',done:false}));
+    const n={id:uid(),meeting:toId,title:i.title,category:i.category||'',
+      context:(i.decision||i.discussion||i.context||'').trim(),discussion:'',decision:'',
+      state:'open',actions:acts,sort:base,created_at:new Date().toISOString()};
+    state.items.push(n);markItem(n.id);
+  });
+  if(!silent)toast(src.length+'건 이월했어요');
+  return src.length;
+}
+
+function addItem(mid){
+  const base=Math.max(0,...itemsOf(mid).map(i=>i.sort||0))+10;
+  const it={id:uid(),meeting:mid,title:'',category:'',context:'',discussion:'',decision:'',
+    state:'open',actions:[],sort:base,created_at:new Date().toISOString()};
+  state.items.push(it);markItem(it.id);
+  renderDetail();renderList();
+  const els=document.querySelectorAll('.item');
+  const last=els[els.length-1];if(last){const t=last.querySelector('.ititle');if(t)t.focus();}
+}
+
+/* 안건 번호를 끌어다 놓아 순서 바꾸기 — 끌어온 안건을 놓은 자리에 끼워 넣고 번호를 다시 매긴다 */
+function reorderItem(srcId,dstId){
+  const src=state.items.find(x=>x.id===srcId),dst=state.items.find(x=>x.id===dstId);
+  if(!src||!dst||src.meeting!==dst.meeting||srcId===dstId)return;
+  const list=itemsOf(src.meeting);
+  const from=list.findIndex(x=>x.id===srcId),to=list.findIndex(x=>x.id===dstId);
+  list.splice(to,0,list.splice(from,1)[0]);
+  list.forEach((x,i)=>{const s=(i+1)*10;if(x.sort!==s){x.sort=s;markItem(x.id);}});
+  renderDetail();
+}
+
+/* ============================================================
+   이벤트
+   ============================================================ */
+$('mlist').addEventListener('click',e=>{
+  const b=e.target.closest('.mitem');if(!b)return;
+  state.sel=b.dataset.m;renderList();renderDetail();window.scrollTo({top:0,behavior:'smooth'});
+});
+$('q').addEventListener('input',e=>{state.q=e.target.value;renderList();});
+$('btnNew').addEventListener('click',()=>newMeeting(true));
+
+/* 상세 영역 — 입력(값 변경만, 다시 그리지 않음: 커서 유지) */
+$('detail').addEventListener('input',e=>{
+  const m=selMeeting();if(!m)return;
+  const t=e.target;
+  if(t.classList.contains('auto'))autoGrow(t);
+
+  // 회의 머리말 (참석자는 사람 고르기 모달에서 정한다)
+  const headMap={fTitle:'title',fDate:'mdate',fTime:'mtime',fPlace:'place',fSummary:'summary'};
+  if(headMap[t.id]){m[headMap[t.id]]=t.value;markMeeting(m.id);
+    if(t.id==='fTitle'||t.id==='fDate')renderList();
+    return;}
+
+  const itemEl=t.closest('.item');if(!itemEl)return;
+  const it=state.items.find(x=>x.id===itemEl.dataset.i);if(!it)return;
+
+  if(t.dataset.f){ it[t.dataset.f]=t.value; markItem(it.id);
+    if(t.dataset.f==='title')renderList();
+    return;}
+  if(t.dataset.af){
+    const ai=+t.closest('.act').dataset.a;
+    const a=(it.actions||[])[ai];if(!a)return;
+    a[t.dataset.af]=t.value;markItem(it.id);
+    if(t.dataset.af==='due'){const d=daysFromToday(t.value);t.classList.toggle('soon',!a.done&&d!==null&&d<=2);}
+  }
+});
+$('detail').addEventListener('change',e=>{
+  const m=selMeeting();if(!m)return;
+  if(e.target.id==='fShared'){
+    const v=e.target.value;
+    if(v==='team'){m.shared=true;m.members=[];markMeeting(m.id);renderDetail();toast('팀 전원이 볼 수 있어요');}
+    else if(v==='personal'){m.shared=false;m.members=[];markMeeting(m.id);renderDetail();toast('나만 보는 회의로 바꿨어요');}
+    else{m.shared=false;markMeeting(m.id);openPick('members');}   // 특정인 — 바로 대상 고르기
+    return;}
+  if(e.target.dataset.act==='actdone'){
+    const itemEl=e.target.closest('.item');const it=state.items.find(x=>x.id===itemEl.dataset.i);if(!it)return;
+    const ai=+e.target.closest('.act').dataset.a;const a=(it.actions||[])[ai];if(!a)return;
+    a.done=e.target.checked;markItem(it.id);
+    e.target.closest('.act').classList.toggle('done',a.done);
+  }
+});
+$('detail').addEventListener('click',async e=>{
+  const m=selMeeting();if(!m)return;
+  const btn=e.target.closest('[data-act]');if(!btn)return;
+  const act=btn.dataset.act;
+  const itemEl=btn.closest('.item');
+  const it=itemEl?state.items.find(x=>x.id===itemEl.dataset.i):null;
+
+  if(act==='pickWho'){openPick('attendees');return;}
+  if(act==='pickMembers'){openPick('members');return;}
+  if(act==='additem'){addItem(m.id);return;}
+  if(act==='cycle'&&it){
+    const i=STATES.findIndex(s=>s[0]===stKey(it.state));
+    it.state=STATES[(i+1)%STATES.length][0];markItem(it.id);renderDetail();renderList();return;}
+  if(act==='delitem'&&it){
+    if((it.title||it.context||it.discussion||it.decision||(it.actions||[]).length)&&!confirm('이 안건을 지울까요?'))return;
+    state.items=state.items.filter(x=>x.id!==it.id);pending.items.delete(it.id);
+    await Store.delItem(it.id);renderDetail();renderList();toast('안건을 지웠어요');return;}
+  if(act==='addact'&&it){
+    it.actions=it.actions||[];it.actions.push({id:uid(),text:'',who:'',due:'',done:false});
+    markItem(it.id);renderDetail();
+    const el=document.querySelector(`.item[data-i="${CSS.escape(it.id)}"] .act:last-of-type .a-text`);
+    if(el)el.focus();return;}
+  if(act==='delact'&&it){
+    const ai=+btn.closest('.act').dataset.a;it.actions.splice(ai,1);markItem(it.id);renderDetail();return;}
+
+  if(act==='carry'){
+    const t=state.meetings.filter(x=>x.id!==m.id&&(x.mdate||'')>=(m.mdate||''))
+      .sort((a,b)=>(a.mdate||'').localeCompare(b.mdate||''))[0];
+    if(t){ if(!confirm(`${fmtD(t.mdate)} 회의로 미결 안건을 이월할까요?`))return;
+      carryInto(m.id,t.id);state.sel=t.id;renderList();renderDetail();}
+    else{ newMeeting(false); const nm=selMeeting(); carryInto(m.id,nm.id); renderDetail(); }
+    return;}
+  if(act==='md'){ copyText(toMarkdown(m)); return;}
+  if(act==='delm'){
+    if(!confirm(`'${m.title||'제목 없는 회의'}'와 안건 ${itemsOf(m.id).length}건을 모두 지울까요?`))return;
+    const id=m.id;
+    state.meetings=state.meetings.filter(x=>x.id!==id);
+    state.items=state.items.filter(x=>x.meeting!==id);
+    pending.meetings.delete(id);
+    await Store.delMeeting(id);
+    state.sel=state.meetings.length?state.meetings[0].id:null;
+    renderList();renderDetail();toast('회의를 지웠어요');return;}
+});
+
+/* ---------- 안건 순서 바꾸기 (번호를 손잡이로 끌기) ----------
+   번호에 마우스를 누른 순간에만 draggable을 켠다 — 본문 텍스트를 끌어서 선택하는 걸 막지 않으려고. */
+let dragId=null;
+$('detail').addEventListener('mousedown',e=>{
+  const grip=e.target.closest('.inum');
+  if(grip){const card=grip.closest('.item');if(card)card.draggable=true;}
+});
+$('detail').addEventListener('dragstart',e=>{
+  const card=e.target.closest('.item');
+  if(!card||!card.draggable){e.preventDefault();return;}
+  dragId=card.dataset.i;card.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  try{e.dataTransfer.setData('text/plain',dragId);}catch(_){}
+});
+$('detail').addEventListener('dragover',e=>{
+  if(!dragId)return;
+  const over=e.target.closest('.item');
+  if(!over||over.dataset.i===dragId)return;
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.item.dropzone').forEach(x=>x.classList.remove('dropzone'));
+  over.classList.add('dropzone');
+});
+$('detail').addEventListener('drop',e=>{
+  if(!dragId)return;
+  const over=e.target.closest('.item');
+  e.preventDefault();
+  const src=dragId;dragId=null;
+  if(over&&over.dataset.i!==src)reorderItem(src,over.dataset.i);
+});
+$('detail').addEventListener('dragend',()=>{
+  dragId=null;
+  document.querySelectorAll('.item').forEach(x=>{x.draggable=false;x.classList.remove('dragging','dropzone');});
+});
+// 번호를 누르기만 하고 끌지 않은 경우 — 카드가 계속 드래그 상태로 남지 않게 되돌린다
+document.addEventListener('mouseup',()=>{
+  if(dragId)return;
+  document.querySelectorAll('.item[draggable="true"]').forEach(x=>{x.draggable=false;});
+});
+
+/* ---------- 사람 고르기 모달 (참석자 / 특정인 공유 공용) ---------- */
+let pickFor=null;   // 'attendees' | 'members'
+function openPick(kind){
+  const m=selMeeting();if(!m)return;
+  pickFor=kind;
+  const sel=new Set(kind==='attendees'?(m.attendee_ids||[]):(m.members||[]));
+  $('pickTitle').textContent=kind==='attendees'?'참석자':'공유 대상';
+  $('pickHint').textContent=kind==='attendees'
+    ?'회의에 참석한 사람을 고르세요.'
+    :'고른 사람만 이 회의를 볼 수 있어요. 참석자를 바꾸면 이 목록도 참석자로 다시 맞춰집니다. (내 계정은 소유자라 목록에서 빠집니다)';
+  const meId=(me()||{}).id;
+  const rows=kind==='attendees'?state.dir:state.dir.filter(p=>p.id!==meId);
+  $('pickList').innerHTML=rows.length?rows.map(p=>`<label>
+      <input type="checkbox" value="${esc(p.id)}"${sel.has(p.id)?' checked':''}>
+      <span>${esc(p.name||'(이름 없음)')} <span class="mail">${esc(p.email||'')}</span></span>
+    </label>`).join(''):'<div class="none">가입자 목록을 불러오지 못했어요</div>';
+  $('pickModal').hidden=false;
+}
+function closePick(){$('pickModal').hidden=true;pickFor=null;}
+$('pickCancel').addEventListener('click',()=>{closePick();renderDetail();});
+$('pickModal').addEventListener('click',e=>{if(e.target.id==='pickModal'){closePick();renderDetail();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('pickModal').hidden){closePick();renderDetail();}});
+$('pickOk').addEventListener('click',()=>{
+  const m=selMeeting();if(!m||!pickFor){closePick();return;}
+  const ids=Array.from($('pickList').querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+  if(pickFor==='attendees'){
+    m.attendee_ids=ids;
+    m.attendees=ids.map(dirName).filter(Boolean).join(', ');   // 검색·마크다운에 쓰는 표시 캐시
+    // 공유 대상은 참석자를 따라간다. '팀 전원'으로 열어둔 회의만 건드리지 않는다.
+    if(!m.shared){
+      m.members=ids.filter(x=>x!==(me()||{}).id);              // 나는 소유자라 목록에 안 넣는다
+      if(m.members.length)toast(`참석자 ${m.members.length}명에게 공유했어요`);
+    }
+  }else{
+    m.members=ids;m.shared=false;
+    toast(ids.length?`${ids.length}명에게 공유했어요`:'공유 대상을 비웠어요 — 나만 보는 회의가 돼요');
+  }
+  markMeeting(m.id);closePick();renderDetail();renderList();
+});
+
+/* ---------- 마크다운 / 복사 / 파일 ---------- */
+function toMarkdown(m){
+  const its=itemsOf(m.id);
+  const L=[];
+  L.push(`# ${m.title||'회의록'}`);
+  const meta=[fmtD(m.mdate),m.mtime,m.place,m.attendees?'참석: '+m.attendees:''].filter(Boolean);
+  L.push(meta.join(' · '));L.push('');
+  its.forEach((it,i)=>{
+    L.push(`## ${i+1}. ${it.title||'(제목 없음)'}${it.category?`  \`${it.category}\``:''} — ${stLabel(stKey(it.state))}`);
+    if((it.context||'').trim()){L.push('**배경**');L.push(it.context.trim());L.push('');}
+    if((it.discussion||'').trim()){L.push('**논의**');L.push(it.discussion.trim());L.push('');}
+    if((it.decision||'').trim()){L.push('**결정**');L.push(it.decision.trim());L.push('');}
+    const acts=(it.actions||[]).filter(a=>(a.text||'').trim());
+    if(acts.length){L.push('**액션**');
+      acts.forEach(a=>{const tail=[a.who,a.due?'~'+fmtMD(a.due):''].filter(Boolean).join(' · ');
+        L.push(`- [${a.done?'x':' '}] ${a.text}${tail?' — '+tail:''}`);});
+      L.push('');}
+  });
+  if((m.summary||'').trim()){L.push('---');L.push('**총평 · 다음 회의**');L.push(m.summary.trim());}
+  return L.join('\n');
+}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('복사했어요'),()=>fallbackCopy(t));}
+  else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('복사했어요');}catch(e){toast('복사 실패');}
+  document.body.removeChild(ta);
+}
+function downloadJson(data,name){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+}
+$('btnExportAll').addEventListener('click',()=>downloadJson({meetings:state.meetings,items:state.items},`회의록_전체_${todayYmd()}.json`));
+$('btnImport').addEventListener('click',()=>$('fileIn').click());
+$('fileIn').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  e.target.value='';
+  try{
+    const d=JSON.parse(await f.text());
+    const ms=d.meetings||[],its=d.items||[];
+    if(!ms.length){toast('회의가 없는 파일이에요');return;}
+    // id 충돌 방지 — 새 id로 바꿔 넣는다
+    let n=0;
+    for(const m of ms){
+      const oldId=m.id,newId=uid();
+      const nm=Object.assign({},m,{id:newId,created_at:new Date().toISOString()});
+      delete nm.owner;
+      state.meetings.push(nm);markMeeting(newId);n++;
+      its.filter(i=>i.meeting===oldId).forEach(i=>{
+        const ni=Object.assign({},i,{id:uid(),meeting:newId,created_at:new Date().toISOString()});
+        delete ni.owner;
+        if(!Array.isArray(ni.actions))ni.actions=[];
+        state.items.push(ni);markItem(ni.id);});
+      state.sel=newId;
+    }
+    await flush();
+    renderList();renderDetail();toast(`회의 ${n}건을 가져왔어요`);
+  }catch(err){toast('가져오기 실패 — '+(err.message||''));}
+});
+
+/* ---------- 서버 표 설치 안내 ---------- */
+const SETUP_SQL=`-- ===== MAKERS 회의록 (meetings / meeting_items) =====
+-- Supabase 대시보드 → SQL Editor 에 그대로 붙여넣고 Run
+
+create table if not exists public.meetings (
+  id         text primary key,
+  title      text not null default '',
+  mdate      date,
+  mtime      text,
+  place      text not null default '',
+  attendees  text not null default '',
+  attendee_ids uuid[] not null default '{}'::uuid[],
+  status     text not null default 'open',
+  summary    text not null default '',
+  project    text,
+  shared     boolean not null default false,
+  members    uuid[] not null default '{}'::uuid[],
+  owner      uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.meetings add column if not exists attendee_ids uuid[] not null default '{}'::uuid[];
+create index if not exists meetings_owner_idx on public.meetings(owner);
+create index if not exists meetings_date_idx  on public.meetings(mdate desc);
+
+create table if not exists public.meeting_items (
+  id         text primary key,
+  meeting    text not null references public.meetings(id) on delete cascade,
+  title      text not null default '',
+  category   text not null default '',
+  context    text not null default '',
+  discussion text not null default '',
+  decision   text not null default '',
+  state      text not null default 'open' check (state in ('open','talked','decided','hold')),
+  actions    jsonb not null default '[]'::jsonb,
+  sort       double precision,
+  owner      uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create index if not exists mitems_meeting_idx on public.meeting_items(meeting);
+
+-- 볼 수 있는 회의인지 (본인 · 팀 전원 공유 · 지정 공유 · 마스터)
+create or replace function public.can_see_meeting(mid text)
+returns boolean language sql security definer stable set search_path = public as $$
+  select exists (
+    select 1 from public.meetings m
+    where m.id = mid
+      and ( m.owner = auth.uid() or m.shared or auth.uid() = any(m.members) or public.is_master() )
+  );
+$$;
+grant execute on function public.can_see_meeting(text) to authenticated;
+
+alter table public.meetings enable row level security;
+drop policy if exists mtg_select on public.meetings;
+drop policy if exists mtg_insert on public.meetings;
+drop policy if exists mtg_update on public.meetings;
+drop policy if exists mtg_delete on public.meetings;
+create policy mtg_select on public.meetings for select to authenticated
+  using ( owner = auth.uid() or shared or auth.uid() = any(members) or public.is_master() );
+create policy mtg_insert on public.meetings for insert to authenticated
+  with check ( owner = auth.uid() );
+create policy mtg_update on public.meetings for update to authenticated
+  using ( owner = auth.uid() or public.is_master() )
+  with check ( owner = auth.uid() or public.is_master() );
+create policy mtg_delete on public.meetings for delete to authenticated
+  using ( owner = auth.uid() or public.is_master() );
+grant select, insert, update, delete on public.meetings to authenticated;
+
+-- 안건: 회의를 볼 수 있는 사람이면 같이 적을 수 있다(회의 중 공동 기록)
+alter table public.meeting_items enable row level security;
+drop policy if exists mitem_select on public.meeting_items;
+drop policy if exists mitem_insert on public.meeting_items;
+drop policy if exists mitem_update on public.meeting_items;
+drop policy if exists mitem_delete on public.meeting_items;
+create policy mitem_select on public.meeting_items for select to authenticated
+  using ( public.can_see_meeting(meeting) );
+create policy mitem_insert on public.meeting_items for insert to authenticated
+  with check ( public.can_see_meeting(meeting) );
+create policy mitem_update on public.meeting_items for update to authenticated
+  using ( public.can_see_meeting(meeting) ) with check ( public.can_see_meeting(meeting) );
+create policy mitem_delete on public.meeting_items for delete to authenticated
+  using ( public.can_see_meeting(meeting) );
+grant select, insert, update, delete on public.meeting_items to authenticated;`;
+
+$('btnCopySql').addEventListener('click',()=>copyText(SETUP_SQL));
+$('btnToggleSql').addEventListener('click',()=>{
+  const b=$('sqlBox');b.hidden=!b.hidden;
+  if(!b.hidden&&!b.textContent)b.textContent=SETUP_SQL;
+  $('btnToggleSql').textContent=b.hidden?'SQL 보기':'SQL 접기';
+});
+$('btnMigrate').addEventListener('click',async()=>{
+  const mode=await Store.detect();
+  if(mode!=='server'){toast('아직 서버에 표가 없어요 — SQL을 먼저 실행해 주세요');Store.mode='local';return;}
+  try{
+    const local=lsGet(LOCAL_KEY)||{meetings:[],items:[]};
+    for(const m of (local.meetings||[]))await Store.putMeeting(m);
+    await Store.putItems(local.items||[]);
+    toast(`서버로 올렸어요 — 회의 ${(local.meetings||[]).length}건`);
+    $('setupBanner').hidden=true;
+    await reload();
+  }catch(e){Store.mode='local';toast('올리기 실패 — '+(e.message||''));}
+});
+
+/* ---------- 로그인 / 부팅 ---------- */
+function show(view){
+  $('loginView').hidden=view!=='login';
+  $('appView').hidden=view!=='app';
+  $('topnav').hidden=view!=='app';
+  $('meBox').hidden=view!=='app';
+  $('btnOut').hidden=view!=='app';
+  if(view==='app'){const u=me()||{};$('meName').textContent=u.name||'—';$('meMail').textContent=u.email||'';}
+}
+async function reload(){
+  const d=await Store.load();
+  state.meetings=d.meetings||[];state.items=d.items||[];
+  state.meetings.forEach(m=>{
+    if(!Array.isArray(m.attendee_ids))m.attendee_ids=[];
+    if(!Array.isArray(m.members))m.members=[];
+  });
+  state.items.forEach(i=>{if(!Array.isArray(i.actions)){try{i.actions=JSON.parse(i.actions||'[]');}catch(e){i.actions=[];}}});
+  if(!state.sel||!state.meetings.some(m=>m.id===state.sel))
+    state.sel=state.meetings.length?state.meetings.slice().sort((a,b)=>(b.mdate||'').localeCompare(a.mdate||''))[0].id:null;
+  renderList();renderDetail();
+}
+$('btnLogin').addEventListener('click',async()=>{
+  $('loginErr').hidden=true;
+  try{
+    const j=await authPost('token?grant_type=password',{email:$('inEmail').value.trim(),password:$('inPw').value});
+    saveTok(j);await boot();
+  }catch(e){$('loginErr').textContent=e.message||'로그인 실패';$('loginErr').hidden=false;}
+});
+$('inPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnLogin').click();});
+$('btnOut').addEventListener('click',async()=>{
+  await flush();
+  try{if(_tok)await fetch(SB+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+_tok.access_token}});}catch(e){}
+  clearTok();show('login');
+});
+
+async function boot(){
+  loadTok();
+  if(!_tok){show('login');return;}
+  show('app');
+  await loadDir();                       // 참석자·공유 대상 고르기에 쓸 가입자 목록
+  const mode=await Store.detect();
+  $('setupBanner').hidden=(mode==='server');
+  try{ await reload(); }
+  catch(e){
+    if(!_tok){show('login');return;}
+    toast('불러오기 실패 — '+(e.message||''));
+    Store.mode='local';$('setupBanner').hidden=false;await reload();
+  }
+}
+boot();
+</script>
+</body>
+</html>
