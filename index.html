@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
-<title>MAKERS TASKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="meetings-20260921">
+<title>MAKERS WORKS</title>
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="works-20261025">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 /* ============================================================
-   MAKERS TASKS  —  색상 컨셉 (여기만 바꾸면 전체 톤이 바뀝니다)
+   MAKERS WORKS  —  색상 컨셉 (여기만 바꾸면 전체 톤이 바뀝니다)
    ============================================================ */
 :root{
   /* 딥 포레스트 그린 — MAKERS 브랜드(랜딩·수석코치 문서와 동일 계열) */
@@ -312,8 +312,8 @@ button{cursor:pointer;border:none;background:none}
   .mb-btn{width:40px;height:40px;border-radius:10px;color:var(--cream);font-size:21px;line-height:1;
     display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .mb-btn:active{background:rgba(255,255,255,.12)}
-  .mb-title{flex:1;display:flex;align-items:baseline;gap:6px;min-width:0}
-  .mb-title b{font-size:16px;letter-spacing:.5px}
+  .mb-title{flex:1;display:flex;align-items:center;gap:6px;min-width:0;height:40px}
+  .mb-title b{font-size:16px;letter-spacing:.5px;line-height:1}
 
   /* 서랍(사이드바) — 왼쪽에서 슬라이드 */
   .sidebar{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:320px;z-index:60;
@@ -521,7 +521,7 @@ button{cursor:pointer;border:none;background:none}
   <aside class="sidebar">
     <div class="brand">
       <span class="logo" role="img" aria-label="MAKERS"></span>
-      <b>MAKERS TASKS</b>
+      <b>MAKERS WORKS</b>
     </div>
     <div class="side-label">프로젝트</div>
     <div class="proj-hint">☑ 프로젝트를 체크하면 그 프로젝트 항목만 보여요 (‘전체’로 모두 보기)</div>
@@ -552,8 +552,8 @@ button{cursor:pointer;border:none;background:none}
   <main class="main">
     <!-- 폰 전용 상단 앱바 -->
     <div class="mobilebar">
-      <button class="mb-btn" data-action="toggle-drawer" aria-label="메뉴 열기">☰</button>
-      <div class="mb-title"><b>MAKERS TASKS</b></div>
+      <button class="mb-btn" data-action="toggle-drawer" aria-label="메뉴 열기"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="mb-title"><b>MAKERS WORKS</b></div>
     </div>
     <div class="topbar">
       <div class="tabs">
@@ -611,7 +611,7 @@ button{cursor:pointer;border:none;background:none}
 <!-- 로그인 화면 (백엔드 연결 후 활성화 · 로컬 모드에선 hidden 유지) -->
 <div class="loginscreen" id="loginScreen" hidden>
   <form class="login-card" id="loginForm">
-    <div class="brand login-brand"><span class="logo" role="img" aria-label="MAKERS"></span><b>MAKERS TASKS</b></div>
+    <div class="brand login-brand"><span class="logo" role="img" aria-label="MAKERS"></span><b>MAKERS WORKS</b></div>
     <h2 id="loginTitle">로그인</h2>
     <input type="text" id="loginName" placeholder="이름" autocomplete="name" hidden>
     <input type="email" id="loginEmail" placeholder="이메일" autocomplete="username">
@@ -879,7 +879,7 @@ const Store = (function(){
       if(_mode==='local'){
         let s; const blob = dataRaw ? {tasks:dataRaw.tasks, projects:dataRaw.projects, ui:_prefs} : null;
         if(blob){ s=migrate(blob); }
-        else { s=defaultState(); s.tasks.push({id:uid(),text:'MAKERS TASKS 보드 둘러보기 — 할 일을 추가해 보세요 ✏️',project:s.projects[0].id,priority:'mid',done:false,createdAt:Date.now(),date:ymd(new Date()),endDate:null,doneAt:null,note:''}); }
+        else { s=defaultState(); s.tasks.push({id:uid(),text:'MAKERS WORKS 보드 둘러보기 — 할 일을 추가해 보세요 ✏️',project:s.projects[0].id,priority:'mid',done:false,createdAt:Date.now(),date:ymd(new Date()),endDate:null,doneAt:null,note:''}); }
         _data.tasks.length=0;    _data.tasks.push.apply(_data.tasks,s.tasks);
         _data.projects.length=0; _data.projects.push.apply(_data.projects,s.projects);
         _prefs=s.ui;
