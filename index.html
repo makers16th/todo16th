@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="works-20261025">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="rmallview-20261025">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -559,7 +559,6 @@ button{cursor:pointer;border:none;background:none}
       <div class="tabs">
         <button class="tab" data-action="view" data-view="date">날짜별</button>
         <button class="tab" data-action="view" data-view="project">프로젝트별</button>
-        <button class="tab" data-action="view" data-view="all">전체</button>
       </div>
       <div class="segbar" id="itemFilter" title="할 일 / 일정 표시">
         <button data-action="item-filter" data-f="all">전체</button>
@@ -727,6 +726,7 @@ function migrate(s){
   if(!Array.isArray(s.ui.projSort))s.ui.projSort=[];
   if(!Array.isArray(s.ui.projFilter))s.ui.projFilter=[];
   if(['day','week','month'].indexOf(s.ui.period)<0)s.ui.period='day';
+  if(['date','project'].indexOf(s.ui.view)<0)s.ui.view='project'; // '전체' 탭 제거(2026-10-25) — 예전 저장값은 프로젝트별로
   if(['all','task','event'].indexOf(s.ui.itemFilter)<0)s.ui.itemFilter='all';
   s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';t.type=(t.type==='event'?'event':'task');if(!('time'in t))t.time=null;if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
   s.projects.forEach(p=>{if(!('shared'in p))p.shared=true; if(!Array.isArray(p.members))p.members=[]; p.color=themeColor(p.color);}); // 기존 프로젝트는 팀 공유 기본값 + 구팔레트 색 리매핑
@@ -1048,18 +1048,6 @@ function cmpProjGroup(a,b){
   const at=a.time||'99:99',bt=b.time||'99:99';
   return at!==bt?(at<bt?-1:1):0;
 }
-/* 전체 뷰: ①완료 여부 최우선(미완료·일정 먼저, 완료된 할 일은 전부 맨 아래) ②프로젝트별 ③날짜·시간 */
-function cmpAllView(a,b){
-  const ad=(!isEvent(a)&&a.done)?1:0,bd=(!isEvent(b)&&b.done)?1:0;
-  if(ad!==bd)return ad-bd;
-  const pa=projOrder(a.project),pb=projOrder(b.project);
-  if(pa!==pb)return pa-pb;
-  const asd=a.date||'9999',bsd=b.date||'9999';
-  if(asd!==bsd)return asd<bsd?-1:1;
-  const at=a.time||'99:99',bt=b.time||'99:99';
-  return at!==bt?(at<bt?-1:1):0;
-}
-
 function syncHeader(){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===state.ui.view));
   const isDate=state.ui.view==='date',period=state.ui.period||'day';
@@ -1204,7 +1192,7 @@ function renderList(){
     if(period==='week')html=renderWeek(visible);
     else if(period==='month')html=renderMonth(visible);
     else html=renderDay(visible);
-  }else if(view==='project'){
+  }else{ // project
     const projs=state.ui.projectFilter==='all'?orderedProjects()
       :state.ui.projectFilter==='pinned'?orderedProjects().filter(p=>(state.ui.projFilter||[]).indexOf(p.id)>=0)
       :state.projects.filter(p=>p.id===state.ui.projectFilter);
@@ -1220,10 +1208,6 @@ function renderList(){
       html+=`<div class="section-h"><span class="dot" style="background:${g.p.color}"></span>${esc(g.p.name)} <span class="cnt">${g.list.length}</span></div>`;
       html+=progressHTML(g.list)+g.list.map(t=>cardOrEdit(t,'full')).join('');
     }
-  }else{ // all — ①완료 여부(완료는 전부 맨 아래) ②프로젝트별 ③날짜·시간
-    const list=visible.slice().sort(cmpAllView);
-    html+=progressHTML(list);
-    html+=list.length?list.map(t=>cardOrEdit(t,'full')).join(''):emptyHTML('항목이 없어요','');
   }
   listContainer.innerHTML=html;
 }
