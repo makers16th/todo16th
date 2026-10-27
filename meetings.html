@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 모바일: 연속 터치가 더블탭 확대로 인식되지 않게 + 입력칸 포커스 시 자동 확대 방지(16px 미만이면 iOS가 확대함). 두 손가락 확대는 그대로 가능 -->
+<style>
+  html,body,*{touch-action:manipulation}
+  @media (pointer:coarse){input,select,textarea{font-size:16px!important}}
+</style>
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <meta name="robots" content="noindex">
