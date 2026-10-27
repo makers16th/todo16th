@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="nodbltap-20261027">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="fontsize-20261027">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -99,6 +99,15 @@ button{cursor:pointer;border:none;background:none}
           mask:var(--logo-mark) center/contain no-repeat}
 .login-brand .logo{background:var(--forest-800)}
 .brand b{font-size:17px;letter-spacing:.5px}
+.gear-btn{margin-left:auto;width:34px;height:34px;border-radius:9px;color:var(--cream-soft);display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:.13s}
+.gear-btn:hover{color:var(--cream);background:rgba(255,255,255,.1)}
+.gear-btn:active{background:rgba(255,255,255,.16)}
+/* 시스템 설정 패널 */
+.set-label{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin-top:2px}
+.set-seg{display:grid;grid-template-columns:repeat(5,1fr)}
+.set-seg button{padding:9px 2px;font-size:12px;white-space:normal;line-height:1.2}
+.set-preview{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-weight:500;color:var(--ink);font-size:calc(14px * var(--task-fs,1))}
+.set-note{font-size:11.5px;color:var(--ink-soft);text-align:center}
 
 .side-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--cream-soft);
   padding:14px 8px 6px;text-transform:uppercase}
@@ -236,7 +245,7 @@ button{cursor:pointer;border:none;background:none}
 .pdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
 .pdot.high{background:var(--p-high)} .pdot.mid{background:var(--p-mid)} .pdot.low{background:var(--p-low)}
 
-.ttext{flex:1;cursor:text;word-break:break-word;font-weight:500;display:flex;align-items:center;gap:6px}
+.ttext{flex:1;cursor:text;word-break:break-word;font-weight:500;display:flex;align-items:center;gap:6px;font-size:calc(14px * var(--task-fs,1))}
 .noteicon{font-size:12px;cursor:help;filter:saturate(.4)}
 
 .pill{font-size:11.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:700;flex:0 0 auto}
@@ -388,7 +397,7 @@ button{cursor:pointer;border:none;background:none}
   /* 폰: 기간 배지·액션버튼 숨겨 내용에 폭 몰아주기 (수정=내용 탭, 삭제=수정창 안 삭제) */
   .task .acts{display:none}
   .task .pill.date,.task .pill.range,.task .pill.carry{display:none}
-  .ttext{font-size:15px}
+  .ttext{font-size:calc(15px * var(--task-fs,1))}
 
   /* 추가바 → 바텀시트(FAB로 열기) */
   .addbar{position:fixed;left:0;right:0;bottom:0;z-index:60;flex-direction:column;gap:11px;align-items:stretch;
@@ -482,7 +491,7 @@ button{cursor:pointer;border:none;background:none}
 .wk-col.today .wk-head{background:color-mix(in srgb,var(--gold) 11%,white)}
 .wk-col.today .wk-head .d,.wk-col.today .wk-head .wd{color:var(--gold-ink)}
 .wk-body{padding:6px;display:flex;flex-direction:column;gap:4px;flex:1}
-.wk-item{display:flex;align-items:center;gap:5px;font-size:11.5px;line-height:1.3;
+.wk-item{display:flex;align-items:center;gap:5px;font-size:calc(11.5px * var(--task-fs,1));line-height:1.3;
   padding:4px 6px;border-radius:7px;border-left:3px solid var(--pc,var(--line-strong));
   background:var(--paper-3);cursor:pointer;transition:.1s}
 .wk-item:hover{filter:brightness(.97)}
@@ -504,7 +513,7 @@ button{cursor:pointer;border:none;background:none}
   .wk-head{padding:10px 12px}
   .wk-head .d{font-size:16px}.wk-head .wd{font-size:12px}
   .wk-body{padding:8px;gap:6px}
-  .wk-item{font-size:13px;padding:7px 9px;gap:7px}
+  .wk-item{font-size:calc(13px * var(--task-fs,1));padding:7px 9px;gap:7px}
   .wk-check{width:17px;height:17px}
 }
 
@@ -521,7 +530,7 @@ button{cursor:pointer;border:none;background:none}
 .cal-cell.today .cal-daynum{color:var(--gold-ink)}
 .cal-daynum.sun{color:var(--red)}.cal-daynum.sat{color:#4a6d8c}
 .cal-cell.today .cal-daynum.sun,.cal-cell.today .cal-daynum.sat{color:var(--gold-ink)}
-.cal-chip{font-size:10.5px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+.cal-chip{font-size:calc(10.5px * var(--task-fs,1));line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   padding:1px 5px;border-radius:5px;border-left:3px solid var(--pc,var(--line-strong));background:var(--paper-3);color:var(--ink)}
 .cal-chip.done{opacity:.65;text-decoration:line-through}
 .cal-chip.ev{border-left-color:var(--gold);background:color-mix(in srgb,var(--gold) 11%,white);font-weight:700}
@@ -529,7 +538,7 @@ button{cursor:pointer;border:none;background:none}
 @media(max-width:760px){
   .cal{gap:3px}
   .cal-cell{min-height:64px;padding:3px 4px;border-radius:8px}
-  .cal-chip{font-size:9px;padding:0 3px}
+  .cal-chip{font-size:calc(9px * var(--task-fs,1));padding:0 3px}
   .cal-daynum{font-size:11px}
 }
 </style>
@@ -541,6 +550,7 @@ button{cursor:pointer;border:none;background:none}
     <div class="brand">
       <span class="logo" role="img" aria-label="MAKERS"></span>
       <b>MAKERS WORKS</b>
+      <button class="gear-btn" data-action="settings-open" aria-label="시스템 설정" title="시스템 설정"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
     <!-- 폰: 상단 보기 선택(.topbar)을 이 자리로 옮겨 메뉴 안에 둔다 (JS placeTopbar) -->
     <div class="side-view" id="sideView" hidden><div class="side-label">보기</div></div>
@@ -682,6 +692,23 @@ button{cursor:pointer;border:none;background:none}
     <button type="button" class="btn" data-action="share-cancel">취소</button>
   </form>
 </div>
+<!-- 시스템 설정 (이 기기에만 저장) -->
+<div class="loginscreen" id="settingsScreen" hidden>
+  <div class="login-card">
+    <h2>시스템 설정</h2>
+    <div class="set-label">할 일 글씨 크기</div>
+    <div class="segbar set-seg" id="taskFontSeg">
+      <button type="button" data-action="task-font" data-fs="xs">매우 작게</button>
+      <button type="button" data-action="task-font" data-fs="s">작게</button>
+      <button type="button" data-action="task-font" data-fs="m">기본</button>
+      <button type="button" data-action="task-font" data-fs="l">크게</button>
+      <button type="button" data-action="task-font" data-fs="xl">매우 크게</button>
+    </div>
+    <div class="set-preview">회의 자료 준비하기 (미리보기)</div>
+    <p class="set-note">이 기기에만 적용돼요.</p>
+    <button type="button" class="btn primary" data-action="settings-close">닫기</button>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -694,6 +721,8 @@ const LEGACY_PROJECT_COLORS={'#7c5cff':'#7a4650','#9b7bff':'#7a4650','#2fd98a':'
 const themeColor=c=>{c=(c||'').toLowerCase();c=LEGACY_PROJECT_COLORS[c]||c;return /^#[0-9a-f]{3,8}$/.test(c)?c:'#8b9a8f';}; // hex만 허용(style 주입 차단)
 const PRI_EMOJI={high:'🔴',mid:'🟡',low:'🟢'};
 const WD=['일','월','화','수','목','금','토'];
+/* 할 일 글씨 크기(기기별 설정): 지금 크기 = 기본(m) */
+const TASK_FONT_SCALE={xs:.85,s:.93,m:1,l:1.15,xl:1.3};
 
 /* ---------- 유틸 ---------- */
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -742,7 +771,7 @@ function defaultState(){
 function migrate(s){
   s.tasks=Array.isArray(s.tasks)?s.tasks:[];
   s.projects=Array.isArray(s.projects)?s.projects:[];
-  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[]},s.ui||{});
+  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[],taskFont:'m'},s.ui||{});
   s.ui.selectedDate=ymd(new Date()); // 열 때 항상 오늘로
   s.ui.editingId=null;
   if(!Array.isArray(s.ui.projSort))s.ui.projSort=[];
@@ -750,6 +779,7 @@ function migrate(s){
   if(['day','week','month'].indexOf(s.ui.period)<0)s.ui.period='day';
   if(['date','project'].indexOf(s.ui.view)<0)s.ui.view='project'; // '전체' 탭 제거(2026-10-25) — 예전 저장값은 프로젝트별로
   if(['all','task','event'].indexOf(s.ui.itemFilter)<0)s.ui.itemFilter='all';
+  if(!(s.ui.taskFont in TASK_FONT_SCALE))s.ui.taskFont='m';
   s.tasks.forEach(t=>{t.priority=t.priority||'mid';t.note=t.note||'';t.type=(t.type==='event'?'event':'task');if(!('time'in t))t.time=null;if(!('date'in t))t.date=null;if(!('endDate'in t))t.endDate=null;if(!('doneAt'in t))t.doneAt=null;});
   s.projects.forEach(p=>{if(!('shared'in p))p.shared=true; if(!Array.isArray(p.members))p.members=[]; p.color=themeColor(p.color);}); // 기존 프로젝트는 팀 공유 기본값 + 구팔레트 색 리매핑
   return s;
@@ -1298,7 +1328,12 @@ function renderMonth(visible){
   }
   return `<div class="cal">${cells}</div>`;
 }
-function render(){syncHeader();renderProjects();renderList();}
+function applyTaskFont(){
+  const k=(state&&state.ui.taskFont in TASK_FONT_SCALE)?state.ui.taskFont:'m';
+  document.documentElement.style.setProperty('--task-fs',TASK_FONT_SCALE[k]);
+  document.querySelectorAll('#taskFontSeg button').forEach(b=>b.classList.toggle('active',b.dataset.fs===k));
+}
+function render(){applyTaskFont();syncHeader();renderProjects();renderList();}
 
 /* ---------- 동작 ---------- */
 function shiftDate(dir){
@@ -1362,6 +1397,9 @@ document.addEventListener('click',e=>{
     case 'pw-cancel':showPw(false);break;
     case 'profile-open':{document.body.classList.remove('nav-open');const u=Store.auth.currentUser()||{};$('profName').value=u.name||'';$('profEmail').value=u.email||'';$('profErr').hidden=true;showProfile(true);setTimeout(()=>$('profName').focus(),0);break;}
     case 'profile-cancel':showProfile(false);break;
+    case 'settings-open':document.body.classList.remove('nav-open');applyTaskFont();$('settingsScreen').hidden=false;break;
+    case 'settings-close':$('settingsScreen').hidden=true;break;
+    case 'task-font':state.ui.taskFont=el.dataset.fs;Store.prefs.save();applyTaskFont();break;
     case 'toggle-drawer':document.body.classList.remove('sheet-open');document.body.classList.toggle('nav-open');break;
     case 'open-add':document.body.classList.remove('nav-open');document.body.classList.add('sheet-open');setTimeout(()=>{try{addText.focus();}catch(_){}},60);break;
     case 'close-overlays':document.body.classList.remove('nav-open','sheet-open');break;
@@ -1460,6 +1498,7 @@ projForm.addEventListener('submit',e=>{
 document.addEventListener('submit',e=>{if(!state)return;if(e.target.classList.contains('editform')){e.preventDefault();saveEdit(e.target.dataset.id);}});
 
 document.addEventListener('keydown',e=>{if(!state)return;if(e.key!=='Escape')return;
+  if(!$('settingsScreen').hidden){$('settingsScreen').hidden=true;return;}
   if(document.body.classList.contains('nav-open')||document.body.classList.contains('sheet-open')){document.body.classList.remove('nav-open','sheet-open');return;}
   if(state.ui.editingId){state.ui.editingId=null;renderList();}});
 
