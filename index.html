@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 -->
-<meta name="app-version" content="addmode-20261028">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 -->
+<meta name="app-version" content="pillsize-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -255,7 +255,7 @@ button{cursor:pointer;border:none;background:none}
 .noteicon{cursor:help;color:var(--ink-soft);opacity:.75;display:inline-flex}
 .noteicon svg{width:13px;height:13px;stroke-width:2}
 
-.pill{font-size:11.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:700;flex:0 0 auto}
+.pill{font-size:calc(11.5px * var(--task-fs,1));padding:calc(3px * var(--task-fs,1)) calc(9px * var(--task-fs,1));border-radius:999px;white-space:nowrap;font-weight:700;flex:0 0 auto}
 .pill.proj{color:color-mix(in srgb,var(--pc) 55%,var(--ink));background:color-mix(in srgb,var(--pc) 15%,white)}
 .pill.proj.etc{color:var(--ink-soft);background:var(--paper-3)}
 .pill.date{color:var(--ink-soft);background:var(--paper-3)}
@@ -621,7 +621,7 @@ button{cursor:pointer;border:none;background:none}
 .proj-item .pi-edit svg,.proj-item .pi-share svg{width:13px;height:13px;stroke-width:2;display:inline-block;vertical-align:-2px}
 .proj-item .pi-share svg{width:15px;height:15px}
 .pill.time{display:inline-flex;align-items:center;gap:4px}
-.pill.time svg{width:12px;height:12px;stroke-width:2.2}
+.pill.time svg{width:calc(12px * var(--task-fs,1));height:calc(12px * var(--task-fs,1));stroke-width:2.2}
 .pill.time{color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 15%,white);font-weight:800}
 
 /* ---------- 주 뷰(요일 7열 그리드 · 한눈에) ---------- */
