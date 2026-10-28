@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
 <!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 / datepick-small 2026-10-28 -->
-<meta name="app-version" content="datepick-small-20261028">
+<meta name="app-version" content="page-switch-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -168,10 +168,17 @@ button{cursor:pointer;border:none;background:none}
 .proj-add input::placeholder{color:var(--cream-soft)}
 .proj-add input:focus{border-color:var(--gold)}
 .proj-add button{flex:0 0 auto;white-space:nowrap;background:var(--gold);color:var(--forest-900);font-weight:700;border-radius:9px;padding:8px 14px}
-/* 사이드바 페이지 이동 링크 (휴가 관리 등) */
-.side-nav-link{display:block;margin-top:8px;padding:9px 10px;border-radius:10px;color:var(--cream-soft);
-  font-weight:600;text-align:left;transition:.13s;border:1px solid rgba(255,255,255,.16);text-decoration:none}
-.side-nav-link:hover{color:var(--cream);border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.04)}
+/* 사이드바 아래 페이지 전환 — 회의록·휴가 관리 화면의 상단 탭(.topnav)과 같은 결의 작은 세그먼트.
+   보드가 주인공이라 메뉴 맨 아래(계정 위)에 조용히 두고, 아이콘 위·글자 아래로 좁은 폭에도 한 줄에 들어가게 한다. */
+.page-switch{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;margin-bottom:12px;
+  background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:3px}
+.page-switch a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;
+  padding:7px 2px 6px;border-radius:8px;font-size:11px;font-weight:700;line-height:1.1;color:var(--cream-soft);
+  white-space:nowrap;text-decoration:none;transition:.13s}
+.page-switch a[hidden]{display:none}
+.page-switch .ps-ic{font-size:15px;line-height:1}
+.page-switch a:hover{color:var(--cream);background:rgba(255,255,255,.07)}
+.page-switch a.active,.page-switch a.active:hover{background:var(--gold);color:#12271d;cursor:default}
 
 .side-foot{margin-top:auto;padding-top:16px}
 .side-stat{font-size:12px;color:var(--cream-soft);padding:0 8px 10px;font-weight:600}
@@ -722,9 +729,13 @@ button{cursor:pointer;border:none;background:none}
       <select id="projShared" title="공유 범위"><option value="personal">🔒 개인</option><option value="shared">👥 팀 전원</option></select>
       <button type="submit">추가</button>
     </form>
-    <a class="side-nav-link" href="meetings.html">🗒 회의록</a>
-    <a class="side-nav-link" href="vacation.html">🏖 휴가 관리</a>
     <div class="side-foot">
+      <nav class="page-switch" aria-label="페이지 이동">
+        <a class="active" aria-current="page"><span class="ps-ic">📋</span>할 일 보드</a>
+        <a href="vacation.html"><span class="ps-ic">🏖</span>휴가 관리</a>
+        <a href="meetings.html"><span class="ps-ic">🗒</span>회의록</a>
+        <a href="admin.html" id="lnkAdmin" hidden><span class="ps-ic">📊</span>대시보드</a>
+      </nav>
       <div class="acct" id="acctRow" hidden>
         <div class="acct-who" id="acctEmail"></div>
         <div class="acct-actions">
@@ -1151,6 +1162,8 @@ const Store = (function(){
     async signup(email,pw,name){ if(_mode==='local')return null; const j=await authPost('signup',{email:email,password:pw,data:{name:name||''}}); if(j&&j.access_token){ saveTok(j); _me=j.user; await pull(); return j.user; } throw new Error('가입 확인이 필요해요(이메일 인증)'); },
     async signout(){ clearTok(); _me=null; _dir=null; _data.tasks.length=0; _data.projects.length=0; _prefs.projSort=[]; _prefs.projFilter=[]; flagPrefs(); },
     refresh(){ return _mode==='local'?Promise.resolve(null):doRefresh(); },
+    // 마스터(관리자) 여부 — 페이지 전환에 대시보드(admin.html)를 보일지만 정한다. 실패하면 일반 계정으로 본다.
+    async isMaster(){ if(_mode==='local'||!_tok)return false; try{ return (await rest('POST','rpc/is_master',{}))===true; }catch(e){ return false; } },
     async changePassword(newPw){ if(_mode==='local')return null;
       let r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
       if(r.status===401&&await doRefresh())r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:restHeaders(),body:JSON.stringify({password:newPw})});
@@ -1795,6 +1808,8 @@ function updateAccountUI(){
   const acct=$('acctRow');if(!acct)return;
   const u=(Store.mode!=='local'&&Store.auth.isAuthenticated())?Store.auth.currentUser():null;
   acct.hidden=!u;
+  const adm=$('lnkAdmin');
+  if(adm){ adm.hidden=true; if(u)Store.auth.isMaster().then(m=>{ adm.hidden=!m; }); }
   if(u){
     const el=$('acctEmail'),nm=(u.name||'').trim(),em=u.email||'';
     el.innerHTML = nm ? `<b>${esc(nm)}</b>${em?` <span class="acct-mail">(${esc(em)})</span>`:''}` : esc(em||'로그인됨');
