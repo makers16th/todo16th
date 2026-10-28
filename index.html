@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
 <!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 -->
-<meta name="app-version" content="pillsize-20261028">
+<meta name="app-version" content="drawer-edit-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -444,9 +444,9 @@ button{cursor:pointer;border:none;background:none}
    프로젝트 이름이 사라지고 날짜·'오늘'이 줄바꿈되며 추가바가 어긋난다.
    ============================================================ */
 .proj-edit-toggle{display:none}
-/* 터치 기기(hover 없음) + 사이드바 표시 폭: 프로젝트 행 컨트롤(↑↓✎👥×)을 평소엔 숨기고
-   '편집'을 눌렀을 때만 노출 — 이름 칸을 지킨다. (폰 서랍 760px 이하는 기존 그대로) */
-@media(hover:none) and (min-width:761px){
+/* 터치 기기(hover 없음) 또는 폰 서랍(760px 이하): 프로젝트 행 컨트롤(↑↓✎👥×)을 평소엔 숨기고
+   '편집'을 눌렀을 때만 노출 — 이름 칸을 지킨다. */
+@media(hover:none),(max-width:760px){
   .proj-label{display:flex;align-items:center;justify-content:space-between}
   .proj-edit-toggle{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;
     border:1px solid rgba(255,255,255,.18);color:var(--cream-soft);font-size:11.5px;font-weight:700;letter-spacing:0;text-transform:none}
@@ -459,6 +459,12 @@ button{cursor:pointer;border:none;background:none}
   body.proj-editing .proj-item .pi-name{flex:1 1 calc(100% - 96px)}
   body.proj-editing .proj-item .pi-move,body.proj-editing .proj-item .pi-del,
   body.proj-editing .proj-item .pi-share,body.proj-editing .proj-item .pi-edit{padding:5px 8px;font-size:14px}
+}
+/* 폰 서랍: '편집' 버튼은 작게, 2줄 아이콘은 손가락으로 누르기 쉽게 조금 크게 */
+@media(max-width:760px){
+  .proj-edit-toggle{height:20px;padding:0 8px;font-size:10px}
+  body.proj-editing .proj-item .pi-move,body.proj-editing .proj-item .pi-del,
+  body.proj-editing .proj-item .pi-share,body.proj-editing .proj-item .pi-edit{padding:7px 11px;font-size:15px}
 }
 @media(min-width:761px) and (max-width:1100px){
   .brand b{font-size:16px}
