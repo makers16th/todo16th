@@ -481,6 +481,31 @@ button{cursor:pointer;border:none;background:none}
   .datepick{width:118px}
 }
 
+/* 패드(터치 기기 761px 이상): 할 일 추가도 폰처럼 오른쪽 아래 ＋ 버튼 → 아래에서 올라오는 입력창.
+   위쪽 입력줄이 사라져 목록이 넓어진다. PC(마우스)는 키보드로 바로 입력하는 지금 방식 유지. */
+@media(hover:none) and (min-width:761px){
+  .scrim{display:block;position:fixed;inset:0;z-index:50;background:rgba(10,18,14,.45);
+    opacity:0;pointer-events:none;transition:opacity .24s}
+  body.sheet-open .scrim{opacity:1;pointer-events:auto}
+  .addbar{position:fixed;left:50%;bottom:0;z-index:60;width:min(560px,calc(100% - 32px));
+    flex-direction:column;flex-wrap:nowrap;gap:11px;align-items:stretch;
+    background:var(--paper-2);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;
+    padding:22px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 34px rgba(16,30,23,.22);
+    transform:translate(-50%,115%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  body.sheet-open .addbar{transform:translate(-50%,0)}
+  .addbar::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:42px;height:4px;border-radius:99px;background:var(--line-strong)}
+  .addbar input#addText{order:0;flex:none;width:100%;min-width:0;padding:14px 15px}
+  .addbar>select,.addbar input[type=time]{order:0;flex:none;width:100%;height:48px}
+  .add-btn{order:0;width:100%;padding:14px;font-size:15px}
+  .listwrap{padding-bottom:110px}
+  .fab{display:flex;align-items:center;justify-content:center;position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:45;
+    width:60px;height:60px;border-radius:50%;background:var(--gold);color:var(--forest-900);font-size:32px;line-height:1;
+    box-shadow:0 8px 22px color-mix(in srgb,var(--gold) 45%,transparent)}
+  .fab:active{transform:scale(.93)}
+  body.sheet-open .fab{opacity:0;pointer-events:none;transform:scale(.6)}
+}
+
 /* ---------- 계정 정보/버튼 (원격 모드 로그인 시) — 윗줄 이름(이메일), 아랫줄 버튼 ---------- */
 .acct{display:flex;flex-direction:column;gap:7px;padding:0 4px 10px}
 .acct[hidden]{display:none}
@@ -1542,7 +1567,8 @@ addForm.addEventListener('submit',e=>{
   Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:type==='event'?'mid':addPriority.value,done:false,
     createdAt:Date.now(),date,endDate:null,time,doneAt:null,note:''});
   addText.value='';if(type==='event')$('addTime').value='';renderProjects();renderList();
-  if(window.matchMedia&&window.matchMedia('(max-width:760px)').matches){document.body.classList.remove('sheet-open');addText.blur();}
+  // 폰·패드의 아래 입력창(＋ 버튼으로 연 경우)이면 닫고, PC 입력줄이면 이어서 입력하도록 포커스 유지
+  if(document.body.classList.contains('sheet-open')){document.body.classList.remove('sheet-open');addText.blur();}
   else{addText.focus();}
 });
 projForm.addEventListener('submit',e=>{
