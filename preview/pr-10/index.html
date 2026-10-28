@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="projpencil-20261028">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="shareicon-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -265,7 +265,7 @@ button{cursor:pointer;border:none;background:none}
   display:inline-flex;align-items:center;justify-content:center}
 .iconbtn:hover{background:var(--paper-3);color:var(--ink)}
 /* 수정·삭제는 단색 라인 아이콘(색 이모지 대신) — 평소엔 보조 글자색, 호버 때만 의미색 */
-.iconbtn svg,.noteicon svg,.evmark svg,.pill.time svg,.proj-item .pi-edit svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;
+.iconbtn svg,.noteicon svg,.evmark svg,.pill.time svg,.proj-item .pi-edit svg,.proj-item .pi-share svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;display:block}
 .iconbtn.ic-edit:hover{color:var(--pine);background:color-mix(in srgb,var(--pine) 10%,white)}
 .iconbtn.ic-del:hover{color:var(--red);background:color-mix(in srgb,var(--red) 8%,white)}
@@ -451,6 +451,14 @@ button{cursor:pointer;border:none;background:none}
 /* ---------- 로그인 화면 (기본 숨김 · 로컬 모드에선 절대 표시 안 됨) ---------- */
 .loginscreen{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--paper);padding:20px}
 .loginscreen[hidden]{display:none}
+/* 삭제 확인: 화면 전체를 덮지 않고 반투명 배경 위에 카드만 띄움 */
+.loginscreen.confirmscreen{background:color-mix(in srgb,var(--ink) 38%,transparent);z-index:80}
+.confirm-msg{text-align:center;color:var(--ink);font-weight:600;word-break:keep-all;overflow-wrap:anywhere}
+.confirm-msg small{display:block;margin-top:4px;font-size:12px;font-weight:500;color:var(--ink-soft)}
+.confirm-btns{display:flex;gap:8px}
+.confirm-btns .btn{flex:1;margin:0}
+.confirm-btns .btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
+.confirm-btns .btn.danger:hover{background:var(--red);filter:brightness(1.06)}
 .login-card{width:340px;max-width:100%;display:flex;flex-direction:column;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
 .login-brand{justify-content:center;padding:0 0 6px}
 .login-card h2{font-size:18px;font-weight:800;color:var(--ink);text-align:center}
@@ -484,7 +492,8 @@ button{cursor:pointer;border:none;background:none}
 .evmark{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
   font-size:12px;background:color-mix(in srgb,var(--gold) 16%,white);color:var(--gold-ink)}
 .evmark svg{width:13px;height:13px;stroke-width:2}
-.proj-item .pi-edit svg{width:13px;height:13px;stroke-width:2;display:inline-block;vertical-align:-2px}
+.proj-item .pi-edit svg,.proj-item .pi-share svg{width:13px;height:13px;stroke-width:2;display:inline-block;vertical-align:-2px}
+.proj-item .pi-share svg{width:15px;height:15px}
 .pill.time{display:inline-flex;align-items:center;gap:4px}
 .pill.time svg{width:12px;height:12px;stroke-width:2.2}
 .pill.time{color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 15%,white);font-weight:800}
@@ -718,6 +727,17 @@ button{cursor:pointer;border:none;background:none}
     <div class="set-preview">회의 자료 준비하기 (미리보기)</div>
     <p class="set-note">이 기기에만 적용돼요.</p>
     <button type="button" class="btn primary" data-action="settings-close">닫기</button>
+  </div>
+</div>
+<!-- 삭제 확인 (잘못 눌러도 바로 지워지지 않게) -->
+<div class="loginscreen confirmscreen" id="confirmScreen" hidden>
+  <div class="login-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">삭제할까요?</h2>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button type="button" class="btn" data-action="confirm-cancel" id="confirmCancel">취소</button>
+      <button type="button" class="btn danger" data-action="confirm-delete">삭제</button>
+    </div>
   </div>
 </div>
 <div id="toast"></div>
@@ -1156,7 +1176,7 @@ function renderProjects(){
     const up = pi>0?`<span class="pi-move" data-action="proj-up" data-id="${p.id}" title="위로">↑</span>`:'';
     const dn = pi<plist.length-1?`<span class="pi-move" data-action="proj-down" data-id="${p.id}" title="아래로">↓</span>`:'';
     const ren = mine?`<span class="pi-edit" data-action="rename-project" data-id="${p.id}" title="이름 수정">${ICON.edit}</span>`:'';
-    const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">👥</span>`:'';
+    const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">${ICON.share}</span>`:'';
     const del = mine?`<span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span>`:'';
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
       <span class="pi-pin${on?' on':''}" data-action="toggle-pin" data-id="${p.id}" role="checkbox" aria-checked="${on?'true':'false'}" title="${on?'고정 해제':'이 프로젝트 고정(체크한 것만 보기)'}"></span>
@@ -1187,6 +1207,7 @@ const ICON={
   del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/></svg>',
   clock:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  share:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6M17.5 14.3c1.6.6 2.7 2.2 3 4.7"/></svg>',
   cal:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'
 };
 function emptyHTML(t,s){return `<div class="empty"><div class="em">🗒️</div><h3>${t}</h3>${s?`<p>${s}</p>`:''}</div>`;}
@@ -1373,6 +1394,14 @@ function toggleDone(id){
   }
   Store.tasks.update(id,{done:nd,doneAt:da});renderProjects();renderList();
 }
+let _confirmDelId=null;
+function askDelTask(id){const t=taskById(id);if(!t)return;_confirmDelId=id;
+  const kind=t.type==='event'?'일정':'할 일';
+  $('confirmTitle').textContent=kind+'을 삭제할까요?';
+  $('confirmMsg').textContent=t.text;
+  const sm=document.createElement('small');sm.textContent='삭제하면 되돌릴 수 없어요.';$('confirmMsg').appendChild(sm);
+  $('confirmScreen').hidden=false;setTimeout(()=>$('confirmCancel').focus(),0);}   // 기본 포커스는 '취소' — 엔터를 눌러도 삭제되지 않게
+function closeConfirm(){$('confirmScreen').hidden=true;_confirmDelId=null;}
 function delTask(id){const t=taskById(id);if(!t)return;if(state.ui.editingId===id)state.ui.editingId=null;Store.tasks.remove(id);renderProjects();renderList();}
 function saveEdit(id){
   const t=taskById(id);if(!t)return;
@@ -1407,6 +1436,7 @@ function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('sho
 /* ---------- 이벤트 ---------- */
 document.addEventListener('click',e=>{
   if(!state)return;
+  if(e.target.id==='confirmScreen'){closeConfirm();return;}   // 바깥(어두운 배경) 탭 = 취소
   const el=e.target.closest('[data-action]');if(!el)return;
   const a=el.dataset.action,id=el.dataset.id;
   switch(a){
@@ -1459,7 +1489,9 @@ document.addEventListener('click',e=>{
     case 'toggle':toggleDone(id);break;
     case 'edit':state.ui.editingId=id;renderList();setTimeout(()=>{const t=$('ef-text');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},0);break;
     case 'cancel-edit':state.ui.editingId=null;renderList();break;
-    case 'delete':delTask(id);break;
+    case 'delete':askDelTask(id);break;
+    case 'confirm-delete':{const did=_confirmDelId;closeConfirm();if(did)delTask(did);break;}
+    case 'confirm-cancel':closeConfirm();break;
     case 'postpone':{const t=taskById(id);if(t){
       let nd,ne;
       if(t.endDate&&t.endDate>t.date){ // 지정 기간: 통째로 +1일(기간 길이 유지)
@@ -1517,6 +1549,7 @@ projForm.addEventListener('submit',e=>{
 document.addEventListener('submit',e=>{if(!state)return;if(e.target.classList.contains('editform')){e.preventDefault();saveEdit(e.target.dataset.id);}});
 
 document.addEventListener('keydown',e=>{if(!state)return;if(e.key!=='Escape')return;
+  if(!$('confirmScreen').hidden){closeConfirm();return;}
   if(!$('settingsScreen').hidden){$('settingsScreen').hidden=true;return;}
   if(document.body.classList.contains('nav-open')||document.body.classList.contains('sheet-open')){document.body.classList.remove('nav-open','sheet-open');return;}
   if(state.ui.editingId){state.ui.editingId=null;renderList();}});
