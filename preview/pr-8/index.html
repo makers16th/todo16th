@@ -499,9 +499,9 @@ button{cursor:pointer;border:none;background:none}
    body.add-bar : 입력줄이 메인 아래쪽에 떠 있는 카드(접기 가능) — 위에는 이미 있는 할 일이 먼저 보이게 */
 .addbar-fold,.addbar-pill{display:none}
 @media(min-width:761px){
-  /* 아래 입력줄 = 지금 보이는 화면의 바닥에서 20% 높이에 떠 있는 카드(스크롤해도 그 자리). 가로는 왼쪽 메뉴까지 덮어 화면 전체 폭.
+  /* 아래 입력줄 = 지금 보이는 화면의 바닥에서 10% 높이에 떠 있는 카드(스크롤해도 그 자리). 가로는 왼쪽 메뉴까지 덮어 화면 전체 폭.
      오른쪽 위 ⌄로 접으면 작은 '＋ 할 일 추가' 알약만 남는다 */
-  body.add-bar .addbar{position:fixed;left:50%;bottom:20vh;bottom:20dvh;transform:translateX(-50%);z-index:30;
+  body.add-bar .addbar{position:fixed;left:50%;bottom:10vh;bottom:10dvh;transform:translateX(-50%);z-index:30;
     width:calc(100vw - 48px);padding:14px 46px 14px 14px;border:1px solid var(--line);border-radius:18px;
     background:color-mix(in srgb,var(--paper-2) 94%,transparent);
     -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
@@ -509,10 +509,10 @@ button{cursor:pointer;border:none;background:none}
   body.add-bar .addbar-fold{display:flex;align-items:center;justify-content:center;position:absolute;top:8px;right:8px;
     width:30px;height:30px;border-radius:9px;color:var(--ink-soft);font-size:18px;line-height:1}
   body.add-bar .addbar-fold:hover{background:var(--paper-3);color:var(--ink)}
-  body.add-bar .listwrap{padding-bottom:calc(20vh + 150px)}   /* 마지막 할 일이 카드 위로 올라올 수 있게 */
+  body.add-bar .listwrap{padding-bottom:calc(10vh + 150px)}   /* 마지막 할 일이 카드 위로 올라올 수 있게 */
   body.add-bar.addbar-folded .addbar{display:none}
-  body.add-bar.addbar-folded .listwrap{padding-bottom:calc(20vh + 70px)}
-  body.add-bar.addbar-folded .addbar-pill{display:flex;align-items:center;gap:6px;position:fixed;left:50%;bottom:20vh;bottom:20dvh;transform:translateX(-50%);z-index:30;
+  body.add-bar.addbar-folded .listwrap{padding-bottom:calc(10vh + 70px)}
+  body.add-bar.addbar-folded .addbar-pill{display:flex;align-items:center;gap:6px;position:fixed;left:50%;bottom:10vh;bottom:10dvh;transform:translateX(-50%);z-index:30;
     padding:11px 20px;border-radius:999px;background:var(--ink);color:var(--paper-2);font-weight:700;font-size:14px;
     box-shadow:0 10px 28px rgba(16,30,23,.25)}
   body.add-bar.addbar-folded .addbar-pill:hover{background:var(--forest-900)}
