@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="confirmdel-20261027">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 (Pages 재빌드 트리거용) -->
+<meta name="app-version" content="shareicon-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -246,7 +246,8 @@ button{cursor:pointer;border:none;background:none}
 .pdot.high{background:var(--p-high)} .pdot.mid{background:var(--p-mid)} .pdot.low{background:var(--p-low)}
 
 .ttext{flex:1;cursor:text;word-break:break-word;font-weight:500;display:flex;align-items:center;gap:6px;font-size:calc(14px * var(--task-fs,1))}
-.noteicon{font-size:12px;cursor:help;filter:saturate(.4)}
+.noteicon{cursor:help;color:var(--ink-soft);opacity:.75;display:inline-flex}
+.noteicon svg{width:13px;height:13px;stroke-width:2}
 
 .pill{font-size:11.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:700;flex:0 0 auto}
 .pill.proj{color:color-mix(in srgb,var(--pc) 55%,var(--ink));background:color-mix(in srgb,var(--pc) 15%,white)}
@@ -260,8 +261,14 @@ button{cursor:pointer;border:none;background:none}
 
 .acts{display:flex;align-items:center;gap:3px;opacity:0;transition:.13s;flex:0 0 auto}
 .task:hover .acts,.task:focus-within .acts{opacity:1}
-.iconbtn{width:30px;height:30px;border-radius:8px;font-size:14px;color:var(--ink-soft);transition:.12s;line-height:1}
+.iconbtn{width:30px;height:30px;border-radius:8px;font-size:14px;color:var(--ink-soft);transition:.12s;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center}
 .iconbtn:hover{background:var(--paper-3);color:var(--ink)}
+/* 수정·삭제는 단색 라인 아이콘(색 이모지 대신) — 평소엔 보조 글자색, 호버 때만 의미색 */
+.iconbtn svg,.noteicon svg,.evmark svg,.pill.time svg,.proj-item .pi-edit svg,.proj-item .pi-share svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;display:block}
+.iconbtn.ic-edit:hover{color:var(--pine);background:color-mix(in srgb,var(--pine) 10%,white)}
+.iconbtn.ic-del:hover{color:var(--red);background:color-mix(in srgb,var(--red) 8%,white)}
 .iconbtn.post{font-weight:800}
 @media(hover:none){.acts{opacity:1}}
 
@@ -483,7 +490,12 @@ button{cursor:pointer;border:none;background:none}
 .task.event{background:color-mix(in srgb,var(--gold) 5%,var(--paper-2));border-color:color-mix(in srgb,var(--gold) 20%,var(--line))}
 .task.event:hover{border-color:color-mix(in srgb,var(--gold) 35%,var(--line))}
 .evmark{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
-  font-size:12px;background:color-mix(in srgb,var(--gold) 16%,white)}
+  font-size:12px;background:color-mix(in srgb,var(--gold) 16%,white);color:var(--gold-ink)}
+.evmark svg{width:13px;height:13px;stroke-width:2}
+.proj-item .pi-edit svg,.proj-item .pi-share svg{width:13px;height:13px;stroke-width:2;display:inline-block;vertical-align:-2px}
+.proj-item .pi-share svg{width:15px;height:15px}
+.pill.time{display:inline-flex;align-items:center;gap:4px}
+.pill.time svg{width:12px;height:12px;stroke-width:2.2}
 .pill.time{color:var(--gold-ink);background:color-mix(in srgb,var(--gold) 15%,white);font-weight:800}
 
 /* ---------- 주 뷰(요일 7열 그리드 · 한눈에) ---------- */
@@ -1163,8 +1175,8 @@ function renderProjects(){
     if(p.shared!==true){ badge = (p.members&&p.members.length) ? `<span class="pi-lock" title="${p.members.length}명에게 공유">🎯${p.members.length}</span>` : '<span class="pi-lock" title="개인 프로젝트(나만)">🔒</span>'; }
     const up = pi>0?`<span class="pi-move" data-action="proj-up" data-id="${p.id}" title="위로">↑</span>`:'';
     const dn = pi<plist.length-1?`<span class="pi-move" data-action="proj-down" data-id="${p.id}" title="아래로">↓</span>`:'';
-    const ren = mine?`<span class="pi-edit" data-action="rename-project" data-id="${p.id}" title="이름 수정">✎</span>`:'';
-    const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">👥</span>`:'';
+    const ren = mine?`<span class="pi-edit" data-action="rename-project" data-id="${p.id}" title="이름 수정">${ICON.edit}</span>`:'';
+    const cfg = mine?`<span class="pi-share" data-action="share-config" data-id="${p.id}" title="공유 설정">${ICON.share}</span>`:'';
     const del = mine?`<span class="pi-del" data-action="delete-project" data-id="${p.id}" title="프로젝트 삭제">×</span>`:'';
     h+=`<button class="proj-item${state.ui.projectFilter===p.id?' active':''}" data-action="select-project" data-id="${p.id}" style="--pc:${p.color}">
       <span class="pi-pin${on?' on':''}" data-action="toggle-pin" data-id="${p.id}" role="checkbox" aria-checked="${on?'true':'false'}" title="${on?'고정 해제':'이 프로젝트 고정(체크한 것만 보기)'}"></span>
@@ -1189,6 +1201,15 @@ function progressHTML(list){
   const pct=Math.round(done/total*100);
   return `<div class="prog"><div class="progbar"><i style="width:${pct}%"></i></div><span class="progtxt">${done}/${total} 완료</span></div>`;
 }
+// 단색 라인 아이콘(stroke=currentColor라 CSS 색을 따른다)
+const ICON={
+  edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
+  note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  share:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M15.5 5.2a3 3 0 0 1 0 5.6M17.5 14.3c1.6.6 2.7 2.2 3 4.7"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'
+};
 function emptyHTML(t,s){return `<div class="empty"><div class="em">🗒️</div><h3>${t}</h3>${s?`<p>${s}</p>`:''}</div>`;}
 
 /* mode: 'day'(날짜별-일 · grip/미루기/기간 진행표시) | 'full'(프로젝트별·전체 · 날짜 전부) | 'compact'(주 뷰 · 날짜배지 최소) */
@@ -1210,20 +1231,20 @@ function cardHTML(t,opts){
       else dateTag=`<span class="pill date none">날짜 미정</span>`;
     }
   }
-  const timePill=(ev&&t.time)?`<span class="pill time">🕒 ${esc(t.time)}</span>`:'';
+  const timePill=(ev&&t.time)?`<span class="pill time">${ICON.clock}${esc(t.time)}</span>`:'';
   const projPill=p.real?`<span class="pill proj" style="--pc:${p.color}">${esc(p.name)}</span>`:`<span class="pill proj etc">기타</span>`;
   const post=(mode==='day')?`<button class="iconbtn post" data-action="postpone" data-id="${t.id}" title="${ev?'다음 날로':'내일로 미루기'}">→</button>`:'';
   const grip=(mode==='day'&&!ev)?`<span class="grip" title="드래그해서 순서 변경" aria-hidden="true">⠿</span>`:'';
   const lead=ev
-    ? `<span class="evmark" title="일정">📅</span>`
+    ? `<span class="evmark" title="일정">${ICON.cal}</span>`
     : `<button class="check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button><span class="pdot ${t.priority}"></span>`;
   return `<div class="task${ev?' event':''}${(!ev&&t.done)?' done':''}" data-id="${t.id}">
     ${grip}${lead}
-    <div class="ttext" data-action="edit" data-id="${t.id}">${esc(t.text)}${t.note?` <span class="noteicon" title="${esc(t.note)}">📝</span>`:''}</div>
+    <div class="ttext" data-action="edit" data-id="${t.id}">${esc(t.text)}${t.note?` <span class="noteicon" title="${esc(t.note)}">${ICON.note}</span>`:''}</div>
     ${timePill}${projPill}${dateTag}
     <div class="acts">${post}
-      <button class="iconbtn" data-action="edit" data-id="${t.id}" title="수정">✏️</button>
-      <button class="iconbtn" data-action="delete" data-id="${t.id}" title="삭제">🗑</button>
+      <button class="iconbtn ic-edit" data-action="edit" data-id="${t.id}" title="수정" aria-label="수정">${ICON.edit}</button>
+      <button class="iconbtn ic-del" data-action="delete" data-id="${t.id}" title="삭제" aria-label="삭제">${ICON.del}</button>
     </div>
   </div>`;
 }
