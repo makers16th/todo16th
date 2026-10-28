@@ -524,6 +524,17 @@ button{cursor:pointer;border:none;background:none}
   body.add-bar .addbar>select,body.add-bar .addbar input[type=time]{flex:0 1 130px}
   body.add-bar .add-btn{order:3}
 }
+/* 떠 있는 입력 카드는 얇고 간결하게: 높이 38px, 선택칸(종류·프로젝트·우선순위)은 내용 폭만큼만.
+   터치 기기는 글씨 16px 유지(iOS는 16px 미만 입력칸을 누르면 화면을 확대해 버림), 마우스 기기는 13.5px */
+@media(min-width:761px){
+  body.add-bar .addbar{padding:8px 44px 8px 8px;gap:6px;border-radius:14px;flex-wrap:nowrap;align-items:center}
+  body.add-bar .addbar input#addText{flex:1 1 auto;min-width:0;height:38px;padding:0 12px;font-size:13.5px;border-radius:9px}
+  body.add-bar .addbar>select,body.add-bar .addbar input[type=time]{flex:0 0 auto;width:auto;max-width:150px;height:38px;
+    padding:0 6px;font-size:12.5px;border-radius:9px}
+  body.add-bar .add-btn{order:3;flex:0 0 auto;height:38px;min-height:0;padding:0 16px;font-size:13.5px;border-radius:9px}
+  body.add-bar .addbar-fold{top:50%;transform:translateY(-50%);right:7px}
+  body.add-bar.addbar-folded .addbar-pill{padding:9px 18px;font-size:13px}
+}
 @media(min-width:761px){
   body.add-fab .scrim{display:block;position:fixed;inset:0;z-index:50;background:rgba(10,18,14,.45);
     opacity:0;pointer-events:none;transition:opacity .24s}
