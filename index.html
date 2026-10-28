@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 -->
-<meta name="app-version" content="drawer-edit-20261028">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 / datepick-small 2026-10-28 -->
+<meta name="app-version" content="datepick-small-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -400,7 +400,7 @@ button{cursor:pointer;border:none;background:none}
   .dn-break{display:block;flex-basis:100%;width:100%;height:0;margin:0}
   #periodSeg{margin-left:0!important;flex:1 1 auto}
   #periodSeg button{flex:1;padding:9px 0}
-  .datepick{margin-left:0;flex:0 0 auto}
+  .datepick{margin-left:0;flex:0 0 auto;height:40px;padding:0 10px;font-size:13px}
 
   /* 리스트 — 큰 터치 영역, FAB 공간 확보 */
   .listwrap{flex:none;overflow:visible;padding:12px 14px 104px}
@@ -482,6 +482,13 @@ button{cursor:pointer;border:none;background:none}
   .add-btn{order:1;min-height:46px}
   .addbar>select,.addbar input[type=time]{order:2;flex:1 1 26%;min-width:0;height:44px}
   .listwrap{padding:10px 20px 60px}
+}
+/* 폰 터치: 날짜선택칸이 일/주/월 바보다 커 보이지 않게. iOS 확대 방지용 16px 글씨는 유지하고 80%로 축소해 그려서
+   보이는 크기를 바(40px)와 맞춘다 — 160x50 상자 → 보이는 128x40, 줄어든 만큼은 음수 여백으로 메움 */
+@media (pointer:coarse) and (max-width:760px){
+  .datepick{-webkit-appearance:none;appearance:none;width:160px;height:50px;padding:0 12px;border-radius:11px;
+    text-align:center;transform:scale(.8);transform-origin:right center;margin:-5px 0 -5px -32px}
+  .datepick::-webkit-date-and-time-value{text-align:center}
 }
 /* 960px 이하: 날짜 줄을 한 줄에 담도록 버튼·간격·날짜선택칸을 조금씩 줄인다 (더 좁으면 자연스럽게 줄바꿈) */
 @media(min-width:761px) and (max-width:960px){
