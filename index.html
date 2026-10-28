@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 (Pages 재빌드 트리거용) -->
-<meta name="app-version" content="shareicon-20261028">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 -->
+<meta name="app-version" content="addmode-20261028">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -80,7 +80,9 @@ button{cursor:pointer;border:none;background:none}
    하한 248px: 이보다 좁으면 프로젝트 이름이 뭉개진다.
    상한 460px: 큰 모니터에서 프로젝트 목록에 여유를 준다(2222px 이상에서 걸린다).
    기울기 18vw+60px: 1456px 창에서 322px가 되도록 맞춘 값(기존 고정폭과 동일 지점). */
-.app{display:grid;grid-template-columns:clamp(248px,calc(18vw + 60px),460px) 1fr;height:100vh;overflow:hidden}
+:root{--side-w:clamp(248px,calc(18vw + 60px),460px)}
+/* 높이 100dvh: 아이패드 사파리는 100vh가 주소창을 뺀 실제 보이는 높이보다 커서 페이지가 살짝 스크롤된다 */
+.app{display:grid;grid-template-columns:var(--side-w) 1fr;height:100vh;height:100dvh;overflow:hidden}
 
 /* ---------- 사이드바 ---------- */
 .sidebar{
@@ -98,7 +100,7 @@ button{cursor:pointer;border:none;background:none}
   -webkit-mask:var(--logo-mark) center/contain no-repeat;
           mask:var(--logo-mark) center/contain no-repeat}
 .login-brand .logo{background:var(--forest-800)}
-.brand b{font-size:17px;letter-spacing:.5px}
+.brand b{font-size:17px;letter-spacing:.5px;white-space:nowrap}
 .gear-btn{margin-left:auto;width:34px;height:34px;border-radius:9px;color:var(--cream-soft);display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:.13s}
 .gear-btn:hover{color:var(--cream);background:rgba(255,255,255,.1)}
 .gear-btn:active{background:rgba(255,255,255,.16)}
@@ -106,6 +108,10 @@ button{cursor:pointer;border:none;background:none}
 .set-label{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin-top:2px}
 .set-seg{display:grid;grid-template-columns:repeat(5,1fr)}
 .set-seg button{padding:9px 2px;font-size:12px;white-space:normal;line-height:1.2}
+.set-seg2{grid-template-columns:repeat(2,1fr)}
+.set-seg2 button{flex:1}
+.set-addmode{display:flex;flex-direction:column;gap:12px}
+@media(max-width:760px){.set-addmode{display:none}}   /* 폰은 항상 ＋ 버튼 */
 .set-preview{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-weight:500;color:var(--ink);font-size:calc(14px * var(--task-fs,1))}
 .set-note{font-size:11.5px;color:var(--ink-soft);text-align:center}
 
@@ -432,6 +438,126 @@ button{cursor:pointer;border:none;background:none}
   .ef-text,.ef-row input,.ef-row select,.ef-note{font-size:16px}
 }
 
+/* ============================================================
+   📲 미니 패드(아이폰 듀오 펼침·아이패드 미니 등) — 761~1100px
+   사이드바가 하한(248px)에 걸려 좁고 메인도 600px대라, 데스크톱 배치를 그대로 쓰면
+   프로젝트 이름이 사라지고 날짜·'오늘'이 줄바꿈되며 추가바가 어긋난다.
+   ============================================================ */
+.proj-edit-toggle{display:none}
+/* 터치 기기(hover 없음) + 사이드바 표시 폭: 프로젝트 행 컨트롤(↑↓✎👥×)을 평소엔 숨기고
+   '편집'을 눌렀을 때만 노출 — 이름 칸을 지킨다. (폰 서랍 760px 이하는 기존 그대로) */
+@media(hover:none) and (min-width:761px){
+  .proj-label{display:flex;align-items:center;justify-content:space-between}
+  .proj-edit-toggle{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.18);color:var(--cream-soft);font-size:11.5px;font-weight:700;letter-spacing:0;text-transform:none}
+  body.proj-editing .proj-edit-toggle{background:var(--gold);border-color:var(--gold);color:var(--forest-900)}
+  .proj-item .pi-move,.proj-item .pi-del,.proj-item .pi-share,.proj-item .pi-edit{display:none}
+  body.proj-editing .proj-item .pi-move,body.proj-editing .proj-item .pi-del,
+  body.proj-editing .proj-item .pi-share,body.proj-editing .proj-item .pi-edit{display:inline;opacity:.75;padding:4px 3px}
+  /* 편집 중: 1줄 = 체크·점·이름·개수, 2줄(오른쪽 정렬) = ↑↓✎👥× — 이름이 잘리지 않게 */
+  body.proj-editing .proj-item{flex-wrap:wrap;justify-content:flex-end;row-gap:2px}
+  body.proj-editing .proj-item .pi-name{flex:1 1 calc(100% - 96px)}
+  body.proj-editing .proj-item .pi-move,body.proj-editing .proj-item .pi-del,
+  body.proj-editing .proj-item .pi-share,body.proj-editing .proj-item .pi-edit{padding:5px 8px;font-size:14px}
+}
+@media(min-width:761px) and (max-width:1100px){
+  .brand b{font-size:16px}
+  .topbar{padding:16px 20px 0;gap:10px}
+  /* 날짜 네비: 날짜·배지·'오늘'은 절대 줄바꿈하지 않고, 폭이 모자라면 일/주/월+날짜선택이 다음 줄로 */
+  .datenav{padding:14px 20px 0;flex-wrap:wrap;row-gap:10px}
+  .datenav button{flex:0 0 auto;white-space:nowrap}
+  .datelabel{font-size:17px;white-space:nowrap;flex:0 0 auto}
+  .daybadge{white-space:nowrap}
+  #periodSeg{flex:0 0 auto}
+  .datepick{width:150px;flex:0 0 auto}
+  /* 추가바: 1줄 = 입력칸 + 추가, 2줄 = 유형·프로젝트·우선순위(·시간) 균등 */
+  .addbar{padding:14px 20px 4px}
+  .addbar input#addText{flex:1 1 calc(100% - 110px);min-width:0;order:0}
+  .add-btn{order:1;min-height:46px}
+  .addbar>select,.addbar input[type=time]{order:2;flex:1 1 26%;min-width:0;height:44px}
+  .listwrap{padding:10px 20px 60px}
+}
+/* 960px 이하: 날짜 줄을 한 줄에 담도록 버튼·간격·날짜선택칸을 조금씩 줄인다 (더 좁으면 자연스럽게 줄바꿈) */
+@media(min-width:761px) and (max-width:960px){
+  .datenav{gap:6px}
+  .datenav button{width:32px;height:34px}
+  .today-btn{padding:0 9px}
+  .datelabel{font-size:16px;gap:6px;letter-spacing:-.4px}
+  .daybadge{padding:2px 7px}
+  #periodSeg{margin-left:2px!important}
+  .datepick{width:128px;padding:6px 8px}
+}
+/* 860px 이하: 그래도 모자라면 날짜 제목의 연도와 '오늘' 배지를 숨긴다(연도는 오른쪽 날짜선택칸에 그대로 보임) */
+@media(min-width:761px) and (max-width:860px){
+  .dl-y{display:none}
+  .daybadge[data-r="오늘"]{display:none!important}   /* 오늘 보는 중이면 배지는 '오늘' 버튼과 겹치는 정보 */
+  .datepick{width:118px}
+}
+
+/* 패드·PC(761px 이상) 할 일 추가 방식 — 시스템 설정에서 고름(기본: 터치 기기 ＋ 버튼, 마우스 기기 아래 입력줄).
+   body.add-fab : 폰처럼 오른쪽 아래 ＋ 버튼 → 아래 가운데에서 올라오는 입력창
+   body.add-bar : 입력줄이 메인 아래쪽에 떠 있는 카드(접기 가능) — 위에는 이미 있는 할 일이 먼저 보이게 */
+.addbar-fold,.addbar-pill{display:none}
+@media(min-width:761px){
+  /* 아래 입력줄 = 지금 보이는 화면의 바닥에서 10% 높이에 떠 있는 카드(스크롤해도 그 자리). 가로는 왼쪽 메뉴까지 덮어 화면 전체 폭.
+     오른쪽 위 ⌄로 접으면 작은 '＋ 할 일 추가' 알약만 남는다 */
+  body.add-bar .addbar{position:fixed;left:50%;bottom:10vh;bottom:10dvh;transform:translateX(-50%);z-index:30;
+    width:calc(100vw - 48px);padding:14px 46px 14px 14px;border:1px solid var(--line);border-radius:18px;
+    background:color-mix(in srgb,var(--paper-2) 94%,transparent);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:0 14px 40px rgba(16,30,23,.18),0 2px 6px rgba(16,30,23,.08)}
+  body.add-bar .addbar-fold{display:flex;align-items:center;justify-content:center;position:absolute;top:8px;right:8px;
+    width:30px;height:30px;border-radius:9px;color:var(--ink-soft);font-size:18px;line-height:1}
+  body.add-bar .addbar-fold:hover{background:var(--paper-3);color:var(--ink)}
+  body.add-bar .listwrap{padding-bottom:calc(10vh + 150px)}   /* 마지막 할 일이 카드 위로 올라올 수 있게 */
+  body.add-bar.addbar-folded .addbar{display:none}
+  body.add-bar.addbar-folded .listwrap{padding-bottom:calc(10vh + 70px)}
+  body.add-bar.addbar-folded .addbar-pill{display:flex;align-items:center;gap:6px;position:fixed;left:50%;bottom:10vh;bottom:10dvh;transform:translateX(-50%);z-index:30;
+    padding:11px 20px;border-radius:999px;background:var(--ink);color:var(--paper-2);font-weight:700;font-size:14px;
+    box-shadow:0 10px 28px rgba(16,30,23,.25)}
+  body.add-bar.addbar-folded .addbar-pill:hover{background:var(--forest-900)}
+}
+@media(min-width:761px) and (max-width:1100px){
+  body.add-bar .addbar{width:calc(100vw - 32px)}
+  /* 화면 전체 폭이라 한 줄로 들어간다 */
+  body.add-bar .addbar input#addText{flex:1 1 200px}
+  body.add-bar .addbar>select,body.add-bar .addbar input[type=time]{flex:0 1 130px}
+  body.add-bar .add-btn{order:3}
+}
+/* 떠 있는 입력 카드는 얇고 간결하게: 높이 38px, 선택칸(종류·프로젝트·우선순위)은 내용 폭만큼만.
+   터치 기기는 글씨 16px 유지(iOS는 16px 미만 입력칸을 누르면 화면을 확대해 버림), 마우스 기기는 13.5px */
+@media(min-width:761px){
+  body.add-bar .addbar{padding:8px 44px 8px 8px;gap:6px;border-radius:14px;flex-wrap:nowrap;align-items:center}
+  body.add-bar .addbar input#addText{flex:1 1 auto;min-width:0;height:38px;padding:0 12px;font-size:13.5px;border-radius:9px}
+  body.add-bar .addbar>select,body.add-bar .addbar input[type=time]{flex:0 0 auto;width:auto;max-width:150px;height:38px;
+    padding:0 6px;font-size:12.5px;border-radius:9px}
+  body.add-bar .add-btn{order:3;flex:0 0 auto;height:38px;min-height:0;padding:0 16px;font-size:13.5px;border-radius:9px}
+  body.add-bar .addbar-fold{top:50%;transform:translateY(-50%);right:7px}
+  body.add-bar.addbar-folded .addbar-pill{padding:9px 18px;font-size:13px}
+}
+@media(min-width:761px){
+  body.add-fab .scrim{display:block;position:fixed;inset:0;z-index:50;background:rgba(10,18,14,.45);
+    opacity:0;pointer-events:none;transition:opacity .24s}
+  body.add-fab.sheet-open .scrim{opacity:1;pointer-events:auto}
+  body.add-fab .addbar{position:fixed;left:50%;bottom:0;z-index:60;width:min(560px,calc(100% - 32px));
+    flex-direction:column;flex-wrap:nowrap;gap:11px;align-items:stretch;
+    background:var(--paper-2);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;
+    padding:22px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 34px rgba(16,30,23,.22);
+    transform:translate(-50%,115%);transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  body.add-fab.sheet-open .addbar{transform:translate(-50%,0)}
+  body.add-fab .addbar::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:42px;height:4px;border-radius:99px;background:var(--line-strong)}
+  body.add-fab .addbar input#addText{order:0;flex:none;width:100%;min-width:0;padding:14px 15px}
+  body.add-fab .addbar>select,body.add-fab .addbar input[type=time]{order:0;flex:none;width:100%;height:48px}
+  body.add-fab .add-btn{order:0;width:100%;padding:14px;font-size:15px}
+  body.add-fab .listwrap{padding-bottom:110px}
+  body.add-fab .fab{display:flex;align-items:center;justify-content:center;position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:45;
+    width:60px;height:60px;border-radius:50%;background:var(--gold);color:var(--forest-900);font-size:32px;line-height:1;
+    box-shadow:0 8px 22px color-mix(in srgb,var(--gold) 45%,transparent)}
+  body.add-fab .fab:active{transform:scale(.93)}
+  body.add-fab.sheet-open .fab{opacity:0;pointer-events:none;transform:scale(.6)}
+}
+
 /* ---------- 계정 정보/버튼 (원격 모드 로그인 시) — 윗줄 이름(이메일), 아랫줄 버튼 ---------- */
 .acct{display:flex;flex-direction:column;gap:7px;padding:0 4px 10px}
 .acct[hidden]{display:none}
@@ -574,7 +700,7 @@ button{cursor:pointer;border:none;background:none}
     </div>
     <!-- 폰: 상단 보기 선택(.topbar)을 이 자리로 옮겨 메뉴 안에 둔다 (JS placeTopbar) -->
     <div class="side-view" id="sideView" hidden><div class="side-label">보기</div></div>
-    <div class="side-label">프로젝트</div>
+    <div class="side-label proj-label">프로젝트<button type="button" class="proj-edit-toggle" data-action="toggle-proj-edit" aria-pressed="false">편집</button></div>
     <div class="proj-hint">☑ 프로젝트를 체크하면 그 프로젝트 항목만 보여요 (‘전체’로 모두 보기)</div>
     <nav class="proj-nav" id="sidebarProjects"></nav>
     <button class="proj-add-btn" data-action="show-add-project">＋ 프로젝트 추가</button>
@@ -649,7 +775,9 @@ button{cursor:pointer;border:none;background:none}
       </select>
       <input type="time" id="addTime" title="일정 시간(선택)" hidden>
       <button type="submit" class="add-btn">추가</button>
+      <button type="button" class="addbar-fold" data-action="fold-addbar" aria-label="입력창 접기" title="접기">⌄</button>
     </form>
+    <button type="button" class="addbar-pill" data-action="unfold-addbar">＋ 할 일 추가</button>
 
     <div class="listwrap" id="listContainer"></div>
   </main>
@@ -725,6 +853,13 @@ button{cursor:pointer;border:none;background:none}
       <button type="button" data-action="task-font" data-fs="xl">매우 크게</button>
     </div>
     <div class="set-preview">회의 자료 준비하기 (미리보기)</div>
+    <div class="set-addmode">
+      <div class="set-label">할 일 추가 방식</div>
+      <div class="segbar set-seg set-seg2" id="addModeSeg">
+        <button type="button" data-action="add-mode" data-m="fab">＋ 버튼</button>
+        <button type="button" data-action="add-mode" data-m="bar">아래 입력줄</button>
+      </div>
+    </div>
     <p class="set-note">이 기기에만 적용돼요.</p>
     <button type="button" class="btn primary" data-action="settings-close">닫기</button>
   </div>
@@ -802,7 +937,7 @@ function defaultState(){
 function migrate(s){
   s.tasks=Array.isArray(s.tasks)?s.tasks:[];
   s.projects=Array.isArray(s.projects)?s.projects:[];
-  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[],taskFont:'m'},s.ui||{});
+  s.ui=Object.assign({view:'date',period:'day',itemFilter:'all',selectedDate:ymd(new Date()),projectFilter:'all',showDone:true,editingId:null,projSort:[],projFilter:[],taskFont:'m',addMode:'',addFolded:false},s.ui||{});
   s.ui.selectedDate=ymd(new Date()); // 열 때 항상 오늘로
   s.ui.editingId=null;
   if(!Array.isArray(s.ui.projSort))s.ui.projSort=[];
@@ -1140,9 +1275,10 @@ function syncHeader(){
     const base=parseYmd(state.ui.selectedDate);
     dayBadge.style.display='none';
     if(period==='day'){
-      dateMain.textContent=fmtDateKo(state.ui.selectedDate);
+      // 연도는 따로 감싸 둔다 — 좁은 미니 패드 폭에선 CSS로 숨겨 날짜 줄을 한 줄로 유지
+      dateMain.innerHTML=fmtDateKo(state.ui.selectedDate).replace(/^(\d+년 )/,'<span class="dl-y">$1</span>');
       const r=relLabel(state.ui.selectedDate);
-      dayBadge.textContent=r;dayBadge.style.display=r?'inline-flex':'none';
+      dayBadge.textContent=r;dayBadge.dataset.r=r;dayBadge.style.display=r?'inline-flex':'none';
     }else if(period==='week'){
       const s=new Date(base);s.setDate(base.getDate()-base.getDay());
       const e=new Date(s);e.setDate(s.getDate()+6);
@@ -1373,7 +1509,16 @@ function applyTaskFont(){
   document.documentElement.style.setProperty('--task-fs',TASK_FONT_SCALE[k]);
   document.querySelectorAll('#taskFontSeg button').forEach(b=>b.classList.toggle('active',b.dataset.fs===k));
 }
-function render(){applyTaskFont();syncHeader();renderProjects();renderList();}
+// 패드·PC 할 일 추가 방식: 설정값(fab/bar)이 없으면 터치 기기는 ＋ 버튼, 마우스 기기는 아래 입력줄
+function applyAddMode(){
+  let m=state&&state.ui.addMode;
+  if(m!=='fab'&&m!=='bar')m=(window.matchMedia&&window.matchMedia('(hover:none)').matches)?'fab':'bar';
+  document.body.classList.toggle('add-fab',m==='fab');document.body.classList.toggle('add-bar',m==='bar');
+  if(m==='bar')document.body.classList.remove('sheet-open');
+  document.body.classList.toggle('addbar-folded',m==='bar'&&!!state.ui.addFolded);
+  document.querySelectorAll('#addModeSeg button').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
+}
+function render(){applyTaskFont();applyAddMode();syncHeader();renderProjects();renderList();}
 
 /* ---------- 동작 ---------- */
 function shiftDate(dir){
@@ -1446,8 +1591,11 @@ document.addEventListener('click',e=>{
     case 'pw-cancel':showPw(false);break;
     case 'profile-open':{document.body.classList.remove('nav-open');const u=Store.auth.currentUser()||{};$('profName').value=u.name||'';$('profEmail').value=u.email||'';$('profErr').hidden=true;showProfile(true);setTimeout(()=>$('profName').focus(),0);break;}
     case 'profile-cancel':showProfile(false);break;
-    case 'settings-open':document.body.classList.remove('nav-open');applyTaskFont();$('settingsScreen').hidden=false;break;
+    case 'settings-open':document.body.classList.remove('nav-open','sheet-open');applyTaskFont();applyAddMode();$('settingsScreen').hidden=false;break;
     case 'settings-close':$('settingsScreen').hidden=true;break;
+    case 'fold-addbar':state.ui.addFolded=true;Store.prefs.save();applyAddMode();break;
+    case 'unfold-addbar':state.ui.addFolded=false;Store.prefs.save();applyAddMode();setTimeout(()=>{try{addText.focus();}catch(_){}},30);break;
+    case 'add-mode':state.ui.addMode=el.dataset.m;Store.prefs.save();applyAddMode();break;
     case 'task-font':state.ui.taskFont=el.dataset.fs;Store.prefs.save();applyTaskFont();break;
     case 'toggle-drawer':document.body.classList.remove('sheet-open');document.body.classList.toggle('nav-open');break;
     case 'open-add':document.body.classList.remove('nav-open');document.body.classList.add('sheet-open');setTimeout(()=>{try{addText.focus();}catch(_){}},60);break;
@@ -1501,6 +1649,7 @@ document.addEventListener('click',e=>{
         const d=parseYmd(state.ui.selectedDate);d.setDate(d.getDate()+1);nd=ymd(d);ne=null;
       }
       Store.tasks.update(id,{date:nd,endDate:ne});renderProjects();renderList();toast('내일로 미뤘어요');}break;}
+    case 'toggle-proj-edit':{const on=document.body.classList.toggle('proj-editing');el.textContent=on?'완료':'편집';el.setAttribute('aria-pressed',on?'true':'false');break;}
     case 'show-add-project':projForm.hidden=!projForm.hidden;if(!projForm.hidden)projName.focus();break;
   }
 });
@@ -1535,7 +1684,8 @@ addForm.addEventListener('submit',e=>{
   Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:type==='event'?'mid':addPriority.value,done:false,
     createdAt:Date.now(),date,endDate:null,time,doneAt:null,note:''});
   addText.value='';if(type==='event')$('addTime').value='';renderProjects();renderList();
-  if(window.matchMedia&&window.matchMedia('(max-width:760px)').matches){document.body.classList.remove('sheet-open');addText.blur();}
+  // 폰·패드의 아래 입력창(＋ 버튼으로 연 경우)이면 닫고, PC 입력줄이면 이어서 입력하도록 포커스 유지
+  if(document.body.classList.contains('sheet-open')){document.body.classList.remove('sheet-open');addText.blur();}
   else{addText.focus();}
 });
 projForm.addEventListener('submit',e=>{
