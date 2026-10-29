@@ -289,6 +289,7 @@ button{cursor:pointer;border:none;background:none}
 .grip{flex:0 0 auto;cursor:grab;color:var(--ink-soft);font-size:15px;line-height:1;padding:0 1px;
   user-select:none;opacity:.7;transition:.12s;letter-spacing:-2px}
 .grip:hover{opacity:1;color:var(--ink-soft)}
+.grip{touch-action:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .grip:active{cursor:grabbing}
 .task.dragging{opacity:.4}
 .task.drop-before{box-shadow:inset 0 3px 0 -1px var(--gold)}
@@ -415,7 +416,7 @@ button{cursor:pointer;border:none;background:none}
   .listwrap{flex:none;overflow:visible;padding:12px 14px 104px}
   .task{padding:15px 14px;gap:12px}
   .check{width:26px;height:26px}
-  .grip{display:none}
+  .grip{font-size:18px;padding:8px 6px;margin:-8px -6px -8px -8px;opacity:.55}
   /* 폰: 기간 배지·액션버튼 숨겨 내용에 폭 몰아주기 (수정=내용 탭, 삭제=수정창 안 삭제) */
   .task .acts{display:none}
   .task .pill.date,.task .pill.range,.task .pill.carry{display:none}
@@ -1760,6 +1761,38 @@ listContainer.addEventListener('dragstart',e=>{const card=e.target.closest('.tas
 listContainer.addEventListener('dragover',e=>{if(dragId==null)return;const card=e.target.closest('.task');if(!card)return;e.preventDefault();if(card.dataset.id===dragId){clearDropMarks();return;}const r=card.getBoundingClientRect();const after=(e.clientY-r.top)>r.height/2;clearDropMarks();card.classList.add(after?'drop-after':'drop-before');});
 listContainer.addEventListener('drop',e=>{if(dragId==null)return;e.preventDefault();const card=e.target.closest('.task');clearDropMarks();if(card&&card.dataset.id!==dragId){const r=card.getBoundingClientRect();const after=(e.clientY-r.top)>r.height/2;reorderTask(dragId,card.dataset.id,after);}dragId=null;});
 listContainer.addEventListener('dragend',e=>{const card=e.target.closest('.task');if(card){card.classList.remove('dragging');card.draggable=false;}clearDropMarks();dragId=null;});
+/* 터치(폰·패드): HTML5 드래그는 터치에서 시작되지 않으므로 그립을 포인터로 끌어 순서 변경 */
+let touchDrag=null;
+function scrollerOf(el){const w=el.closest('.listwrap');return(w&&getComputedStyle(w).overflowY!=='visible'&&w.scrollHeight>w.clientHeight)?w:null;}
+function touchDragMark(x,y){
+  const el=document.elementFromPoint(x,y);const card=el&&el.closest('.task');clearDropMarks();
+  if(!card||!listContainer.contains(card)||card.dataset.id===touchDrag.id){touchDrag.target=null;return;}
+  const r=card.getBoundingClientRect();touchDrag.target=card.dataset.id;touchDrag.after=(y-r.top)>r.height/2;
+  card.classList.add(touchDrag.after?'drop-after':'drop-before');
+}
+function touchDragTick(){
+  if(!touchDrag)return;const y=touchDrag.y,edge=70;
+  const sc=touchDrag.scroller,top=sc?sc.getBoundingClientRect().top:0,bot=sc?sc.getBoundingClientRect().bottom:innerHeight;
+  const dy=y<top+edge?-Math.ceil((top+edge-y)/6):y>bot-edge?Math.ceil((y-bot+edge)/6):0;
+  if(dy){if(sc)sc.scrollTop+=dy;else scrollBy(0,dy);touchDragMark(touchDrag.x,y);}
+  touchDrag.raf=requestAnimationFrame(touchDragTick);
+}
+function touchDragEnd(commit){
+  if(!touchDrag)return;const d=touchDrag;touchDrag=null;cancelAnimationFrame(d.raf);
+  d.card.classList.remove('dragging');clearDropMarks();
+  if(commit&&d.target)reorderTask(d.id,d.target,d.after);
+}
+listContainer.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse')return;const grip=e.target.closest('.grip');if(!grip)return;
+  const card=grip.closest('.task');if(!card)return;e.preventDefault();
+  try{grip.setPointerCapture(e.pointerId);}catch(_){}
+  touchDrag={id:card.dataset.id,card,pid:e.pointerId,x:e.clientX,y:e.clientY,target:null,after:false,scroller:scrollerOf(listContainer)};
+  card.classList.add('dragging');if(navigator.vibrate)try{navigator.vibrate(10);}catch(_){}
+  touchDrag.raf=requestAnimationFrame(touchDragTick);
+});
+listContainer.addEventListener('pointermove',e=>{if(!touchDrag||e.pointerId!==touchDrag.pid)return;e.preventDefault();touchDrag.x=e.clientX;touchDrag.y=e.clientY;touchDragMark(e.clientX,e.clientY);});
+listContainer.addEventListener('pointerup',e=>{if(touchDrag&&e.pointerId===touchDrag.pid)touchDragEnd(true);});
+listContainer.addEventListener('pointercancel',e=>{if(touchDrag&&e.pointerId===touchDrag.pid)touchDragEnd(false);});
 
 /* ---------- 일회성 추가(시드) ----------
    여기에 항목을 넣어두면 새로고침 때 '한 번만' 보드에 추가됩니다.
