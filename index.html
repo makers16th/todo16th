@@ -11,8 +11,8 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#162e23">
 <title>MAKERS WORKS</title>
-<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 / datepick-small 2026-10-28 -->
-<meta name="app-version" content="page-switch-20261028">
+<!-- build: projfilter 2026-07-04 / redeploy 2026-07-05 / rename-r2 / doneat-endfix / rm-databtns-r2 / donedate-edit 2026-07-21 / pwa 2026-08-12 / resync 2026-08-12 / sw 2026-08-14 / enddate-autodone 2026-08-14 / brandmark 2026-08-17 / ownerfilter 2026-08-17 / fluidside 2026-08-17 / works-header 2026-10-25 / rm-allview 2026-10-25 / frosted-bar / drawer-right 2026-10-26 / no-dbltap-zoom 2026-10-27 / task-fontsize 2026-10-27 / confirm-delete 2026-10-27 / mono-icons 2026-10-27 / proj-pencil 2026-10-28 / proj-share-icon 2026-10-28 / pill-fontsize 2026-10-28 (Pages 재빌드 트리거용) / minipad 2026-10-27 / addmode 2026-10-28 / datepick-small 2026-10-28 / no-priority 2026-10-29 -->
+<meta name="app-version" content="no-priority-20261029">
 
 <!-- PWA: 아이폰 '홈 화면에 추가' 시 앱처럼 전체화면 실행 -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -55,11 +55,6 @@
   --gold-ink:#8f6512;       /* 밝은 배경 위 골드 '글자'용(가독) */
   --pine:#2f6b4e;           /* 완료·진행 그린 */
   --red:#a81d2b;            /* 시그니처 레드(위험·최우선, 1포인트) */
-
-  /* 우선순위 */
-  --p-high:#a81d2b;
-  --p-mid:#c58f23;
-  --p-low:#8b9a8f;
 
   --radius:14px;
   --shadow:0 1px 2px rgba(16,30,23,.05), 0 6px 20px rgba(16,30,23,.07);
@@ -255,8 +250,6 @@ button{cursor:pointer;border:none;background:none}
 .task.done .check{background:var(--pine);border-color:var(--pine)}
 .task.done .check::after{transform:rotate(45deg) scale(1)}
 
-.pdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-.pdot.high{background:var(--p-high)} .pdot.mid{background:var(--p-mid)} .pdot.low{background:var(--p-low)}
 
 .ttext{flex:1;cursor:text;word-break:break-word;font-weight:500;display:flex;align-items:center;gap:6px;font-size:calc(14px * var(--task-fs,1))}
 .noteicon{cursor:help;color:var(--ink-soft);opacity:.75;display:inline-flex}
@@ -483,7 +476,7 @@ button{cursor:pointer;border:none;background:none}
   .daybadge{white-space:nowrap}
   #periodSeg{flex:0 0 auto}
   .datepick{width:150px;flex:0 0 auto}
-  /* 추가바: 1줄 = 입력칸 + 추가, 2줄 = 유형·프로젝트·우선순위(·시간) 균등 */
+  /* 추가바: 1줄 = 입력칸 + 추가, 2줄 = 유형·프로젝트(·시간) 균등 */
   .addbar{padding:14px 20px 4px}
   .addbar input#addText{flex:1 1 calc(100% - 110px);min-width:0;order:0}
   .add-btn{order:1;min-height:46px}
@@ -544,7 +537,7 @@ button{cursor:pointer;border:none;background:none}
   body.add-bar .addbar>select,body.add-bar .addbar input[type=time]{flex:0 1 130px}
   body.add-bar .add-btn{order:3}
 }
-/* 떠 있는 입력 카드는 얇고 간결하게: 높이 38px, 선택칸(종류·프로젝트·우선순위)은 내용 폭만큼만.
+/* 떠 있는 입력 카드는 얇고 간결하게: 높이 38px, 선택칸(종류·프로젝트)은 내용 폭만큼만.
    터치 기기는 글씨 16px 유지(iOS는 16px 미만 입력칸을 누르면 화면을 확대해 버림), 마우스 기기는 13.5px */
 @media(min-width:761px){
   body.add-bar .addbar{padding:8px 44px 8px 8px;gap:6px;border-radius:14px;flex-wrap:nowrap;align-items:center}
@@ -792,11 +785,6 @@ button{cursor:pointer;border:none;background:none}
         <option value="event">📅 일정</option>
       </select>
       <select id="addProject"></select>
-      <select id="addPriority">
-        <option value="high">🔴 높음</option>
-        <option value="mid" selected>🟡 보통</option>
-        <option value="low">🟢 낮음</option>
-      </select>
       <input type="time" id="addTime" title="일정 시간(선택)" hidden>
       <button type="submit" class="add-btn">추가</button>
       <button type="button" class="addbar-fold" data-action="fold-addbar" aria-label="입력창 접기" title="접기">⌄</button>
@@ -909,7 +897,6 @@ const PROJECT_COLORS=['#c58f23','#2f6b4e','#a81d2b','#4a6d8c','#b3702f','#7f9a48
 const LEGACY_PROJECT_COLORS={'#7c5cff':'#7a4650','#9b7bff':'#7a4650','#2fd98a':'#2f6b4e','#3dd6c0':'#3f8577',
   '#ff8a5c':'#b3702f','#ffc24b':'#c58f23','#4bc0ff':'#4a6d8c','#5ac8fa':'#8b9a8f','#ff6b9d':'#a81d2b','#ff6b6b':'#a81d2b'};
 const themeColor=c=>{c=(c||'').toLowerCase();c=LEGACY_PROJECT_COLORS[c]||c;return /^#[0-9a-f]{3,8}$/.test(c)?c:'#8b9a8f';}; // hex만 허용(style 주입 차단)
-const PRI_EMOJI={high:'🔴',mid:'🟡',low:'🟢'};
 const WD=['일','월','화','수','목','금','토'];
 /* 할 일 글씨 크기(기기별 설정): 지금 크기 = 기본(m) */
 const TASK_FONT_SCALE={xs:.85,s:.93,m:1,l:1.15,xl:1.3};
@@ -1210,12 +1197,11 @@ function projectOptions(sel){
   for(const p of orderedProjects())o+=`<option value="${p.id}"${sel===p.id?' selected':''}>${esc(p.name)}</option>`;
   return o;
 }
-function priOptions(sel){return['high','mid','low'].map(k=>`<option value="${k}"${sel===k?' selected':''}>${PRI_EMOJI[k]} ${{high:'높음',mid:'보통',low:'낮음'}[k]}</option>`).join('');}
 
 /* ---------- DOM 참조 ---------- */
 const $=id=>document.getElementById(id);
 const sidebarProjects=$('sidebarProjects'),addProject=$('addProject'),addText=$('addText'),
-  addPriority=$('addPriority'),addForm=$('addForm'),projForm=$('projForm'),projName=$('projName'),
+  addForm=$('addForm'),projForm=$('projForm'),projName=$('projName'),
   dateNav=$('dateNav'),dateMain=$('dateMain'),dayBadge=$('dayBadge'),datePick=$('datePick'),
   listContainer=$('listContainer'),showDone=$('showDone'),
   sideStat=$('sideStat');
@@ -1399,7 +1385,7 @@ function cardHTML(t,opts){
   const grip=(mode==='day'&&!ev)?`<span class="grip" title="드래그해서 순서 변경" aria-hidden="true">⠿</span>`:'';
   const lead=ev
     ? `<span class="evmark" title="일정">${ICON.cal}</span>`
-    : `<button class="check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button><span class="pdot ${t.priority}"></span>`;
+    : `<button class="check" data-action="toggle" data-id="${t.id}" aria-label="완료 토글"></button>`;
   return `<div class="task${ev?' event':''}${(!ev&&t.done)?' done':''}" data-id="${t.id}">
     ${grip}${lead}
     <div class="ttext" data-action="edit" data-id="${t.id}">${esc(t.text)}${t.note?` <span class="noteicon" title="${esc(t.note)}">${ICON.note}</span>`:''}</div>
@@ -1421,7 +1407,6 @@ function editHTML(t){
           <option value="event"${isEvent(t)?' selected':''}>📅 일정</option>
         </select>
         <select id="ef-proj">${projectOptions(t.project)}</select>
-        <select id="ef-pri"${isEvent(t)?' hidden':''}>${priOptions(t.priority)}</select>
         <input type="time" id="ef-time" value="${t.time||''}"${isEvent(t)?'':' hidden'} title="시간 (선택)">
         <input type="date" id="ef-date" value="${t.date||''}" title="시작일 (비우면 ‘날짜 미정’)">
         <span class="ef-tilde">~</span>
@@ -1583,7 +1568,6 @@ function saveEdit(id){
   else if(sd&&ed&&ed<sd){const tmp=sd;sd=ed;ed=tmp;} // 종료<시작 → 두 날짜 자동 정렬
   if(ed&&ed===sd)ed=null;                            // 시작=종료 → 하루짜리
   const patch={text:newText,type,project:$('ef-proj').value,date:sd,endDate:ed,time:type==='event'?($('ef-time').value||null):null,note:$('ef-note').value.trim()};
-  if(type!=='event')patch.priority=$('ef-pri').value;
   if(type==='event'&&t.done){patch.done=false;patch.doneAt=null;}   // 일정으로 바꾸면 완료상태 해제
   else if(t.done&&type!=='event'&&sd){const ne=ed||sd;if(t.doneAt!==ne)patch.doneAt=ne;} // 완료된 할 일: 편집한 날짜가 최우선 — 완료일(doneAt)을 입력한 종료일에 맞춰 화면에도 그대로 반영
   else if(!t.done&&type!=='event'&&rawEd&&sd){const fin=ed||sd;if(fin<todayYmd()){patch.done=true;patch.doneAt=fin;}} // 미완료 할 일에 지난 날짜로 종료일 지정 → 그 날 완료한 것으로 자동 체크(자동 연장 종료)
@@ -1691,12 +1675,12 @@ document.addEventListener('change',e=>{
 });
 function toggleAddType(){
   const ev=$('addType').value==='event';
-  $('addPriority').hidden=ev;$('addTime').hidden=!ev;
+  $('addTime').hidden=!ev;
   addText.placeholder=ev?'일정을 입력하고 Enter ↵':'할 일을 입력하고 Enter ↵';
 }
 function toggleEfType(){
   const sel=$('ef-type');if(!sel)return;const ev=sel.value==='event';
-  const pri=$('ef-pri'),tm=$('ef-time');if(pri)pri.hidden=ev;if(tm)tm.hidden=!ev;
+  const tm=$('ef-time');if(tm)tm.hidden=!ev;
 }
 
 addForm.addEventListener('submit',e=>{
@@ -1707,7 +1691,7 @@ addForm.addEventListener('submit',e=>{
   const period=state.ui.period||'day';
   // 날짜별 뷰(일/주)면 보고 있는 날짜에, 월 뷰/다른 뷰면 오늘에 추가
   const date=(state.ui.view==='date'&&period!=='month')?state.ui.selectedDate:ymd(new Date());
-  Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:type==='event'?'mid':addPriority.value,done:false,
+  Store.tasks.create({id:uid(),text,type,project:addProject.value,priority:'mid',done:false,
     createdAt:Date.now(),date,endDate:null,time,doneAt:null,note:''});
   addText.value='';if(type==='event')$('addTime').value='';renderProjects();renderList();
   // 폰·패드의 아래 입력창(＋ 버튼으로 연 경우)이면 닫고, PC 입력줄이면 이어서 입력하도록 포커스 유지

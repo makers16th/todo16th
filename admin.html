@@ -139,8 +139,6 @@ main.wrap{padding-top:26px;padding-bottom:80px}  /* .wrap(클래스)가 좌우 �
 .mark.ev{border:none;width:auto;height:auto;font-size:13px}
 .row .txt{flex:1;min-width:0;word-break:break-word;font-weight:500}
 .row.done .txt{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line-strong)}
-.pdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
-.pdot.high{background:var(--red)} .pdot.mid{background:var(--gold)} .pdot.low{background:#8b9a8f}
 .dt{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--ink-soft);white-space:nowrap}
 .dt.late{color:var(--red)}
 .dt.time{color:var(--gold-ink)}
@@ -340,7 +338,6 @@ function renderUsers(){
 function taskRowHTML(t){
   const late=isLate(t);
   const mark=isEvent(t)?'<span class="mark ev">📅</span>':`<span class="mark${t.done?' done':''}"></span>`;
-  const pd=isEvent(t)?'':`<span class="pdot ${esc(t.priority||'mid')}"></span>`;
   const note=t.note?`<span class="note-i" title="${esc(t.note)}">📝</span>`:'';
   let dt='';
   if(isEvent(t)){
@@ -348,7 +345,7 @@ function taskRowHTML(t){
     dt=`<span class="dt time">${range}${t.event_time?' '+esc(t.event_time):''}</span>`;
   }
   else if(t.start_date)dt=`<span class="dt${late?' late':''}">${esc(fmtD(t.start_date))}${t.end_date&&t.end_date!==t.start_date?'~'+esc(fmtD(t.end_date)):''}${late?' 지남':''}</span>`;
-  return `<div class="row${t.done?' done':''}">${mark}${pd}<span class="txt">${esc(t.title)}${note?' '+note:''}</span>${dt}</div>`;
+  return `<div class="row${t.done?' done':''}">${mark}<span class="txt">${esc(t.title)}${note?' '+note:''}</span>${dt}</div>`;
 }
 function cmpRow(a,b){
   const d=(a.done?1:0)-(b.done?1:0);if(d)return d;
