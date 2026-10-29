@@ -445,6 +445,17 @@ button{cursor:pointer;border:none;background:none}
   .login-card{width:100%}
   .login-card input,.login-card select{font-size:16px}
   .editform{font-size:calc(15px * var(--task-fs,1))}
+  /* 폰 수정창: 1줄 = 종류 | 프로젝트, 2줄 = 시작일 ~ 종료일 (항상 나란히), 일정이면 3줄 = 시간 */
+  .ef-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.55em .45em;align-items:center}
+  .ef-row select,.ef-row input{width:100%;min-width:0}
+  #ef-type{grid-area:1/1}
+  #ef-proj{grid-area:1/2/2/4}
+  #ef-date{grid-area:2/1}
+  .ef-row .ef-tilde{grid-area:2/2}
+  #ef-dateEnd{grid-area:2/3}
+  #ef-time{grid-area:3/1}
+  .ef-row input[type=date]{-webkit-appearance:none;appearance:none;min-height:2.6em;text-align:left}
+  .ef-row input[type=date]::-webkit-date-and-time-value{text-align:left}
 }
 
 /* ============================================================
